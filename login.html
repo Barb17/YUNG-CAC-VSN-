@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOCKED - VSN</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background-color: white;
+            color: black;
+            font-family: 'IBM Plex Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .login-container {
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.5em;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        input[type="password"] {
+            font-family: 'IBM Plex Mono', monospace;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid black;
+            outline: none;
+            text-align: center;
+            margin-bottom: 20px;
+            width: 250px;
+            transition: box-shadow 0.2s;
+        }
+        input[type="password"]:focus {
+            box-shadow: 4px 4px 0px black;
+        }
+        button {
+            font-family: 'IBM Plex Mono', monospace;
+            padding: 10px 30px;
+            font-size: 16px;
+            background-color: black;
+            color: white;
+            border: 2px solid black;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: white;
+            color: black;
+        }
+        #error-msg {
+            color: red;
+            margin-top: 15px;
+            font-size: 0.9em;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>TYPE PASSWORD</h2>
+        <input type="password" id="password-input" autofocus>
+        <br>
+        <button onclick="checkPassword()">ENTER</button>
+        <div id="error-msg">INCORRECT PASSWORD</div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const pass = document.getElementById('password-input').value;
+            const errorMsg = document.getElementById('error-msg');
+            
+            // ==========================================
+            // INSERISCI QUI LA TUA PASSWORD TRA LE VIRGOLETTE
+            // ==========================================
+            if (pass === 'ihatejpeople') { 
+                
+                // Salva il passaporto nella memoria della sessione
+                sessionStorage.setItem('vsn_authenticated', 'true');
+                
+                // Controlla se l'utente voleva andare in una pagina specifica, altrimenti va alla home
+                const redirectUrl = sessionStorage.getItem('vsn_redirect') || 'index.html';
+                sessionStorage.removeItem('vsn_redirect'); // Pulisce la traccia
+                
+                window.location.href = redirectUrl;
+            } else {
+                // Password errata
+                errorMsg.style.visibility = 'visible';
+                document.getElementById('password-input').value = '';
+            }
+        }
+
+        // Permette di premere "Invio" sulla tastiera per confermare
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
+</body>
+</html>

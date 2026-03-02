@@ -1,0 +1,414 @@
+/* --- RIMUOVE AURA BLU E FOCUS --- */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+button:focus, input:focus, a:focus {
+    outline: none;
+}
+/* ------------------------------- */
+
+body {
+    margin: 0;
+    background-color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    align-items: center; 
+    min-height: 100vh;
+}
+
+#page-title {
+    margin-top: 40px;
+    text-align: center;
+    width: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Stili per la galleria globale */
+.image-gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 80px; 
+    width: 100%;
+    max-width: 800px; 
+    box-sizing: border-box;
+    opacity: 1;
+    visibility: visible;
+    padding: 20px 20px 80px 20px; 
+}
+
+/* SINGOLO ELEMENTO (TITOLO + CAROSELLI) */
+.model-item {
+    text-align: center;
+    width: 90%; 
+    max-width: 600px; 
+}
+
+.model-item .image-title { 
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    font-family: 'IBM Plex Mono', monospace;
+    color: black;
+    width: 100%;
+}
+
+/* --- STILI CAROSELLO STRUTTURA --- */
+.carousel-container {
+    width: 100%;
+    margin-bottom: 40px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.carousel {
+    position: relative;
+    width: 100%;
+    height: auto; 
+    overflow: hidden;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: transparent; 
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.4s ease-in-out;
+    width: 100%;
+    align-items: center; 
+}
+
+.carousel-slide {
+    min-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Imposta immagini e video per NON essere tagliate e adattarsi */
+.carousel-slide img,
+.carousel-slide video {
+    width: 100%;
+    height: auto;
+    max-height: 500px; 
+    object-fit: contain; 
+    display: block;
+}
+
+.carousel-slide img {
+    cursor: zoom-in;
+}
+
+/* --- WRAPPER VIDEO E OVERLAY PLAY --- */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.85); /* Leggermente trasparente */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.custom-play-overlay:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.custom-play-overlay svg {
+    width: 28px;
+    height: 28px;
+    fill: black;
+    margin-left: 5px; /* Centra l'icona play otticamente */
+}
+
+/* Quando il video è in play, il bottone si nasconde senza ostacolare i clic sui controlli */
+.custom-play-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* --- STILI DESCRIZIONE --- */
+.carousel-description {
+    margin-top: 12px;
+    font-size: 0.9em;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #555;
+    text-align: center;
+    width: 100%;
+    min-height: 1.2em; 
+}
+
+/* Pulsanti avanti/indietro */
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.6);
+    color: black;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    z-index: 10;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel-btn:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.carousel-btn.prev { left: 10px; }
+.carousel-btn.next { right: 10px; }
+
+/* --- STILI HAMBURGER MENU --- */
+.hamburger-menu {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+}
+
+.menu__btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    z-index: 1002;
+}
+
+.menu__btn > span,
+.menu__btn > span::before,
+.menu__btn > span::after {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: black;
+    transition-duration: .25s;
+}
+
+.menu__btn > span::before { content: ''; top: -8px; }
+.menu__btn > span::after { content: ''; top: 8px; }
+
+.menu__box {
+    display: block;
+    position: fixed;
+    visibility: hidden;
+    top: 0;
+    left: -100%;
+    width: 300px;
+    height: 100vh;
+    margin: 0;
+    padding: 80px 0;
+    list-style: none;
+    background-color: #ECEFF1;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+    transition-duration: .25s;
+    z-index: 1000;
+}
+
+.menu__item {
+    display: block;
+    padding: 12px 24px;
+    color: black;
+    font-family: 'IBM Plex Mono', monospace; 
+    font-size: 20px;
+    text-decoration: none;
+    transition-duration: .25s;
+}
+
+.menu__item:hover { background-color: #CFD8DC; }
+
+#menu__toggle { display: none; }
+
+#menu__toggle:checked ~ .menu__btn > span { transform: rotate(45deg); }
+#menu__toggle:checked ~ .menu__btn > span::before { top: 0; transform: rotate(0deg); }
+#menu__toggle:checked ~ .menu__btn > span::after { top: 0; transform: rotate(90deg); }
+#menu__toggle:checked ~ .menu__box { visibility: visible; left: 0; }
+
+/* ================= STILI LIGHTBOX ZOOM ================= */
+.lightbox {
+    display: none; 
+    position: fixed;
+    z-index: 9999; 
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.93); 
+}
+
+.lightbox.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lightbox-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#lightbox-img {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    cursor: zoom-in;
+    transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); 
+    transform-origin: center center;
+}
+
+#lightbox-img.zoomed {
+    cursor: zoom-out;
+}
+
+.close-lightbox {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10000;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.close-lightbox:hover {
+    color: #ccc;
+}
+
+/* =========================================
+   STILI ALBUM UNRELEASED (SOON) PER LA PAGINA ART
+   ========================================= */
+.model-item.unreleased {
+    position: relative;
+    pointer-events: none; /* Impedisce interazioni (zoom, video play, click frecce) */
+    user-select: none;
+}
+
+.model-item.unreleased .image-title,
+.model-item.unreleased .carousel-container,
+.model-item.unreleased .carousel-description {
+    filter: blur(8px);
+    opacity: 0.6;
+}
+
+.model-item.unreleased .soon-overlay {
+    position: absolute;
+    top: 250px; /* Centrato approssimativamente sul carosello immagini */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2em;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: bold;
+    color: black;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px 15px;
+    border-radius: 5px;
+    z-index: 20;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    letter-spacing: 2px;
+}
+
+/* Media query per mobile */
+@media (max-width: 600px) {
+    .image-gallery {
+        gap: 60px;
+        padding: 10px 10px 40px 10px;
+    }
+
+    .model-item { width: 95%; }
+
+    .carousel-slide img,
+    .carousel-slide video {
+        max-height: 400px; 
+    }
+
+    .carousel-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+    
+    .close-lightbox {
+        top: 15px;
+        right: 20px;
+        font-size: 40px;
+    }
+
+    .model-item.unreleased .soon-overlay {
+        top: 200px; /* Adattato per gli schermi piccoli */
+        font-size: 1.5em;
+    }
+}
+
+/* =========================================
+   STILI FOOTER
+   ========================================= */
+.site-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; 
+    width: 100%;
+    padding: 40px 20px 30px 20px; 
+    box-sizing: border-box;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85em; 
+    color: #555; 
+    margin-top: auto; 
+}
+
+.footer-logo {
+    height: 20px; 
+    width: auto;
+    object-fit: contain;
+}
+
+.site-footer a {
+    color: black;
+    font-weight: bold;
+    text-decoration: none; 
+    transition: color 0.2s ease;
+}
+
+.site-footer a:hover {
+    color: #888; 
+    text-decoration: underline; 
+}

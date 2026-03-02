@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <script>
+        // Controlla se l'utente ha la chiave di accesso per questa sessione
+        if (sessionStorage.getItem('vsn_authenticated') !== 'true') {
+            // Salva l'URL della pagina che voleva visitare per riportarcelo dopo il login
+            sessionStorage.setItem('vsn_redirect', window.location.href);
+            // Lo sbatte fuori sulla pagina di login
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SND</title>
+    <link rel="stylesheet" href="music.css">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="SND-VSN">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+</head>
+<body>
+    <div class="hamburger-menu">
+        <input id="menu__toggle" type="checkbox" />
+        <label class="menu__btn" for="menu__toggle">
+            <span></span>
+        </label>
+        <ul class="menu__box">
+            <li><a class="menu__item" href="index.html">HOME</a></li>
+            <li><a class="menu__item" href="music.html">SND</a></li>
+            <li><a class="menu__item" href="art.html">ART</a></li>
+        </ul>
+    </div>
+    
+    <h2 id="page-title">SND</h2>
+
+    <div class="music-container">
+        <div class="album unreleased">
+            <div class="soon-overlay">SOON</div>
+            <img src="album.jpg" alt="Copertina album" class="album-cover-clickable" data-album-index="0">
+            <h3 id="album-title">FART MUSIC</h3>
+        </div>
+    </div>
+
+    <div class="music-container">
+        <div class="album unreleased">
+            <div class="soon-overlay">SOON</div>
+            <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="1">
+            <h3 id="album-title-2">STUPRO MUSICA 2</h3>
+        </div>
+    </div>
+
+    <div class="music-container">
+        <div class="album unreleased">
+            <div class="soon-overlay">SOON</div>
+            <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="2">
+            <h3 id="album-title-3">VULTURES 4</h3>
+        </div>
+    </div>
+
+    <div class="music-container">
+        <div class="album unreleased">
+            <div class="soon-overlay">SOON</div>
+            <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="3">
+            <h3 id="album-title-4">CHISSA' COSA DIREBBE FREUD</h3>
+        </div>
+    </div>
+    
+    <div class="music-container">
+        <div class="album unreleased">
+            <div class="soon-overlay">SOON</div>
+            <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="4">
+            <h3 id="album-title-5">ANCHE GLI EROI SI FANNO DI CRACK</h3>
+        </div>
+    </div>
+
+    <div id="modal-backdrop"></div>
+    <div id="tracklist-modal">
+        <button id="close-tracklist-btn">&times;</button>
+        <div id="tracklist-content"></div>
+    </div>
+    
+    <div id="global-player-container" class="hidden">
+        
+        <div id="player-bar">
+            <div class="player-bar-clickable" id="open-expanded-player">
+                <img src="album.jpg" alt="Copertina" id="bar-album-cover">
+                <div class="bar-track-info">
+                    <span id="bar-track-title"></span>
+                    <span id="bar-album-title"></span>
+                </div>
+            </div>
+            <button id="bar-play-pause-btn" class="play-pause-btn"></button>
+        </div>
+    
+        <div id="player-expanded">
+            <button id="close-expanded-btn">▼</button>
+            <div class="expanded-content">
+                <img src="album.jpg" alt="Copertina album" id="expanded-album-cover">
+                <h3 id="expanded-album-title"></h3>
+                <h4 id="expanded-track-title"></h4>
+                
+                <input type="range" id="global-progress-bar" class="progress-bar" value="0" step="0.01">
+                <div class="time-container">
+                    <span id="global-current-time">0:00</span>
+                    <span id="global-duration">0:00</span>
+                </div>
+                
+                <div class="controls">
+                    <button class="skip-btn" id="global-prev-btn">⏮</button>
+                    <button id="global-play-pause-btn" class="play-pause-btn"></button>
+                    <button class="skip-btn" id="global-next-btn">⏭</button>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrato:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Registrazione ServiceWorker fallita:', error);
+                    });
+            });
+        }
+
+        const allAlbums = [
+            {
+                albumTitle: "FART MUSIC",
+                albumCover: "album.jpg",
+                tracks: [
+                    { title: 'CAVALLI', src: 'MUSICA/CAVALLI.mp3' },
+                    { title: 'BERGHAIN', src: 'MUSICA/BERGHAIN.mp3' },
+                    { title: 'NINTENDO SWITCH', src: 'MUSICA/NINTENDO SWITCH.mp3' },
+                    { title: 'AHAHAHAH', src: 'MUSICA/AHAHAHAH.mp3' },
+                    { title: 'OUTRO', src: 'MUSICA/OUTRO.mp3' },
+                ]
+            },
+            {
+                albumTitle: "STUPRO MUSICA 2",
+                albumCover: "album2.jpg",
+                tracks: [
+                    { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
+                    { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
+                    { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
+                    { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
+                    { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
+                    { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
+                    { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
+                    { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
+                ]
+            },
+            {
+                albumTitle: "LAUNDRY",
+                albumCover: "album3.jpg",
+                tracks: [
+                    { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
+                    { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
+                    { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
+                    { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
+                    { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
+                    { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
+                    { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
+                    { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
+                ]
+            },
+            {
+                albumTitle: "ECHOES OF NOTHING",
+                albumCover: "album4.jpg",
+                tracks: [
+                    { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
+                    { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
+                    { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
+                    { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
+                    { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
+                    { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
+                    { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
+                    { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
+                ]
+            },
+            {
+                albumTitle: "NOISE",
+                albumCover: "album5.jpg",
+                tracks: [
+                    { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
+                    { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
+                    { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
+                    { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
+                    { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
+                    { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
+                    { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
+                    { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
+                ]
+            },
+        ];
+
+        const globalAudio = new Audio();
+        let currentAlbumIndex = 0;
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        const globalPlayerContainer = document.getElementById('global-player-container');
+        const playerBar = document.getElementById('player-bar');
+        const openExpandedPlayerBtn = document.getElementById('open-expanded-player');
+        const barAlbumCover = document.getElementById('bar-album-cover');
+        const barTrackTitle = document.getElementById('bar-track-title');
+        const barAlbumTitle = document.getElementById('bar-album-title');
+        const barPlayPauseBtn = document.getElementById('bar-play-pause-btn');
+        const playerExpanded = document.getElementById('player-expanded');
+        const closeExpandedPlayerBtn = document.getElementById('close-expanded-btn');
+        const expandedAlbumCover = document.getElementById('expanded-album-cover');
+        const expandedAlbumTitle = document.getElementById('expanded-album-title');
+        const expandedTrackTitle = document.getElementById('expanded-track-title');
+        const globalProgressBar = document.getElementById('global-progress-bar');
+        const globalCurrentTime = document.getElementById('global-current-time');
+        const globalDuration = document.getElementById('global-duration');
+        const globalPrevBtn = document.getElementById('global-prev-btn');
+        const globalPlayPauseBtn = document.getElementById('global-play-pause-btn');
+        const globalNextBtn = document.getElementById('global-next-btn');
+        const albumCoverImages = document.querySelectorAll('.album-cover-clickable');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const tracklistModal = document.getElementById('tracklist-modal');
+        const closeTracklistBtn = document.getElementById('close-tracklist-btn');
+        const tracklistContent = document.getElementById('tracklist-content');
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+
+        const playIconSVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>';
+        const pauseIconSVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>';
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${remainingSeconds}`;
+        }
+
+        function loadTrack(albumIndex, trackIndex) {
+            currentAlbumIndex = albumIndex;
+            currentTrackIndex = trackIndex;
+            const album = allAlbums[albumIndex];
+            const track = album.tracks[trackIndex];
+            globalAudio.src = track.src;
+            barAlbumCover.src = album.albumCover;
+            barTrackTitle.textContent = track.title;
+            barAlbumTitle.textContent = album.albumTitle;
+            expandedAlbumCover.src = album.albumCover;
+            expandedTrackTitle.textContent = track.title;
+            expandedAlbumTitle.textContent = album.albumTitle;
+            globalPlayerContainer.classList.remove('hidden');
+            globalProgressBar.value = 0;
+            globalCurrentTime.textContent = '0:00';
+            globalAudio.addEventListener('loadedmetadata', () => {
+                globalDuration.textContent = formatTime(globalAudio.duration || 0);
+            }, { once: true });
+            if (isPlaying) {
+                playAudio();
+            }
+        }
+
+        function playAudio() {
+            globalAudio.play();
+            isPlaying = true;
+            barPlayPauseBtn.innerHTML = pauseIconSVG;
+            globalPlayPauseBtn.innerHTML = pauseIconSVG;
+        }
+
+        function pauseAudio() {
+            globalAudio.pause();
+            isPlaying = false;
+            barPlayPauseBtn.innerHTML = playIconSVG;
+            globalPlayPauseBtn.innerHTML = playIconSVG;
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function playNextTrack() {
+            currentTrackIndex++;
+            const currentAlbum = allAlbums[currentAlbumIndex];
+            if (currentTrackIndex >= currentAlbum.tracks.length) {
+                currentTrackIndex = 0;
+            }
+            loadTrack(currentAlbumIndex, currentTrackIndex);
+        }
+
+        function playPrevTrack() {
+            currentTrackIndex--;
+            if (currentTrackIndex < 0) {
+                const currentAlbum = allAlbums[currentAlbumIndex];
+                currentTrackIndex = currentAlbum.tracks.length - 1;
+            }
+            loadTrack(currentAlbumIndex, currentTrackIndex);
+        }
+
+        function updateProgress() {
+            const currentTime = globalAudio.currentTime;
+            const duration = globalAudio.duration || 0;
+            globalProgressBar.value = duration ? (currentTime / duration) * 100 : 0;
+            globalCurrentTime.textContent = formatTime(currentTime);
+        }
+
+        function setProgress() {
+            const duration = globalAudio.duration || 0;
+            const progress = globalProgressBar.value / 100;
+            globalAudio.currentTime = duration * progress;
+        }
+
+        function openExpandedPlayer() {
+            playerExpanded.classList.add('active');
+            hamburgerMenu.classList.add('hidden-by-player'); 
+        }
+        
+        function closeExpandedPlayer() {
+            playerExpanded.classList.remove('active');
+            hamburgerMenu.classList.remove('hidden-by-player'); 
+        }
+
+        function showTracklist(albumIndex) {
+            const album = allAlbums[albumIndex];
+            tracklistContent.innerHTML = '';
+            const modalCover = document.createElement('img');
+            modalCover.src = album.albumCover;
+            modalCover.className = 'tracklist-cover';
+            tracklistContent.appendChild(modalCover);
+            const modalTitle = document.createElement('h3');
+            modalTitle.textContent = album.albumTitle;
+            modalTitle.className = 'tracklist-album-title';
+            tracklistContent.appendChild(modalTitle);
+            const trackListElement = document.createElement('ol');
+            trackListElement.className = 'tracklist-ol';
+            album.tracks.forEach((track, trackIndex) => {
+                const trackItem = document.createElement('li');
+                trackItem.textContent = track.title;
+                trackItem.className = 'tracklist-item';
+                trackItem.dataset.albumIndex = albumIndex;
+                trackItem.dataset.trackIndex = trackIndex;
+                trackListElement.appendChild(trackItem);
+            });
+            tracklistContent.appendChild(trackListElement);
+            modalBackdrop.classList.add('active');
+            tracklistModal.classList.add('active');
+            hamburgerMenu.classList.add('hidden-by-player'); 
+        }
+
+        function closeTracklistModal() {
+            modalBackdrop.classList.remove('active');
+            tracklistModal.classList.remove('active');
+            hamburgerMenu.classList.remove('hidden-by-player'); 
+        }
+
+        // --- GESTIONE CLICK SULLE COPERTINE DEGLI ALBUM ---
+        albumCoverImages.forEach(image => {
+            image.addEventListener('click', (e) => {
+                const albumDiv = e.currentTarget.closest('.album');
+                
+                // Se l'album ha la classe "unreleased", mostra il modal "SOON"
+                if (albumDiv && albumDiv.classList.contains('unreleased')) {
+                    tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
+                    modalBackdrop.classList.add('active');
+                    tracklistModal.classList.add('active');
+                    hamburgerMenu.classList.add('hidden-by-player');
+                    return; // Interrompe l'esecuzione, non carica le canzoni
+                }
+                
+                // Se non è "unreleased", procedi normalmente
+                const albumIndex = parseInt(e.currentTarget.dataset.albumIndex);
+                showTracklist(albumIndex); 
+            });
+        });
+
+        tracklistContent.addEventListener('click', (e) => {
+            if (e.target && e.target.classList.contains('tracklist-item')) {
+                const albumIndex = parseInt(e.target.dataset.albumIndex);
+                const trackIndex = parseInt(e.target.dataset.trackIndex);
+                loadTrack(albumIndex, trackIndex);
+                playAudio();
+                closeTracklistModal(); 
+            }
+        });
+
+        closeTracklistBtn.addEventListener('click', closeTracklistModal);
+        modalBackdrop.addEventListener('click', closeTracklistModal);
+
+        barPlayPauseBtn.addEventListener('click', togglePlayPause);
+        globalPlayPauseBtn.addEventListener('click', togglePlayPause);
+        globalNextBtn.addEventListener('click', playNextTrack);
+        globalPrevBtn.addEventListener('click', playPrevTrack);
+
+        globalAudio.addEventListener('timeupdate', updateProgress);
+        globalProgressBar.addEventListener('input', setProgress);
+        
+        globalAudio.addEventListener('ended', () => {
+            playNextTrack();
+        });
+        
+        openExpandedPlayerBtn.addEventListener('click', openExpandedPlayer);
+        closeExpandedPlayerBtn.addEventListener('click', closeExpandedPlayer);
+
+        const menuToggle = document.getElementById('menu__toggle');
+        const menuBox = document.querySelector('.menu__box');
+
+        menuToggle.addEventListener('change', () => {
+            if (menuToggle.checked) {
+                menuBox.style.visibility = 'visible';
+                menuBox.style.left = '0';
+            } else {
+                menuBox.style.visibility = 'hidden';
+                menuBox.style.left = '-100%';
+            }
+        });
+
+        loadTrack(0, 0);
+        globalPlayerContainer.classList.add('hidden');
+        pauseAudio(); 
+
+    </script>
+
+    <footer class="site-footer">
+        <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo">
+        <span>Sound & Vision by <a href="https://loveveryone.it" target="_blank" rel="noopener noreferrer">VSN</a></span>
+    </footer>
+
+</body>
+</html>

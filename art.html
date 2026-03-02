@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <script>
+        // Controlla se l'utente ha la chiave di accesso per questa sessione
+        if (sessionStorage.getItem('vsn_authenticated') !== 'true') {
+            // Salva l'URL della pagina che voleva visitare per riportarcelo dopo il login
+            sessionStorage.setItem('vsn_redirect', window.location.href);
+            // Lo sbatte fuori sulla pagina di login
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ART</title>
+    <link rel="stylesheet" href="art.css">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="hamburger-menu">
+        <input id="menu__toggle" type="checkbox" />
+        <label class="menu__btn" for="menu__toggle">
+            <span></span>
+        </label>
+        <ul class="menu__box">
+            <li><a class="menu__item" href="index.html">HOME</a></li>
+            <li><a class="menu__item" href="music.html">SND</a></li>
+            <li><a class="menu__item" href="art.html">ART</a></li>
+        </ul>
+    </div>
+
+    <h2 id="page-title">ART</h2>
+
+    <div class="image-gallery">
+        
+        <div class="model-item">
+            <h3 class="image-title">FART MUSIC</h3>
+            
+            <div class="carousel-container">
+                <div class="carousel" id="img-love" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('img-love', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Cover FART MUSIC"><img src="IMMAGINE/Front_1.png" alt="Cover FART MUSIC"></div>
+                        <div class="carousel-slide" data-desc="Back cover FART MUSIC"><img src="IMMAGINE/Back_1.png" alt="Back cover FART MUSIC"></div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('img-love', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-img-love">Cover FART MUSIC</p>
+            </div>
+
+            <div class="carousel-container" style="display: none;">
+                <div class="carousel" id="vid-love" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('vid-love', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Descrizione video 1 di Love Everyone">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-desc="Descrizione video 2 di Love Everyone">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/love2.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('vid-love', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-vid-love">Descrizione video 1 di Love Everyone</p>
+            </div>
+        </div>
+
+        <div class="model-item unreleased">
+            <h3 class="image-title">STUPRO MUSICA 2</h3>
+            <div class="soon-overlay">SOON</div>
+            
+            <div class="carousel-container">
+                <div class="carousel" id="img-hate" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('img-hate', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Cover STUPRO MUSICA 2"><img src="IMMAGINE/Front_2.jpg" alt="Cover STUPRO MUSICA 2"></div>
+                        <div class="carousel-slide" data-desc="Back cover STUPRO MUSICA 2"><img src="IMMAGINE/Back_2.png" alt="Back cover STUPRO MUSICA 2"></div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('img-hate', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-img-hate">Cover STUPRO MUSICA 2</p>
+            </div>
+
+            <div class="carousel-container">
+                <div class="carousel" id="vid-hate" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('vid-hate', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="PISCIO (esperienza ufficiale)">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-desc="Descrizione video 2 di Hate Everyone">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/hate2.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('vid-hate', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-vid-hate">PISCIO (esperienza ufficiale)</p>
+            </div>
+        </div>
+
+        <div class="model-item unreleased">
+            <h3 class="image-title">VULTURES 4</h3>
+            <div class="soon-overlay">SOON</div>
+            
+            <div class="carousel-container">
+                <div class="carousel" id="img-laundry" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('img-laundry', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Cover VULTURES 4"><img src="IMMAGINE/Front_3.png" alt="Cover VULTURES 4"></div>
+                        <div class="carousel-slide" data-desc="Back cover VULTURES 4"><img src="IMMAGINE/Back_3.png" alt="Back cover VULTURES 4"></div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('img-laundry', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-img-laundry">Cover VULTURES 4</p>
+            </div>
+
+            <div class="carousel-container" style="display: none;">
+                <div class="carousel" id="vid-laundry" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('vid-laundry', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Descrizione video 1 di Laundry">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/laundry1.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-desc="Descrizione video 2 di Laundry">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/laundry2.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('vid-laundry', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-vid-laundry">Descrizione video 1 di Laundry</p>
+            </div>
+        </div>
+
+        <div class="model-item unreleased">
+            <h3 class="image-title">CHISSA' COSA DIREBBE FREUD</h3>
+            <div class="soon-overlay">SOON</div>
+            
+            <div class="carousel-container">
+                <div class="carousel" id="img-echoes" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('img-echoes', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Front_4.png" alt="Cover CHISSA' COSA DIREBBE FREUD"></div>
+                        <div class="carousel-slide" data-desc="Back cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Back_4.png" alt="Back cover CHISSA' COSA DIREBBE FREUD"></div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('img-echoes', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-img-echoes">Cover CHISSA' COSA DIREBBE FREUD</p>
+            </div>
+
+            <div class="carousel-container" style="display: none;">
+                <div class="carousel" id="vid-echoes" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('vid-echoes', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Descrizione video 1 di Echoes">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/echoes1.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-desc="Descrizione video 2 di Echoes">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/echoes2.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('vid-echoes', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-vid-echoes">Descrizione video 1 di Echoes</p>
+            </div>
+        </div>
+
+        <div class="model-item unreleased">
+            <h3 class="image-title">ANCHE GLI EROI SI FANNO DI CRACK</h3>
+            <div class="soon-overlay">SOON</div>
+            
+            <div class="carousel-container">
+                <div class="carousel" id="img-noise" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('img-noise', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Front_5.png" alt="Cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
+                        <div class="carousel-slide" data-desc="Back cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Back_5.png" alt="Back cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('img-noise', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-img-noise">Cover ANCHE GLI EROI SI FANNO DI CRACK</p>
+            </div>
+
+            <div class="carousel-container" style="display: none;">
+                <div class="carousel" id="vid-noise" data-index="0">
+                    <button class="carousel-btn prev" onclick="moveSlide('vid-noise', -1)">&#10094;</button>
+                    <div class="carousel-track">
+                        <div class="carousel-slide" data-desc="Descrizione video 1 di Noise">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/noise1.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-desc="Descrizione video 2 di Noise">
+                            <div class="video-wrapper">
+                                <video controls playsinline preload="metadata"><source src="VIDEO/noise2.mp4" type="video/mp4"></video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="moveSlide('vid-noise', 1)">&#10095;</button>
+                </div>
+                <p class="carousel-description" id="desc-vid-noise">Descrizione video 1 di Noise</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="image-lightbox" class="lightbox">
+        <span class="close-lightbox" id="close-lightbox">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Zoom Immagine">
+        </div>
+    </div>
+
+    <script>
+        // Gestione Menu Hamburger
+        const menuToggle = document.getElementById('menu__toggle');
+        const menuBox = document.querySelector('.menu__box');
+
+        menuToggle.addEventListener('change', () => {
+            if (menuToggle.checked) {
+                menuBox.style.visibility = 'visible';
+                menuBox.style.left = '0';
+            } else {
+                menuBox.style.visibility = 'hidden';
+                menuBox.style.left = '-100%';
+            }
+        });
+
+        // Gestione Carosello (Immagini e Video con descrizioni)
+        function moveSlide(carouselId, direction) {
+            const carousel = document.getElementById(carouselId);
+            const track = carousel.querySelector('.carousel-track');
+            const slides = carousel.querySelectorAll('.carousel-slide');
+            const descElement = document.getElementById('desc-' + carouselId); 
+            
+            // --- FERMA I VIDEO QUANDO CAMBI SLIDE ---
+            const videos = carousel.querySelectorAll('video');
+            videos.forEach(video => {
+                video.pause();
+            });
+            // ----------------------------------------
+            
+            let currentIndex = parseInt(carousel.getAttribute('data-index')) || 0;
+            
+            currentIndex += direction;
+            
+            // Loop continuo
+            if (currentIndex < 0) {
+                currentIndex = slides.length - 1;
+            } else if (currentIndex >= slides.length) {
+                currentIndex = 0;
+            }
+            
+            carousel.setAttribute('data-index', currentIndex);
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            
+            if (descElement) {
+                descElement.textContent = slides[currentIndex].getAttribute('data-desc');
+            }
+        }
+
+        // ================= GESTIONE TASTO PLAY VIDEO =================
+        document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+            const video = wrapper.querySelector('video');
+            const overlay = wrapper.querySelector('.custom-play-overlay');
+
+            // Cliccando il tasto centrale avvia il video
+            overlay.addEventListener('click', () => {
+                video.play();
+            });
+
+            // Sincronizza l'overlay nativo: nascondilo se in play
+            video.addEventListener('play', () => {
+                overlay.classList.add('hidden');
+            });
+
+            // Mostralo di nuovo se in pausa
+            video.addEventListener('pause', () => {
+                overlay.classList.remove('hidden');
+            });
+        });
+
+        // ================= GESTIONE LIGHTBOX (ZOOM) =================
+        const lightbox = document.getElementById('image-lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeLightboxBtn = document.getElementById('close-lightbox');
+
+        // Apre l'immagine nel Lightbox quando cliccata
+        document.querySelectorAll('.carousel-slide img').forEach(img => {
+            img.addEventListener('click', function() {
+                lightboxImg.src = this.src;
+                lightboxImg.classList.remove('zoomed'); 
+                lightboxImg.style.transform = 'scale(1)'; 
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = ''; 
+        }
+
+        closeLightboxBtn.addEventListener('click', closeLightbox);
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox || e.target.classList.contains('lightbox-content')) {
+                closeLightbox();
+            }
+        });
+
+        lightboxImg.addEventListener('click', function(e) {
+            e.stopPropagation(); 
+            if (this.classList.contains('zoomed')) {
+                this.classList.remove('zoomed');
+                this.style.transform = 'scale(1)';
+            } else {
+                this.classList.add('zoomed');
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left; 
+                const y = e.clientY - rect.top;  
+                const xPercent = (x / rect.width) * 100;
+                const yPercent = (y / rect.height) * 100;
+                this.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+                this.style.transform = 'scale(2.5)'; 
+            }
+        });
+    </script>
+
+    <footer class="site-footer">
+        <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo">
+        <span>Sound & Vision by <a href="https://loveveryone.it" target="_blank" rel="noopener noreferrer">VSN</a></span>
+    </footer>
+
+</body>
+</html>
