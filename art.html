@@ -18,6 +18,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video"></script>
 </head>
 <body>
     <div class="hamburger-menu">
@@ -51,26 +53,17 @@
                 <p class="carousel-description" id="desc-img-love">Cover FART MUSIC</p>
             </div>
 
-            <div class="carousel-container" style="display: none;">
-                <div class="carousel" id="vid-love" data-index="0">
-                    <button class="carousel-btn prev" onclick="moveSlide('vid-love', -1)">&#10094;</button>
-                    <div class="carousel-track">
-                        <div class="carousel-slide" data-desc="Descrizione video 1 di Love Everyone">
-                            <div class="video-wrapper">
-                                <video controls playsinline preload="metadata"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                        <div class="carousel-slide" data-desc="Descrizione video 2 di Love Everyone">
-                            <div class="video-wrapper">
-                                <video controls playsinline preload="metadata"><source src="VIDEO/love2.mp4" type="video/mp4"></video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
+            <div class="carousel-container">
+                <div class="carousel">
+                    <div class="carousel-slide">
+                        <div class="video-wrapper">
+                            <mux-video controls playsinline preload="metadata" playback-id="2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k"></mux-video>
+                            
+                            <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
                         </div>
                     </div>
-                    <button class="carousel-btn next" onclick="moveSlide('vid-love', 1)">&#10095;</button>
                 </div>
-                <p class="carousel-description" id="desc-vid-love">Descrizione video 1 di Love Everyone</p>
+                <p class="carousel-description">FART MUSIC DOCUMENTARY</p>
             </div>
         </div>
 
@@ -261,8 +254,8 @@
             const slides = carousel.querySelectorAll('.carousel-slide');
             const descElement = document.getElementById('desc-' + carouselId); 
             
-            // --- FERMA I VIDEO QUANDO CAMBI SLIDE ---
-            const videos = carousel.querySelectorAll('video');
+            // --- FERMA I VIDEO QUANDO CAMBI SLIDE (aggiornato per Mux) ---
+            const videos = carousel.querySelectorAll('video, mux-video');
             videos.forEach(video => {
                 video.pause();
             });
@@ -287,25 +280,27 @@
             }
         }
 
-        // ================= GESTIONE TASTO PLAY VIDEO =================
+        // ================= GESTIONE TASTO PLAY VIDEO (Aggiornato per Mux) =================
         document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-            const video = wrapper.querySelector('video');
+            const video = wrapper.querySelector('video, mux-video');
             const overlay = wrapper.querySelector('.custom-play-overlay');
 
-            // Cliccando il tasto centrale avvia il video
-            overlay.addEventListener('click', () => {
-                video.play();
-            });
+            if (video && overlay) {
+                // Cliccando il tasto centrale avvia il video
+                overlay.addEventListener('click', () => {
+                    video.play();
+                });
 
-            // Sincronizza l'overlay nativo: nascondilo se in play
-            video.addEventListener('play', () => {
-                overlay.classList.add('hidden');
-            });
+                // Sincronizza l'overlay nativo: nascondilo se in play
+                video.addEventListener('play', () => {
+                    overlay.classList.add('hidden');
+                });
 
-            // Mostralo di nuovo se in pausa
-            video.addEventListener('pause', () => {
-                overlay.classList.remove('hidden');
-            });
+                // Mostralo di nuovo se in pausa
+                video.addEventListener('pause', () => {
+                    overlay.classList.remove('hidden');
+                });
+            }
         });
 
         // ================= GESTIONE LIGHTBOX (ZOOM) =================
