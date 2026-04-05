@@ -49,9 +49,16 @@
     </div>
 
     <div class="music-container">
+        <div class="album">
+            <img id="album-cover-6" src="album6.jpg" alt="Copertina BLACKSTONE FREESTYLE" class="album-cover-clickable" data-album-index="1">
+            <h3 id="album-title-6">BLACKSTONE FREESTYLE</h3>
+        </div>
+    </div>
+
+    <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="1">
+            <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="2">
             <h3 id="album-title-2">STUPRO MUSICA 2</h3>
         </div>
     </div>
@@ -59,7 +66,7 @@
     <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="2">
+            <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="3">
             <h3 id="album-title-3">VULTURES 4</h3>
         </div>
     </div>
@@ -67,7 +74,7 @@
     <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="3">
+            <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="4">
             <h3 id="album-title-4">CHISSA' COSA DIREBBE FREUD</h3>
         </div>
     </div>
@@ -75,7 +82,7 @@
     <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="4">
+            <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="5">
             <h3 id="album-title-5">ANCHE GLI EROI SI FANNO DI CRACK</h3>
         </div>
     </div>
@@ -93,6 +100,7 @@
                 <img src="album.jpg" alt="Copertina" id="bar-album-cover">
                 <div class="bar-track-info">
                     <span id="bar-track-title"></span>
+                    <span id="bar-track-artists" style="font-size: 0.85em; color: #888; display: none;"></span>
                     <span id="bar-album-title"></span>
                 </div>
             </div>
@@ -105,6 +113,7 @@
                 <img src="album.jpg" alt="Copertina album" id="expanded-album-cover">
                 <h3 id="expanded-album-title"></h3>
                 <h4 id="expanded-track-title"></h4>
+                <h5 id="expanded-track-artists" style="margin-top: 0; font-size: 0.9em; color: #555; display: none; font-weight: normal;"></h5>
                 
                 <input type="range" id="global-progress-bar" class="progress-bar" value="0" step="0.01">
                 <div class="time-container">
@@ -145,6 +154,15 @@
                     { title: 'NINTENDO SWITCH', src: 'MUSICA/NINTENDO SWITCH.mp3' },
                     { title: 'AHAHAHAH', src: 'MUSICA/AHAHAHAH.mp3' },
                     { title: 'OUTRO', src: 'MUSICA/OUTRO.mp3' },
+                ]
+            },
+            {
+                // INSERIMENTO DEL NUOVO SINGOLO CON CAMPO ARTISTS
+                albumTitle: "BLACKSTONE FREESTYLE",
+                albumCover: "album6.jpg", // Inserisci il nome della copertina corretta
+                artists: "Juanky, Zodiak, Yung CAC, VSN", // <--- Questo fa attivare la scritta nel player
+                tracks: [
+                    { title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }
                 ]
             },
             {
@@ -215,6 +233,7 @@
         const openExpandedPlayerBtn = document.getElementById('open-expanded-player');
         const barAlbumCover = document.getElementById('bar-album-cover');
         const barTrackTitle = document.getElementById('bar-track-title');
+        const barTrackArtists = document.getElementById('bar-track-artists');
         const barAlbumTitle = document.getElementById('bar-album-title');
         const barPlayPauseBtn = document.getElementById('bar-play-pause-btn');
         const playerExpanded = document.getElementById('player-expanded');
@@ -222,6 +241,7 @@
         const expandedAlbumCover = document.getElementById('expanded-album-cover');
         const expandedAlbumTitle = document.getElementById('expanded-album-title');
         const expandedTrackTitle = document.getElementById('expanded-track-title');
+        const expandedTrackArtists = document.getElementById('expanded-track-artists');
         const globalProgressBar = document.getElementById('global-progress-bar');
         const globalCurrentTime = document.getElementById('global-current-time');
         const globalDuration = document.getElementById('global-duration');
@@ -249,6 +269,7 @@
             currentTrackIndex = trackIndex;
             const album = allAlbums[albumIndex];
             const track = album.tracks[trackIndex];
+            
             globalAudio.src = track.src;
             barAlbumCover.src = album.albumCover;
             barTrackTitle.textContent = track.title;
@@ -256,6 +277,21 @@
             expandedAlbumCover.src = album.albumCover;
             expandedTrackTitle.textContent = track.title;
             expandedAlbumTitle.textContent = album.albumTitle;
+            
+            // GESTIONE DINAMICA DEGLI ARTISTI
+            if (album.artists) {
+                barTrackArtists.textContent = album.artists;
+                barTrackArtists.style.display = 'block';
+                expandedTrackArtists.textContent = album.artists;
+                expandedTrackArtists.style.display = 'block';
+                expandedTrackTitle.style.marginBottom = '5px'; // Riduce lo spazio se ci sono gli artisti
+                expandedTrackArtists.style.marginBottom = '20px';
+            } else {
+                barTrackArtists.style.display = 'none';
+                expandedTrackArtists.style.display = 'none';
+                expandedTrackTitle.style.marginBottom = '20px'; // Ripristina il margine standard
+            }
+
             globalPlayerContainer.classList.remove('hidden');
             globalProgressBar.value = 0;
             globalCurrentTime.textContent = '0:00';
