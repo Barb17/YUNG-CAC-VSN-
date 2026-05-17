@@ -2,22 +2,22 @@
 <html lang="it">
 <head>
     <script>
-        // Controlla se l'utente ha la chiave di accesso per questa sessione
+        // Controlla se l'utente ha la chiave di accesso
         if (sessionStorage.getItem('vsn_authenticated') !== 'true') {
-            // Salva l'URL della pagina che voleva visitare per riportarcelo dopo il login
             sessionStorage.setItem('vsn_redirect', window.location.href);
-            // Lo sbatte fuori sulla pagina di login
             window.location.href = 'login.html';
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME</title>
-    <link rel="stylesheet" href="style.css">
+    <title>GOYCAST</title>
+    <link rel="stylesheet" href="art.css">
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video"></script>
 </head>
 <body>
     <div class="hamburger-menu">
@@ -33,20 +33,31 @@
         </ul>
     </div>
 
-    <h2 id="page-title">YUNG CAC & VSN</h2>
+    <h2 id="page-title">GOYCAST</h2>
 
-    <div class="content">
-        <div class="image-container">
-            <a href="music.html"><img src="IMMAGINE/immagine.jpg" alt="SND" class="animated-image"></a>
-            <h3 class="image-label">SND</h3>
+    <div class="image-gallery">
+        
+        <div class="model-item">
+            <h3 class="image-title">EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE</h3>
+            
+            <div class="carousel-container">
+                <div class="carousel">
+                    <div class="carousel-slide">
+                        <div class="video-wrapper">
+                            <mux-video controls playsinline preload="metadata" playback-id="2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00"></mux-video>
+                            
+                            <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="carousel-description">16-05-2026 </p>
+            </div>
         </div>
 
-        <div class="image-container">
-            <a href="art.html"><img src="IMMAGINE/immagine2.jpg" alt="ART" class="animated-image"></a>
-            <h3 class="image-label">ART</h3>
         </div>
-    </div>
+
     <script>
+        // Gestione Menu Hamburger
         const menuToggle = document.getElementById('menu__toggle');
         const menuBox = document.querySelector('.menu__box');
 
@@ -57,6 +68,24 @@
             } else {
                 menuBox.style.visibility = 'hidden';
                 menuBox.style.left = '-100%';
+            }
+        });
+
+        // Gestione Tasto Play Video (Sincronizzato con Mux)
+        document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+            const video = wrapper.querySelector('mux-video');
+            const overlay = wrapper.querySelector('.custom-play-overlay');
+
+            if (video && overlay) {
+                overlay.addEventListener('click', () => {
+                    video.play();
+                });
+                video.addEventListener('play', () => {
+                    overlay.classList.add('hidden');
+                });
+                video.addEventListener('pause', () => {
+                    overlay.classList.remove('hidden');
+                });
             }
         });
     </script>
