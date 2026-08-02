@@ -57,9 +57,16 @@
     </div>
 
     <div class="music-container">
+        <div class="album">
+            <img id="album-cover-7" src="album7.png" alt="Copertina GAR(B)AGE MUSIC" class="album-cover-clickable" data-album-index="2">
+            <h3 id="album-title-7">GAR(B)AGE MUSIC</h3>
+        </div>
+    </div>
+
+    <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="2">
+            <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="3">
             <h3 id="album-title-2">STUPRO MUSICA 2</h3>
         </div>
     </div>
@@ -67,7 +74,7 @@
     <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="3">
+            <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="4">
             <h3 id="album-title-3">VULTURES 4</h3>
         </div>
     </div>
@@ -75,7 +82,7 @@
     <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="4">
+            <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="5">
             <h3 id="album-title-4">CHISSA' COSA DIREBBE FREUD</h3>
         </div>
     </div>
@@ -83,7 +90,7 @@
     <div class="music-container">
         <div class="album unreleased">
             <div class="soon-overlay">SOON</div>
-            <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="5">
+            <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="6">
             <h3 id="album-title-5">ANCHE GLI EROI SI FANNO DI CRACK</h3>
         </div>
     </div>
@@ -113,6 +120,7 @@
             <div class="expanded-content">
                 <img src="album.jpg" alt="Copertina album" id="expanded-album-cover">
                 <h3 id="expanded-album-title"></h3>
+                <!-- TITOLO TRACCIA E ARTISTI -->
                 <h4 id="expanded-track-title"></h4>
                 <h5 id="expanded-track-artists" style="margin-top: 0; font-size: 0.9em; color: #555; display: none; font-weight: normal;"></h5>
                 
@@ -158,12 +166,21 @@
                 ]
             },
             {
-                // INSERIMENTO DEL NUOVO SINGOLO CON CAMPO ARTISTS
                 albumTitle: "BLACKSTONE FREESTYLE",
-                albumCover: "album6.jpg", // Inserisci il nome della copertina corretta
-                artists: "Juanky, Zodiak, Yung CAC, VSN", // <--- Questo fa attivare la scritta nel player
+                albumCover: "album6.jpg", 
+                artists: "Juanky, Zodiak, Yung CAC, VSN", 
+                isSingle: true, // Questo parametro disattiva il doppio titolo
                 tracks: [
                     { title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }
+                ]
+            },
+            {
+                albumTitle: "GAR(B)AGE MUSIC",
+                albumCover: "album7.png", 
+                artists: "Juanky, Zodiak, Yung CAC", 
+                isSingle: true, // Questo parametro disattiva il doppio titolo
+                tracks: [
+                    { title: 'GAR(B)AGE MUSIC', src: 'MUSICA/GAR(B)AGE MUSIC.mp3' }
                 ]
             },
             {
@@ -279,19 +296,33 @@
             expandedTrackTitle.textContent = track.title;
             expandedAlbumTitle.textContent = album.albumTitle;
             
-            // GESTIONE DINAMICA DEGLI ARTISTI
+            // ==========================================
+            // GESTIONE TITOLI E ARTISTI DINAMICA
+            // ==========================================
+            if (album.isSingle) {
+                // Se è un singolo nascondiamo il titolo piccolo e manteniamo quello grande dell'album
+                expandedTrackTitle.style.display = 'none';
+                barAlbumTitle.style.display = 'none'; 
+            } else {
+                expandedTrackTitle.style.display = 'block';
+                barAlbumTitle.style.display = 'block';
+            }
+
             if (album.artists) {
                 barTrackArtists.textContent = album.artists;
                 barTrackArtists.style.display = 'block';
                 expandedTrackArtists.textContent = album.artists;
                 expandedTrackArtists.style.display = 'block';
-                expandedTrackTitle.style.marginBottom = '5px'; // Riduce lo spazio se ci sono gli artisti
+                
+                // Manteniamo le giuste distanze visive
+                expandedTrackTitle.style.marginBottom = '5px'; 
                 expandedTrackArtists.style.marginBottom = '20px';
             } else {
                 barTrackArtists.style.display = 'none';
                 expandedTrackArtists.style.display = 'none';
-                expandedTrackTitle.style.marginBottom = '20px'; // Ripristina il margine standard
+                expandedTrackTitle.style.marginBottom = '20px'; 
             }
+            // ==========================================
 
             globalPlayerContainer.classList.remove('hidden');
             globalProgressBar.value = 0;
