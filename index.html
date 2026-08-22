@@ -12,59 +12,1259 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME</title>
-    <link rel="stylesheet" href="style.css">
+    <title>YNGCAC</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="YNGCAC">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Mux Video Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video"></script>
+    
+    <style>
+        /* ================================================================
+           RESET & BASE
+           ================================================================ */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        *:focus:not(:focus-visible) { outline: none; }
+        
+        body {
+            margin: 0;
+            background-color: white; 
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: scroll;
+        }
+
+        #page-title {
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* ================================================================
+           NAV
+           ================================================================ */
+        .text-menu {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 10px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: white;
+            z-index: 1001;
+            transition: visibility 0.2s, opacity 0.2s linear;
+        }
+        .text-menu.hidden-by-player { visibility: hidden; opacity: 0; }
+        .text-menu a {
+            text-decoration: none;
+            color: #ccc;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 10px 5px;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+        .text-menu a.active { color: black; font-weight: bold; }
+        .text-menu a:hover { color: #777; }
+        
+        @media (max-width: 400px) {
+            .text-menu { gap: 8px; }
+            .text-menu a { font-size: 0.95em; padding: 10px 2px; }
+        }
+
+        /* ================================================================
+           PAGES (SPA Logic)
+           ================================================================ */
+        .page { 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%; 
+            padding-top: 80px; 
+            padding-bottom: 80px; 
+            flex-grow: 1;
+        }
+        .page.active { display: flex; }
+
+        /* ================================================================
+           SND (Music Section)
+           ================================================================ */
+        .music-container {
+            padding: 20px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .album { margin-bottom: 20px; }
+        .album img { max-width: 200px; width: 200px; border-radius: 5px; }
+        
+        .album-cover-clickable {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .album-cover-clickable:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Unreleased / SOON */
+        .album.unreleased { position: relative; }
+        .album.unreleased img,
+        .album.unreleased h3 { filter: blur(8px); opacity: 0.6; }
+        .album.unreleased .soon-overlay {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            font-weight: bold;
+            color: black;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 15px;
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            letter-spacing: 2px;
+        }
+
+        .album-title-text {
+            margin-top: 10px;
+            font-size: 1.1em;
+            width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .music-container { width: 95%; padding: 10px; }
+            .album { margin-bottom: 15px; }
+            .album img { max-width: 150px; width: 150px; }
+            .album.unreleased .soon-overlay { top: 75px; font-size: 1.5em; }
+        }
+
+        /* ================================================================
+           ART & GOYCAST (Galleries and Videos)
+           ================================================================ */
+        .image-gallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px; 
+            width: 100%;
+            max-width: 800px; 
+            box-sizing: border-box;
+            padding: 20px 20px 80px 20px; 
+        }
+
+        .model-item { text-align: center; width: 90%; max-width: 600px; }
+        .model-item .image-title { margin-bottom: 25px; font-size: 1.5em; color: black; width: 100%; }
+
+        .carousel-container {
+            width: 100%; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center;
+        }
+        .carousel {
+            position: relative; width: 100%; height: auto; overflow: hidden;
+            border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: transparent; 
+        }
+        .carousel-track {
+            display: flex; transition: transform 0.4s ease-in-out; width: 100%; align-items: center; 
+        }
+        .carousel-slide {
+            min-width: 100%; display: flex; justify-content: center; align-items: center;
+        }
+        .carousel-slide img, .carousel-slide video, .carousel-slide mux-video {
+            width: 100%; height: auto; max-height: 500px; object-fit: contain; display: block;
+        }
+        .carousel-slide img { cursor: zoom-in; }
+
+        .video-wrapper {
+            position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+        }
+        .custom-play-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60px; height: 60px; background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 5; transition: opacity 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .custom-play-overlay:hover { transform: translate(-50%, -50%) scale(1.05); }
+        .custom-play-overlay svg { width: 28px; height: 28px; fill: black; margin-left: 5px; }
+        .custom-play-overlay.hidden { opacity: 0; pointer-events: none; }
+
+        .carousel-description {
+            margin-top: 12px; font-size: 0.9em; color: #555; text-align: center; width: 100%; min-height: 1.2em; 
+        }
+
+        .carousel-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.6); color: black; border: none; font-size: 20px;
+            cursor: pointer; width: 40px; height: 40px; border-radius: 50%; z-index: 10;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .carousel-btn:hover { background-color: rgba(255, 255, 255, 0.9); transform: translateY(-50%) scale(1.05); }
+        .carousel-btn.prev { left: 10px; }
+        .carousel-btn.next { right: 10px; }
+
+        /* ART Unreleased */
+        .model-item.unreleased { position: relative; pointer-events: none; user-select: none; }
+        .model-item.unreleased .image-title,
+        .model-item.unreleased .carousel-container,
+        .model-item.unreleased .carousel-description { filter: blur(8px); opacity: 0.6; }
+        .model-item.unreleased .soon-overlay {
+            position: absolute; top: 250px; left: 50%; transform: translate(-50%, -50%);
+            font-size: 2em; font-weight: bold; color: black; background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 15px; border-radius: 5px; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.2); letter-spacing: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .image-gallery { gap: 60px; padding: 10px 10px 40px 10px; }
+            .model-item { width: 95%; }
+            .carousel-slide img, .carousel-slide video, .carousel-slide mux-video { max-height: 400px; }
+            .carousel-btn { width: 35px; height: 35px; font-size: 16px; }
+            .model-item.unreleased .soon-overlay { top: 200px; font-size: 1.5em; }
+        }
+
+        /* Lightbox (Zoom Immagini) */
+        .lightbox {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.93); 
+        }
+        .lightbox.active { display: flex; justify-content: center; align-items: center; }
+        .lightbox-content { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        #lightbox-img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: zoom-in; transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); transform-origin: center center; }
+        #lightbox-img.zoomed { cursor: zoom-out; }
+        .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; font-weight: bold; cursor: pointer; z-index: 10000; text-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: color 0.2s; line-height: 1; }
+        .close-lightbox:hover { color: #ccc; }
+        @media (max-width: 600px) { .close-lightbox { top: 15px; right: 20px; font-size: 40px; } }
+
+        /* ================================================================
+           GLOBAL AUDIO PLAYER
+           ================================================================ */
+        #global-player-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+        #global-player-container.hidden { transform: translateY(100%); }
+        #player-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: #ffffff; border-top: 1px solid #ccc; height: 60px; padding: 0 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .player-bar-clickable {
+            display: flex; align-items: center; flex-grow: 1; cursor: pointer;
+            width: calc(100% - 60px); overflow: hidden;
+        }
+        #bar-album-cover { width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px; }
+        .bar-track-info {
+            display: flex; flex-direction: column; font-size: 0.8em; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; text-align: left;
+        }
+        #bar-track-title { font-weight: bold; text-overflow: ellipsis; overflow: hidden; }
+        #bar-album-title { color: #555; text-overflow: ellipsis; overflow: hidden; }
+        .play-pause-btn { font-size: 1.5em; padding: 10px; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+        .play-pause-btn svg { width: 1em; height: 1em; fill: currentColor; vertical-align: middle; flex-shrink: 0; }
+        
+        #player-expanded {
+            position: fixed; top: 100%; left: 0; width: 100%; height: 100vh;
+            background-color: white; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.4s; visibility: hidden;
+        }
+        #player-expanded.active { top: 0; visibility: visible; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s; }
+        #close-expanded-btn { position: absolute; top: 20px; left: 20px; font-size: 1.5em; background: none; border: none; cursor: pointer; z-index: 1002; color: #555; font-weight: bold; }
+        
+        .expanded-content { display: flex; flex-direction: column; align-items: center; text-align: center; width: 90%; max-width: 350px; }
+        #expanded-album-cover { width: 80vw; height: 80vw; max-width: 300px; max-height: 300px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        #expanded-album-title { font-size: 1.2em; font-weight: bold; margin: 10px 0 5px 0; }
+        #expanded-track-title { font-size: 1em; color: #333; margin-bottom: 20px; }
+        
+        .controls { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; width: 100%; }
+        .controls button { padding: 15px 30px; border: none; background-color: transparent; font-size: 1.5em; outline: none; box-shadow: none; cursor: pointer; border-radius: 3px; }
+        
+        .progress-bar { width: 100%; margin-top: 5px; -webkit-appearance: none; appearance: none; background: #ccc; height: 3px; cursor: pointer; border-radius: 2px; }
+        .progress-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; background: black; width: 8px; height: 8px; border-radius: 50%; cursor: pointer; }
+        .progress-bar::-moz-range-thumb { background: black; width: 8px; height: 8px; border-radius: 50%; cursor: pointer; border: none; }
+        .time-container { display: flex; justify-content: space-between; width: 100%; margin-top: 3px; font-size: 0.7em; color: #555; }
+
+        /* ================================================================
+           TRACKLIST MODAL (SND)
+           ================================================================ */
+        #modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001; visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #modal-backdrop.active { visibility: visible; opacity: 1; }
+        #tracklist-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 90%; max-width: 400px; max-height: 80vh; background-color: #ffffff; border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1002; visibility: hidden; opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease; display: flex; flex-direction: column;
+        }
+        #tracklist-modal.active { visibility: visible; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #close-tracklist-btn { position: absolute; top: 10px; right: 15px; font-size: 2em; color: #aaa; background: none; border: none; cursor: pointer; line-height: 1; padding: 0; }
+        #close-tracklist-btn:hover { color: #333; }
+        #tracklist-content { padding: 20px; text-align: center; overflow-y: auto; }
+        .tracklist-cover { width: 150px; height: 150px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tracklist-album-title { font-size: 1.2em; font-weight: bold; margin: 0 0 20px 0; }
+        .tracklist-ol { list-style-type: decimal; padding-left: 30px; margin: 0; text-align: left; }
+        .tracklist-item { padding: 12px 10px; font-size: 0.9em; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s ease; }
+        .tracklist-item:hover { background-color: #f9f9f9; }
+        .tracklist-item:last-child { border-bottom: none; }
+
+        /* ================================================================
+           FOOTER
+           ================================================================ */
+        .site-footer {
+            display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%;
+            padding: 40px 20px 30px 20px; box-sizing: border-box; font-size: 0.85em; color: #555; margin-top: auto;
+        }
+        .footer-logo { height: 20px; width: auto; object-fit: contain; }
+        .site-footer a { color: black; font-weight: bold; text-decoration: none; transition: color 0.2s ease; }
+        .site-footer a:hover { color: #888; text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <div class="hamburger-menu">
-        <input id="menu__toggle" type="checkbox" />
-        <label class="menu__btn" for="menu__toggle">
-            <span></span>
-        </label>
-        <ul class="menu__box">
-            <li><a class="menu__item" href="index.html">HOME</a></li>
-            <li><a class="menu__item" href="music.html">SND</a></li>
-            <li><a class="menu__item" href="art.html">ART</a></li>
-            <li><a class="menu__item" href="goycast.html">GOYCAST</a></li>
-        </ul>
-    </div>
 
-    <h2 id="page-title">YUNG CAC & VSN</h2>
+    <!-- NAV testuale SPA -->
+    <nav class="text-menu" id="main-nav">
+        <a href="#snd" data-page="snd">SND</a>
+        <a href="#art" data-page="art">ART</a>
+        <a href="#goycast" data-page="goycast">GOYCAST</a>
+    </nav>
 
-    <div class="content">
-        <div class="image-container">
-            <a href="music.html"><img src="IMMAGINE/immagine.jpg" alt="SND" class="animated-image"></a>
-            <h3 class="image-label">SND</h3>
+    <!-- ================================================================
+         SND PAGE
+         ================================================================ -->
+    <div id="page-snd" class="page">
+        
+
+        <div class="music-container">
+            <div class="album">
+                <img src="album.jpg" alt="Copertina album" class="album-cover-clickable" data-album-index="0">
+                <h3 class="album-title-text">FART MUSIC</h3>
+            </div>
         </div>
 
-        <div class="image-container">
-            <a href="art.html"><img src="IMMAGINE/immagine2.jpg" alt="ART" class="animated-image"></a>
-            <h3 class="image-label">ART</h3>
+        <div class="music-container">
+            <div class="album">
+                <img id="album-cover-6" src="album6.jpg" alt="Copertina BLACKSTONE FREESTYLE" class="album-cover-clickable" data-album-index="1">
+                <h3 class="album-title-text">BLACKSTONE FREESTYLE</h3>
+            </div>
+        </div>
+
+        <div class="music-container">
+            <div class="album">
+                <img id="album-cover-7" src="album7.png" alt="Copertina BAG CHASERS" class="album-cover-clickable" data-album-index="2">
+                <h3 class="album-title-text">BAG CHASERS</h3>
+            </div>
+        </div>
+
+        <div class="music-container">
+            <div class="album unreleased">
+                <div class="soon-overlay">SOON</div>
+                <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="3">
+                <h3 class="album-title-text">STUPRO MUSICA 2</h3>
+            </div>
+        </div>
+
+        <div class="music-container">
+            <div class="album unreleased">
+                <div class="soon-overlay">SOON</div>
+                <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="4">
+                <h3 class="album-title-text">VULTURES 4</h3>
+            </div>
+        </div>
+
+        <div class="music-container">
+            <div class="album unreleased">
+                <div class="soon-overlay">SOON</div>
+                <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="5">
+                <h3 class="album-title-text">CHISSA' COSA DIREBBE FREUD</h3>
+            </div>
+        </div>
+        
+        <div class="music-container">
+            <div class="album unreleased">
+                <div class="soon-overlay">SOON</div>
+                <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="6">
+                <h3 class="album-title-text">ANCHE GLI EROI SI FANNO DI CRACK</h3>
+            </div>
         </div>
     </div>
-    <script>
-        const menuToggle = document.getElementById('menu__toggle');
-        const menuBox = document.querySelector('.menu__box');
 
-        menuToggle.addEventListener('change', () => {
-            if (menuToggle.checked) {
-                menuBox.style.visibility = 'visible';
-                menuBox.style.left = '0';
-            } else {
-                menuBox.style.visibility = 'hidden';
-                menuBox.style.left = '-100%';
-            }
-        });
-    </script>
+    <!-- ================================================================
+         ART PAGE
+         ================================================================ -->
+    <div id="page-art" class="page">
+        
+
+        <div class="image-gallery">
+            <div class="model-item">
+                <h3 class="image-title">FART MUSIC</h3>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-love" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-love', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover FART MUSIC"><img src="IMMAGINE/Front_1.png" alt="Cover FART MUSIC"></div>
+                            <div class="carousel-slide" data-desc="Back cover FART MUSIC"><img src="IMMAGINE/Back_1.png" alt="Back cover FART MUSIC"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-love', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-love">Cover FART MUSIC</p>
+                </div>
+
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">FART MUSIC DOCUMENTARY</p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">BLACKSTONE FREESTYLE</h3>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-blackstone" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-blackstone', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover BLACKSTONE FREESTYLE"><img src="IMMAGINE/Front_6.jpg" alt="Cover BLACKSTONE FREESTYLE"></div>
+                            <div class="carousel-slide" data-desc="WE ARE HISTORY"><img src="IMMAGINE/bf01.jpg" alt="WE ARE HISTORY"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-blackstone', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-blackstone">Cover BLACKSTONE FREESTYLE</p>
+                </div>
+
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">BLACKSTONE FREESTYLE DOCUMENTARY</p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">BAG CHASERS</h3>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-bagchasers" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-bagchasers', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover BAG CHASERS"><img src="IMMAGINE/BAGCHASERS/Front_7.png" alt="Cover BAG CHASERS"></div>
+                            <div class="carousel-slide" data-desc="JUANKY TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_01.jpg" alt="JUANKY TOON SIGN"></div>
+                            <div class="carousel-slide" data-desc="VSN TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_02.jpg" alt="VSN TOON SIGN"></div>
+                            <div class="carousel-slide" data-desc="KFC YUNG CAC & JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_03.jpg" alt="KFC YUNG CAC & JUANKY"></div>
+                            <div class="carousel-slide" data-desc="KFC JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_04.jpg" alt="KFC JUANKY"></div>
+                            <div class="carousel-slide" data-desc="KFC ZODIAK & VSN"><img src="IMMAGINE/BAGCHASERS/BC_05.jpg" alt="KFC ZODIAK & VSN"></div>
+                            <div class="carousel-slide" data-desc="GREEDY SUL POLLO"><img src="IMMAGINE/BAGCHASERS/BC_06.jpg" alt="GREEDY SUL POLLO"></div>
+                            <div class="carousel-slide" data-desc="JUANKY X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_07.jpg" alt="JUANKY X STEF5K"></div>
+                            <div class="carousel-slide" data-desc="ZODIAK X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_09.jpg" alt="ZODIAK X STEF5K"></div>
+                            <div class="carousel-slide" data-desc="VSN DIETRO LA CAMERA"><img src="IMMAGINE/BAGCHASERS/BC_08.jpg" alt="VSN DIETRO LA CAMERA"></div>
+                            
+                            <div class="carousel-slide" data-desc="LOST">
+                                <div class="video-wrapper">
+                                    <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_10.mp4" type="video/mp4"></video>
+                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                                </div>
+                            </div>
+                            <div class="carousel-slide" data-desc="JUANKY ESCLUSO PERCHE' NERO">
+                                <div class="video-wrapper">
+                                    <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_11.mp4" type="video/mp4"></video>
+                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                                </div>
+                            </div>
+
+                            <div class="carousel-slide" data-desc="THE CHAIN"><img src="IMMAGINE/BAGCHASERS/BC_12.jpg" alt="THE CHAIN"></div>
+                            <div class="carousel-slide" data-desc="ZODIAK X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_13.jpg" alt="ZODIAK X WICKIBOI"></div>
+                            <div class="carousel-slide" data-desc="JUANKY X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_14.jpg" alt="JUANKY  X WICKIBOI"></div>
+                            <div class="carousel-slide" data-desc="SQUAD"><img src="IMMAGINE/BAGCHASERS/BC_15.jpg" alt="SQUAD"></div>
+                            <div class="carousel-slide" data-desc="LARPER"><img src="IMMAGINE/BAGCHASERS/BC_16.jpg" alt="LARPER"></div>
+                            <div class="carousel-slide" data-desc="LARPER PT.2"><img src="IMMAGINE/BAGCHASERS/BC_17.jpg" alt="LARPER PT.2"></div>
+
+                            <div class="carousel-slide" data-desc="LARPER PT.3">
+                                <div class="video-wrapper">
+                                    <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_18.mp4" type="video/mp4"></video>
+                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                                </div>
+                            </div>
+
+                            <div class="carousel-slide" data-desc="OBAMA"><img src="IMMAGINE/BAGCHASERS/BC_19.jpg" alt="OBAMA"></div>
+                            <div class="carousel-slide" data-desc="STUDIO (PARK)"><img src="IMMAGINE/BAGCHASERS/BC_20.jpg" alt="STUDIO (PARK)"></div>
+                            <div class="carousel-slide" data-desc="FOCUSRITE"><img src="IMMAGINE/BAGCHASERS/BC_21.jpg" alt="FOCUSRITE"></div>
+                            <div class="carousel-slide" data-desc="THE STUDIO"><img src="IMMAGINE/BAGCHASERS/BC_22.jpg" alt="THE STUDIO"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-bagchasers', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-bagchasers">BAG CHASERS COVER</p>
+                </div>
+            </div>    
+
+            <div class="model-item unreleased">
+                <h3 class="image-title">STUPRO MUSICA 2</h3>
+                <div class="soon-overlay">SOON</div>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-hate" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-hate', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover STUPRO MUSICA 2"><img src="IMMAGINE/Front_2.jpg" alt="Cover STUPRO MUSICA 2"></div>
+                            <div class="carousel-slide" data-desc="Back cover STUPRO MUSICA 2"><img src="IMMAGINE/Back_2.png" alt="Back cover STUPRO MUSICA 2"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-hate', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-hate">Cover STUPRO MUSICA 2</p>
+                </div>
+
+                <div class="carousel-container">
+                    <div class="carousel" id="vid-hate" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('vid-hate', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="PISCIO (esperienza ufficiale)">
+                                <div class="video-wrapper">
+                                    <video controls playsinline preload="metadata"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
+                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                                </div>
+                            </div>
+                            <div class="carousel-slide" data-desc="Descrizione video 2 di Hate Everyone">
+                                <div class="video-wrapper">
+                                    <video controls playsinline preload="metadata"><source src="VIDEO/hate2.mp4" type="video/mp4"></video>
+                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('vid-hate', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-vid-hate">PISCIO (esperienza ufficiale)</p>
+                </div>
+            </div>
+
+            <div class="model-item unreleased">
+                <h3 class="image-title">VULTURES 4</h3>
+                <div class="soon-overlay">SOON</div>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-laundry" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-laundry', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover VULTURES 4"><img src="IMMAGINE/Front_3.png" alt="Cover VULTURES 4"></div>
+                            <div class="carousel-slide" data-desc="Back cover VULTURES 4"><img src="IMMAGINE/Back_3.png" alt="Back cover VULTURES 4"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-laundry', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-laundry">Cover VULTURES 4</p>
+                </div>
+
+                <div class="carousel-container" style="display: none;">
+                    <div class="carousel" id="vid-laundry" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('vid-laundry', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Descrizione video 1 di Laundry">
+                                <div class="video-wrapper">
+                                    <video controls playsinline preload="metadata"><source src="VIDEO/laundry1.mp4" type="video/mp4"></video>
+                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('vid-laundry', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-vid-laundry">Descrizione video 1 di Laundry</p>
+                </div>
+            </div>
+
+            <div class="model-item unreleased">
+                <h3 class="image-title">CHISSA' COSA DIREBBE FREUD</h3>
+                <div class="soon-overlay">SOON</div>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-echoes" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-echoes', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Front_4.png" alt="Cover CHISSA' COSA DIREBBE FREUD"></div>
+                            <div class="carousel-slide" data-desc="Back cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Back_4.png" alt="Back cover CHISSA' COSA DIREBBE FREUD"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-echoes', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-echoes">Cover CHISSA' COSA DIREBBE FREUD</p>
+                </div>
+            </div>
+
+            <div class="model-item unreleased">
+                <h3 class="image-title">ANCHE GLI EROI SI FANNO DI CRACK</h3>
+                <div class="soon-overlay">SOON</div>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-noise" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-noise', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <div class="carousel-slide" data-desc="Cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Front_5.png" alt="Cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
+                            <div class="carousel-slide" data-desc="Back cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Back_5.png" alt="Back cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-noise', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-noise">Cover ANCHE GLI EROI SI FANNO DI CRACK</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         GOYCAST PAGE
+         ================================================================ -->
+    <div id="page-goycast" class="page">
+        
+
+        <div class="image-gallery">
+            <div class="model-item">
+                <h3 class="image-title">EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">16-05-2026 </p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">EP.1 LA CAVERNA DI PLATONE</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">25-06-2026 </p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">EP.1.5 PORTIAMO DA MANGIARE ALLE HOES</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">28-06-2026 </p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">EP.2 ECCO COSA PROVAVANO</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">11-07-2026 </p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">EP.2.5 IL VIAGGIO DI ULISSE</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">18-07-2026 </p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">18-07-2026 </p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">EP.3.5 HA BACIATO IL MICROFONO</h3>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <div class="carousel-slide">
+                            <div class="video-wrapper">
+                                <mux-video controls playsinline preload="metadata" playback-id="scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc"></mux-video>
+                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="carousel-description">01-08-2026 </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         GLOBAL MODALS & PLAYER (Persistenti)
+         ================================================================ -->
+    
+    <!-- Lightbox (Zoom Immagini) -->
+    <div id="image-lightbox" class="lightbox">
+        <span class="close-lightbox" id="close-lightbox">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Zoom Immagine">
+        </div>
+    </div>
+
+    <!-- SND Tracklist Modal -->
+    <div id="modal-backdrop"></div>
+    <div id="tracklist-modal">
+        <button id="close-tracklist-btn">&times;</button>
+        <div id="tracklist-content"></div>
+    </div>
+    
+    <!-- Global Player Audio -->
+    <div id="global-player-container" class="hidden">
+        <div id="player-bar">
+            <div class="player-bar-clickable" id="open-expanded-player">
+                <img src="album.jpg" alt="Copertina" id="bar-album-cover">
+                <div class="bar-track-info">
+                    <span id="bar-track-title"></span>
+                    <span id="bar-track-artists" style="font-size: 0.85em; color: #888; display: none;"></span>
+                    <span id="bar-album-title"></span>
+                </div>
+            </div>
+            <button id="bar-play-pause-btn" class="play-pause-btn"></button>
+        </div>
+    
+        <div id="player-expanded">
+            <button id="close-expanded-btn">▼</button>
+            <div class="expanded-content">
+                <img src="album.jpg" alt="Copertina album" id="expanded-album-cover">
+                <h3 id="expanded-album-title"></h3>
+                <h4 id="expanded-track-title"></h4>
+                <h5 id="expanded-track-artists" style="margin-top: 0; font-size: 0.9em; color: #555; display: none; font-weight: normal;"></h5>
+                
+                <input type="range" id="global-progress-bar" class="progress-bar" value="0" step="0.01">
+                <div class="time-container">
+                    <span id="global-current-time">0:00</span>
+                    <span id="global-duration">0:00</span>
+                </div>
+                
+                <div class="controls">
+                    <button class="skip-btn" id="global-prev-btn">⏮</button>
+                    <button id="global-play-pause-btn" class="play-pause-btn"></button>
+                    <button class="skip-btn" id="global-next-btn">⏭</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer class="site-footer">
         <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo">
         <span>Sound & Vision by <a href="https://loveveryone.it" target="_blank" rel="noopener noreferrer">VSN</a></span>
     </footer>
 
+    <!-- ================================================================
+         JAVASCRIPT E REGISTRAZIONE PWA
+         ================================================================ -->
+    <script>
+        'use strict';
+
+        const PLAY_SVG  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>';
+        const PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>';
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60);
+            return m + ':' + Math.floor(s % 60).toString().padStart(2, '0');
+        }
+
+        // ==========================================
+        // SPA ROUTING
+        // ==========================================
+        const ALL_PAGES = ['snd','art','goycast'];
+        let currentPage = null;
+        const mainNav = document.getElementById('main-nav');
+
+        function navigateTo(page) {
+            if (!ALL_PAGES.includes(page)) page = 'snd';
+            if (page === currentPage) return;
+            
+            if (currentPage) {
+                document.getElementById('page-' + currentPage).classList.remove('active');
+            }
+            
+            currentPage = page;
+            document.getElementById('page-' + page).classList.add('active');
+            
+            document.querySelectorAll('.text-menu a').forEach(a => {
+                a.classList.toggle('active', a.dataset.page === page);
+            });
+            
+            history.pushState({ page }, '', '#' + page);
+            window.scrollTo(0, 0);
+
+            // Mette in pausa eventuali video in riproduzione cambiando tab
+            document.querySelectorAll('video, mux-video').forEach(video => video.pause());
+        }
+
+        document.querySelectorAll('.text-menu a[data-page]').forEach(a => {
+            a.addEventListener('click', e => { 
+                e.preventDefault(); 
+                navigateTo(a.dataset.page); 
+            });
+        });
+
+        window.addEventListener('popstate', e => {
+            const page = (e.state && e.state.page) || location.hash.replace('#','') || 'snd';
+            navigateTo(page);
+        });
+
+        // Setup iniziale SPA
+        (function() {
+            const hash = location.hash.replace('#','');
+            navigateTo(ALL_PAGES.includes(hash) ? hash : 'snd');
+        })();
+
+        // ==========================================
+        // DATI ALBUM (SND)
+        // ==========================================
+        const allAlbums = [
+            {
+                albumTitle: "FART MUSIC", albumCover: "album.jpg",
+                tracks: [
+                    { title: 'CAVALLI', src: 'MUSICA/FartMusic/CAVALLI.mp3' },
+                    { title: 'BERGHAIN', src: 'MUSICA/FartMusic/BERGHAIN.mp3' },
+                    { title: 'NINTENDO SWITCH', src: 'MUSICA/FartMusic/NINTENDO SWITCH.mp3' },
+                    { title: 'AHAHAHAH', src: 'MUSICA/FartMusic/AHAHAHAH.mp3' },
+                    { title: 'OUTRO', src: 'MUSICA/FartMusic/OUTRO.mp3' }
+                ]
+            },
+            {
+                albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
+                artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
+                tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
+            },
+            {
+                albumTitle: "BAG CHASERS", albumCover: "album7.png", 
+                artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
+                tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
+            },
+            {
+                albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg",
+                tracks: [
+                    { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
+                    { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
+                    { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
+                    { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
+                    { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
+                    { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
+                    { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
+                    { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
+                ]
+            },
+            {
+                albumTitle: "LAUNDRY", albumCover: "album3.jpg",
+                tracks: [
+                    { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
+                    { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
+                    { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
+                    { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
+                    { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
+                    { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
+                    { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
+                    { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
+                ]
+            },
+            {
+                albumTitle: "ECHOES OF NOTHING", albumCover: "album4.jpg",
+                tracks: [
+                    { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
+                    { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
+                    { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
+                    { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
+                    { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
+                    { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
+                    { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
+                    { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
+                ]
+            },
+            {
+                albumTitle: "NOISE", albumCover: "album5.jpg",
+                tracks: [
+                    { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
+                    { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
+                    { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
+                    { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
+                    { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
+                    { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
+                    { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
+                    { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
+                ]
+            }
+        ];
+
+        // ==========================================
+        // PLAYER AUDIO GLOBALE E MUTUA ESCLUSIONE
+        // ==========================================
+        const globalAudio = new Audio();
+        let currentAlbumIndex = 0;
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        const globalPlayerContainer = document.getElementById('global-player-container');
+        const barPlayPauseBtn = document.getElementById('bar-play-pause-btn');
+        const globalPlayPauseBtn = document.getElementById('global-play-pause-btn');
+        const globalProgressBar = document.getElementById('global-progress-bar');
+        const globalCurrentTime = document.getElementById('global-current-time');
+        const globalDuration = document.getElementById('global-duration');
+        const allVideos = document.querySelectorAll('video, mux-video');
+
+        function loadTrack(albumIndex, trackIndex) {
+            currentAlbumIndex = albumIndex;
+            currentTrackIndex = trackIndex;
+            const album = allAlbums[albumIndex];
+            const track = album.tracks[trackIndex];
+            
+            globalAudio.src = track.src;
+            document.getElementById('bar-album-cover').src = album.albumCover;
+            document.getElementById('bar-track-title').textContent = track.title;
+            document.getElementById('bar-album-title').textContent = album.albumTitle;
+            document.getElementById('expanded-album-cover').src = album.albumCover;
+            document.getElementById('expanded-track-title').textContent = track.title;
+            document.getElementById('expanded-album-title').textContent = album.albumTitle;
+            
+            const expTrackTitle = document.getElementById('expanded-track-title');
+            const barAlbumTitle = document.getElementById('bar-album-title');
+            const barTrackArtists = document.getElementById('bar-track-artists');
+            const expTrackArtists = document.getElementById('expanded-track-artists');
+
+            if (album.isSingle) {
+                expTrackTitle.style.display = 'none';
+                barAlbumTitle.style.display = 'none'; 
+            } else {
+                expTrackTitle.style.display = 'block';
+                barAlbumTitle.style.display = 'block';
+            }
+
+            if (album.artists) {
+                barTrackArtists.textContent = album.artists;
+                barTrackArtists.style.display = 'block';
+                expTrackArtists.textContent = album.artists;
+                expTrackArtists.style.display = 'block';
+                expTrackTitle.style.marginBottom = '5px'; 
+                expTrackArtists.style.marginBottom = '20px';
+            } else {
+                barTrackArtists.style.display = 'none';
+                expTrackArtists.style.display = 'none';
+                expTrackTitle.style.marginBottom = '20px'; 
+            }
+
+            globalPlayerContainer.classList.remove('hidden');
+            globalProgressBar.value = 0;
+            globalCurrentTime.textContent = '0:00';
+            
+            globalAudio.addEventListener('loadedmetadata', () => {
+                globalDuration.textContent = formatTime(globalAudio.duration || 0);
+            }, { once: true });
+            
+            if (isPlaying) playAudio();
+        }
+
+        function playAudio() {
+            allVideos.forEach(v => v.pause());
+            globalAudio.play();
+            isPlaying = true;
+            barPlayPauseBtn.innerHTML = PAUSE_SVG;
+            globalPlayPauseBtn.innerHTML = PAUSE_SVG;
+        }
+
+        function pauseAudio() {
+            globalAudio.pause();
+            isPlaying = false;
+            barPlayPauseBtn.innerHTML = PLAY_SVG;
+            globalPlayPauseBtn.innerHTML = PLAY_SVG;
+        }
+
+        function togglePlayPause() { isPlaying ? pauseAudio() : playAudio(); }
+
+        function playNextTrack() {
+            currentTrackIndex++;
+            const currentAlbum = allAlbums[currentAlbumIndex];
+            if (currentTrackIndex >= currentAlbum.tracks.length) currentTrackIndex = 0;
+            loadTrack(currentAlbumIndex, currentTrackIndex);
+        }
+
+        function playPrevTrack() {
+            currentTrackIndex--;
+            if (currentTrackIndex < 0) {
+                const currentAlbum = allAlbums[currentAlbumIndex];
+                currentTrackIndex = currentAlbum.tracks.length - 1;
+            }
+            loadTrack(currentAlbumIndex, currentTrackIndex);
+        }
+
+        globalAudio.addEventListener('timeupdate', () => {
+            const d = globalAudio.duration || 0;
+            globalProgressBar.value = d ? (globalAudio.currentTime / d) * 100 : 0;
+            globalCurrentTime.textContent = formatTime(globalAudio.currentTime);
+        });
+
+        globalProgressBar.addEventListener('input', () => {
+            globalAudio.currentTime = (globalProgressBar.value / 100) * (globalAudio.duration || 0);
+        });
+        
+        globalAudio.addEventListener('ended', playNextTrack);
+        
+        barPlayPauseBtn.addEventListener('click', togglePlayPause);
+        globalPlayPauseBtn.addEventListener('click', togglePlayPause);
+        document.getElementById('global-next-btn').addEventListener('click', playNextTrack);
+        document.getElementById('global-prev-btn').addEventListener('click', playPrevTrack);
+
+        document.getElementById('open-expanded-player').addEventListener('click', () => {
+            document.getElementById('player-expanded').classList.add('active');
+            mainNav.classList.add('hidden-by-player'); 
+        });
+        document.getElementById('close-expanded-btn').addEventListener('click', () => {
+            document.getElementById('player-expanded').classList.remove('active');
+            mainNav.classList.remove('hidden-by-player'); 
+        });
+
+        loadTrack(0, 0);
+        globalPlayerContainer.classList.add('hidden');
+        pauseAudio(); 
+
+        // ==========================================
+        // GESTIONE VIDEO (ART / GOYCAST)
+        // ==========================================
+        allVideos.forEach(video => {
+            video.addEventListener('play', () => {
+                if (isPlaying) pauseAudio();
+            });
+        });
+
+        document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+            const video = wrapper.querySelector('video, mux-video');
+            const overlay = wrapper.querySelector('.custom-play-overlay');
+            if (video && overlay) {
+                overlay.addEventListener('click', () => video.play());
+                video.addEventListener('play', () => overlay.classList.add('hidden'));
+                video.addEventListener('pause', () => overlay.classList.remove('hidden'));
+            }
+        });
+
+        // ==========================================
+        // TRACKLIST MODAL (SND)
+        // ==========================================
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const tracklistModal = document.getElementById('tracklist-modal');
+        const tracklistContent = document.getElementById('tracklist-content');
+
+        function showTracklist(albumIndex) {
+            const album = allAlbums[albumIndex];
+            tracklistContent.innerHTML = '';
+            
+            const modalCover = document.createElement('img');
+            modalCover.src = album.albumCover;
+            modalCover.className = 'tracklist-cover';
+            tracklistContent.appendChild(modalCover);
+            
+            const modalTitle = document.createElement('h3');
+            modalTitle.textContent = album.albumTitle;
+            modalTitle.className = 'tracklist-album-title';
+            tracklistContent.appendChild(modalTitle);
+            
+            const trackListElement = document.createElement('ol');
+            trackListElement.className = 'tracklist-ol';
+            album.tracks.forEach((track, trackIndex) => {
+                const trackItem = document.createElement('li');
+                trackItem.textContent = track.title;
+                trackItem.className = 'tracklist-item';
+                trackItem.dataset.albumIndex = albumIndex;
+                trackItem.dataset.trackIndex = trackIndex;
+                trackListElement.appendChild(trackItem);
+            });
+            tracklistContent.appendChild(trackListElement);
+            
+            modalBackdrop.classList.add('active');
+            tracklistModal.classList.add('active');
+            mainNav.classList.add('hidden-by-player'); 
+        }
+
+        function closeTracklistModal() {
+            modalBackdrop.classList.remove('active');
+            tracklistModal.classList.remove('active');
+            mainNav.classList.remove('hidden-by-player'); 
+        }
+
+        document.querySelectorAll('.album-cover-clickable').forEach(image => {
+            image.addEventListener('click', (e) => {
+                const albumDiv = e.currentTarget.closest('.album');
+                if (albumDiv && albumDiv.classList.contains('unreleased')) {
+                    tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
+                    modalBackdrop.classList.add('active');
+                    tracklistModal.classList.add('active');
+                    mainNav.classList.add('hidden-by-player');
+                    return; 
+                }
+                showTracklist(parseInt(e.currentTarget.dataset.albumIndex)); 
+            });
+        });
+
+        tracklistContent.addEventListener('click', (e) => {
+            if (e.target && e.target.classList.contains('tracklist-item')) {
+                loadTrack(parseInt(e.target.dataset.albumIndex), parseInt(e.target.dataset.trackIndex));
+                playAudio();
+                closeTracklistModal(); 
+            }
+        });
+
+        document.getElementById('close-tracklist-btn').addEventListener('click', closeTracklistModal);
+        modalBackdrop.addEventListener('click', closeTracklistModal);
+
+        // ==========================================
+        // CAROUSEL IMMAGINI (ART)
+        // ==========================================
+        window.moveSlide = function(carouselId, direction) {
+            const carousel = document.getElementById(carouselId);
+            const track = carousel.querySelector('.carousel-track');
+            const slides = carousel.querySelectorAll('.carousel-slide');
+            const descElement = document.getElementById('desc-' + carouselId); 
+            
+            carousel.querySelectorAll('video, mux-video').forEach(video => video.pause());
+            
+            let currentIndex = parseInt(carousel.getAttribute('data-index')) || 0;
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = slides.length - 1;
+            else if (currentIndex >= slides.length) currentIndex = 0;
+            
+            carousel.setAttribute('data-index', currentIndex);
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            if (descElement) descElement.textContent = slides[currentIndex].getAttribute('data-desc');
+        };
+
+        // ==========================================
+        // LIGHTBOX ZOOM IMMAGINI (ART)
+        // ==========================================
+        const lightbox = document.getElementById('image-lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        document.querySelectorAll('.carousel-slide img').forEach(img => {
+            img.addEventListener('click', function() {
+                lightboxImg.src = this.src;
+                lightboxImg.classList.remove('zoomed'); 
+                lightboxImg.style.transform = 'scale(1)'; 
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = ''; 
+        }
+
+        document.getElementById('close-lightbox').addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox || e.target.classList.contains('lightbox-content')) closeLightbox();
+        });
+
+        lightboxImg.addEventListener('click', function(e) {
+            e.stopPropagation(); 
+            if (this.classList.contains('zoomed')) {
+                this.classList.remove('zoomed');
+                this.style.transform = 'scale(1)';
+            } else {
+                this.classList.add('zoomed');
+                const rect = this.getBoundingClientRect();
+                const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+                const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+                this.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+                this.style.transform = 'scale(2.5)'; 
+            }
+        });
+
+        // ==========================================
+        // REGISTRAZIONE SERVICE WORKER (PWA)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').then(reg => {
+                    setInterval(() => reg.update(), 60 * 60 * 1000); 
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                newWorker.postMessage('SKIP_WAITING');
+                            }
+                        });
+                    });
+                }).catch(err => console.error('YNGCAC: registrazione Service Worker fallita', err));
+            });
+        }
+    </script>
 </body>
 </html>
