@@ -4,19 +4,18 @@
     <script>
         // Controlla se l'utente ha la chiave di accesso per questa sessione
         if (sessionStorage.getItem('vsn_authenticated') !== 'true') {
-            // Salva l'URL della pagina che voleva visitare per riportarcelo dopo il login
             sessionStorage.setItem('vsn_redirect', window.location.href);
-            // Lo sbatte fuori sulla pagina di login
             window.location.href = 'login.html';
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YNGCAC</title>
-    
+
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="YNGCAC">
@@ -26,10 +25,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
-    
-    <!-- Mux Video Script -->
-    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video"></script>
-    
+
+    <!-- Mux Video Script (defer per non bloccare il rendering iniziale) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video" defer></script>
+
     <style>
         /* ================================================================
            RESET & BASE
@@ -39,25 +38,24 @@
             box-sizing: border-box;
         }
         *:focus:not(:focus-visible) { outline: none; }
-        
+        *:focus-visible { outline: 2px solid black; outline-offset: 2px; }
+
         body {
             margin: 0;
-            background-color: white; 
+            background-color: white;
             font-family: 'IBM Plex Mono', monospace;
             font-size: 16px;
             color: black;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            min-height: 100dvh;
             overflow-x: hidden;
             overflow-y: scroll;
         }
 
-        #page-title {
-            margin-top: 10px;
-            text-align: center;
-            width: 100%;
-            font-family: 'IBM Plex Mono', monospace;
+        button, a, .album-cover-clickable, .carousel-btn, .custom-play-overlay, .player-bar-clickable, .close-lightbox {
+            touch-action: manipulation;
         }
 
         /* ================================================================
@@ -70,7 +68,6 @@
             align-items: center;
             gap: 15px;
             padding: 20px 10px;
-            box-sizing: border-box;
             position: fixed;
             top: 0;
             left: 0;
@@ -82,7 +79,7 @@
         .text-menu a {
             text-decoration: none;
             color: #ccc;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: inherit;
             font-size: 1.1em;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -91,8 +88,10 @@
             cursor: pointer;
         }
         .text-menu a.active { color: black; font-weight: bold; }
-        .text-menu a:hover { color: #777; }
-        
+        @media (hover: hover) {
+            .text-menu a:hover { color: #777; }
+        }
+
         @media (max-width: 400px) {
             .text-menu { gap: 8px; }
             .text-menu a { font-size: 0.95em; padding: 10px 2px; }
@@ -101,19 +100,19 @@
         /* ================================================================
            PAGES (SPA Logic)
            ================================================================ */
-        .page { 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            width: 100%; 
-            padding-top: 80px; 
-            padding-bottom: 80px; 
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-top: 80px;
+            padding-bottom: 80px;
             flex-grow: 1;
         }
         .page.active { display: flex; }
 
         /* ================================================================
-           SND (Music Section)
+           SND (Music Section - GPU Accelerated)
            ================================================================ */
         .music-container {
             padding: 20px;
@@ -121,28 +120,51 @@
             width: 80%;
             max-width: 600px;
             position: relative;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin: 20px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         .album { margin-bottom: 20px; }
-        .album img { max-width: 200px; width: 200px; border-radius: 5px; }
-        
-        .album-cover-clickable {
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .album-cover-clickable:hover {
-            transform: scale(1.03);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        .album img {
+            max-width: 200px;
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            display: block;
         }
 
-        /* Unreleased / SOON */
+        .album-cover-clickable {
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0);
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.2s ease;
+        }
+        @media (hover: hover) {
+            .album-cover-clickable {
+                will-change: transform;
+                transform: translateZ(0);
+                backface-visibility: hidden;
+            }
+            .album-cover-clickable:hover {
+                transform: translateZ(0) scale(1.03);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            }
+        }
+
+        /* Unreleased / SOON (Promosso su GPU per evitare ricalcolo blur in hover) */
         .album.unreleased { position: relative; }
         .album.unreleased img,
-        .album.unreleased h3 { filter: blur(8px); opacity: 0.6; }
+        .album.unreleased h3 {
+            filter: blur(8px);
+            opacity: 0.6;
+            transform: translateZ(0);
+        }
+        @media (hover: hover) {
+            .album.unreleased .album-cover-clickable:hover {
+                transform: translateZ(0) scale(1.03);
+            }
+        }
         .album.unreleased .soon-overlay {
             position: absolute;
             top: 100px;
@@ -172,7 +194,7 @@
         @media (max-width: 600px) {
             .music-container { width: 95%; padding: 10px; }
             .album { margin-bottom: 15px; }
-            .album img { max-width: 150px; width: 150px; }
+            .album img { max-width: 150px; width: 150px; height: 150px; }
             .album.unreleased .soon-overlay { top: 75px; font-size: 1.5em; }
         }
 
@@ -183,11 +205,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 80px; 
+            gap: 80px;
             width: 100%;
-            max-width: 800px; 
-            box-sizing: border-box;
-            padding: 20px 20px 80px 20px; 
+            max-width: 800px;
+            padding: 20px 20px 80px 20px;
         }
 
         .model-item { text-align: center; width: 90%; max-width: 600px; }
@@ -198,10 +219,14 @@
         }
         .carousel {
             position: relative; width: 100%; height: auto; overflow: hidden;
-            border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: transparent; 
+            border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: transparent;
         }
         .carousel-track {
-            display: flex; transition: transform 0.4s ease-in-out; width: 100%; align-items: center; 
+            display: flex;
+            will-change: transform;
+            transition: transform 0.4s ease-in-out;
+            width: 100%;
+            align-items: center;
         }
         .carousel-slide {
             min-width: 100%; display: flex; justify-content: center; align-items: center;
@@ -221,12 +246,14 @@
             cursor: pointer; z-index: 5; transition: opacity 0.2s ease, transform 0.2s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .custom-play-overlay:hover { transform: translate(-50%, -50%) scale(1.05); }
+        @media (hover: hover) {
+            .custom-play-overlay:hover { transform: translate(-50%, -50%) scale(1.05); }
+        }
         .custom-play-overlay svg { width: 28px; height: 28px; fill: black; margin-left: 5px; }
         .custom-play-overlay.hidden { opacity: 0; pointer-events: none; }
 
         .carousel-description {
-            margin-top: 12px; font-size: 0.9em; color: #555; text-align: center; width: 100%; min-height: 1.2em; 
+            margin-top: 12px; font-size: 0.9em; color: #555; text-align: center; width: 100%; min-height: 1.2em;
         }
 
         .carousel-btn {
@@ -236,15 +263,21 @@
             transition: background-color 0.2s ease, transform 0.1s ease;
             display: flex; justify-content: center; align-items: center;
         }
-        .carousel-btn:hover { background-color: rgba(255, 255, 255, 0.9); transform: translateY(-50%) scale(1.05); }
+        @media (hover: hover) {
+            .carousel-btn:hover { background-color: rgba(255, 255, 255, 0.9); transform: translateY(-50%) scale(1.05); }
+        }
         .carousel-btn.prev { left: 10px; }
         .carousel-btn.next { right: 10px; }
 
-        /* ART Unreleased */
+        /* ART Unreleased (GPU-layering per scroll fluido) */
         .model-item.unreleased { position: relative; pointer-events: none; user-select: none; }
         .model-item.unreleased .image-title,
         .model-item.unreleased .carousel-container,
-        .model-item.unreleased .carousel-description { filter: blur(8px); opacity: 0.6; }
+        .model-item.unreleased .carousel-description {
+            filter: blur(8px);
+            opacity: 0.6;
+            transform: translateZ(0);
+        }
         .model-item.unreleased .soon-overlay {
             position: absolute; top: 250px; left: 50%; transform: translate(-50%, -50%);
             font-size: 2em; font-weight: bold; color: black; background-color: rgba(255, 255, 255, 0.7);
@@ -261,15 +294,28 @@
 
         /* Lightbox (Zoom Immagini) */
         .lightbox {
-            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.93); 
+            display: none; position: fixed; z-index: 9999; inset: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
+            background-color: rgba(0, 0, 0, 0.93);
         }
         .lightbox.active { display: flex; justify-content: center; align-items: center; }
         .lightbox-content { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        #lightbox-img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: zoom-in; transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); transform-origin: center center; }
+        #lightbox-img {
+            max-width: 95vw; max-height: 95vh; max-height: 95dvh;
+            object-fit: contain; cursor: zoom-in;
+            will-change: transform;
+            transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transform-origin: center center;
+        }
         #lightbox-img.zoomed { cursor: zoom-out; }
-        .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; font-weight: bold; cursor: pointer; z-index: 10000; text-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: color 0.2s; line-height: 1; }
-        .close-lightbox:hover { color: #ccc; }
+        .close-lightbox {
+            position: absolute; top: 20px; right: 30px; color: white; font-size: 50px;
+            font-weight: bold; cursor: pointer; z-index: 10000;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: color 0.2s; line-height: 1;
+        }
+        @media (hover: hover) {
+            .close-lightbox:hover { color: #ccc; }
+        }
         @media (max-width: 600px) { .close-lightbox { top: 15px; right: 20px; font-size: 40px; } }
 
         /* ================================================================
@@ -277,6 +323,7 @@
            ================================================================ */
         #global-player-container {
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
+            will-change: transform;
             transition: transform 0.3s ease-in-out;
         }
         #global-player-container.hidden { transform: translateY(100%); }
@@ -298,24 +345,30 @@
         #bar-album-title { color: #555; text-overflow: ellipsis; overflow: hidden; }
         .play-pause-btn { font-size: 1.5em; padding: 10px; background: none; border: none; cursor: pointer; flex-shrink: 0; }
         .play-pause-btn svg { width: 1em; height: 1em; fill: currentColor; vertical-align: middle; flex-shrink: 0; }
-        
+
         #player-expanded {
-            position: fixed; top: 100%; left: 0; width: 100%; height: 100vh;
-            background-color: white; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: fixed; top: 100%; left: 0; width: 100%; height: 100vh; height: 100dvh;
+            background-color: white; z-index: 1001;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            will-change: top;
             transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.4s; visibility: hidden;
         }
         #player-expanded.active { top: 0; visibility: visible; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s; }
         #close-expanded-btn { position: absolute; top: 20px; left: 20px; font-size: 1.5em; background: none; border: none; cursor: pointer; z-index: 1002; color: #555; font-weight: bold; }
-        
+
         .expanded-content { display: flex; flex-direction: column; align-items: center; text-align: center; width: 90%; max-width: 350px; }
         #expanded-album-cover { width: 80vw; height: 80vw; max-width: 300px; max-height: 300px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
         #expanded-album-title { font-size: 1.2em; font-weight: bold; margin: 10px 0 5px 0; }
         #expanded-track-title { font-size: 1em; color: #333; margin-bottom: 20px; }
-        
+
         .controls { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; width: 100%; }
-        .controls button { padding: 15px 30px; border: none; background-color: transparent; font-size: 1.5em; outline: none; box-shadow: none; cursor: pointer; border-radius: 3px; }
-        
-        .progress-bar { width: 100%; margin-top: 5px; -webkit-appearance: none; appearance: none; background: #ccc; height: 3px; cursor: pointer; border-radius: 2px; }
+        .controls button { padding: 15px 30px; border: none; background-color: transparent; font-size: 1.5em; outline: none; box-shadow: none; cursor: pointer; border-radius: 3px; font-family: inherit; }
+
+        .progress-bar {
+            width: 100%; margin-top: 5px; -webkit-appearance: none; appearance: none;
+            background: #ccc; height: 3px; cursor: pointer; border-radius: 2px;
+            touch-action: none;
+        }
         .progress-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; background: black; width: 8px; height: 8px; border-radius: 50%; cursor: pointer; }
         .progress-bar::-moz-range-thumb { background: black; width: 8px; height: 8px; border-radius: 50%; cursor: pointer; border: none; }
         .time-container { display: flex; justify-content: space-between; width: 100%; margin-top: 3px; font-size: 0.7em; color: #555; }
@@ -324,25 +377,29 @@
            TRACKLIST MODAL (SND)
            ================================================================ */
         #modal-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+            position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5);
             z-index: 1001; visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         #modal-backdrop.active { visibility: visible; opacity: 1; }
         #tracklist-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 400px; max-height: 80vh; background-color: #ffffff; border-radius: 8px;
+            width: 90%; max-width: 400px; max-height: 80vh; max-height: 80dvh;
+            background-color: #ffffff; border-radius: 8px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1002; visibility: hidden; opacity: 0;
+            will-change: transform, opacity;
             transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease; display: flex; flex-direction: column;
         }
         #tracklist-modal.active { visibility: visible; opacity: 1; transform: translate(-50%, -50%) scale(1); }
         #close-tracklist-btn { position: absolute; top: 10px; right: 15px; font-size: 2em; color: #aaa; background: none; border: none; cursor: pointer; line-height: 1; padding: 0; }
-        #close-tracklist-btn:hover { color: #333; }
-        #tracklist-content { padding: 20px; text-align: center; overflow-y: auto; }
-        .tracklist-cover { width: 150px; height: 150px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        #tracklist-content { padding: 20px; text-align: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .tracklist-cover { width: 150px; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .tracklist-album-title { font-size: 1.2em; font-weight: bold; margin: 0 0 20px 0; }
         .tracklist-ol { list-style-type: decimal; padding-left: 30px; margin: 0; text-align: left; }
         .tracklist-item { padding: 12px 10px; font-size: 0.9em; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s ease; }
-        .tracklist-item:hover { background-color: #f9f9f9; }
+        @media (hover: hover) {
+            #close-tracklist-btn:hover { color: #333; }
+            .tracklist-item:hover { background-color: #f9f9f9; }
+        }
         .tracklist-item:last-child { border-bottom: none; }
 
         /* ================================================================
@@ -350,11 +407,13 @@
            ================================================================ */
         .site-footer {
             display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%;
-            padding: 40px 20px 30px 20px; box-sizing: border-box; font-size: 0.85em; color: #555; margin-top: auto;
+            padding: 40px 20px 30px 20px; font-size: 0.85em; color: #555; margin-top: auto;
         }
         .footer-logo { height: 20px; width: auto; object-fit: contain; }
         .site-footer a { color: black; font-weight: bold; text-decoration: none; transition: color 0.2s ease; }
-        .site-footer a:hover { color: #888; text-decoration: underline; }
+        @media (hover: hover) {
+            .site-footer a:hover { color: #888; text-decoration: underline; }
+        }
     </style>
 </head>
 <body>
@@ -370,32 +429,31 @@
          SND PAGE
          ================================================================ -->
     <div id="page-snd" class="page">
-        
 
         <div class="music-container">
             <div class="album">
-                <img src="album.jpg" alt="Copertina album" class="album-cover-clickable" data-album-index="0">
+                <img src="album.jpg" width="200" height="200" decoding="async" alt="Copertina album" class="album-cover-clickable" data-album-index="0">
                 <h3 class="album-title-text">FART MUSIC</h3>
             </div>
         </div>
 
         <div class="music-container">
             <div class="album">
-                <img id="album-cover-6" src="album6.jpg" alt="Copertina BLACKSTONE FREESTYLE" class="album-cover-clickable" data-album-index="1">
+                <img id="album-cover-6" src="album6.jpg" width="200" height="200" decoding="async" alt="Copertina BLACKSTONE FREESTYLE" class="album-cover-clickable" data-album-index="1">
                 <h3 class="album-title-text">BLACKSTONE FREESTYLE</h3>
             </div>
         </div>
 
         <div class="music-container">
             <div class="album">
-                <img id="album-cover-7" src="album7.png" alt="Copertina BAG CHASERS" class="album-cover-clickable" data-album-index="2">
+                <img id="album-cover-7" src="album7.png" width="200" height="200" decoding="async" alt="Copertina BAG CHASERS" class="album-cover-clickable" data-album-index="2">
                 <h3 class="album-title-text">BAG CHASERS</h3>
             </div>
         </div>
 
         <div class="music-container">
             <div class="album">
-                <img id="album-cover-8" src="album8.png" alt="Copertina FUFI" class="album-cover-clickable" data-album-index="3">
+                <img id="album-cover-8" src="album8.png" width="200" height="200" decoding="async" alt="Copertina FUFI" class="album-cover-clickable" data-album-index="3">
                 <h3 class="album-title-text">FUFI</h3>
             </div>
         </div>
@@ -403,7 +461,7 @@
         <div class="music-container">
             <div class="album unreleased">
                 <div class="soon-overlay">SOON</div>
-                <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="4">
+                <img id="album-cover-2" src="album2.jpg" width="200" height="200" decoding="async" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="4">
                 <h3 class="album-title-text">STUPRO MUSICA 2</h3>
             </div>
         </div>
@@ -411,7 +469,7 @@
         <div class="music-container">
             <div class="album unreleased">
                 <div class="soon-overlay">SOON</div>
-                <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="5">
+                <img id="album-cover-3" src="album3.jpg" width="200" height="200" decoding="async" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="5">
                 <h3 class="album-title-text">VULTURES 4</h3>
             </div>
         </div>
@@ -419,15 +477,15 @@
         <div class="music-container">
             <div class="album unreleased">
                 <div class="soon-overlay">SOON</div>
-                <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="6">
+                <img id="album-cover-4" src="album4.jpg" width="200" height="200" decoding="async" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="6">
                 <h3 class="album-title-text">CHISSA' COSA DIREBBE FREUD</h3>
             </div>
         </div>
-        
+
         <div class="music-container">
             <div class="album unreleased">
                 <div class="soon-overlay">SOON</div>
-                <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="7">
+                <img id="album-cover-5" src="album5.jpg" width="200" height="200" decoding="async" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="7">
                 <h3 class="album-title-text">ANCHE GLI EROI SI FANNO DI CRACK</h3>
             </div>
         </div>
@@ -437,18 +495,17 @@
          ART PAGE
          ================================================================ -->
     <div id="page-art" class="page">
-        
 
         <div class="image-gallery">
             <div class="model-item">
                 <h3 class="image-title">FART MUSIC</h3>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-love" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-love', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover FART MUSIC"><img src="IMMAGINE/Front_1.png" alt="Cover FART MUSIC"></div>
-                            <div class="carousel-slide" data-desc="Back cover FART MUSIC"><img src="IMMAGINE/Back_1.png" alt="Back cover FART MUSIC"></div>
+                            <div class="carousel-slide" data-desc="Cover FART MUSIC"><img src="IMMAGINE/Front_1.png" loading="lazy" decoding="async" alt="Cover FART MUSIC"></div>
+                            <div class="carousel-slide" data-desc="Back cover FART MUSIC"><img src="IMMAGINE/Back_1.png" loading="lazy" decoding="async" alt="Back cover FART MUSIC"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-love', 1)">&#10095;</button>
                     </div>
@@ -470,13 +527,13 @@
 
             <div class="model-item">
                 <h3 class="image-title">BLACKSTONE FREESTYLE</h3>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-blackstone" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-blackstone', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover BLACKSTONE FREESTYLE"><img src="IMMAGINE/Front_6.jpg" alt="Cover BLACKSTONE FREESTYLE"></div>
-                            <div class="carousel-slide" data-desc="WE ARE HISTORY"><img src="IMMAGINE/bf01.jpg" alt="WE ARE HISTORY"></div>
+                            <div class="carousel-slide" data-desc="Cover BLACKSTONE FREESTYLE"><img src="IMMAGINE/Front_6.jpg" loading="lazy" decoding="async" alt="Cover BLACKSTONE FREESTYLE"></div>
+                            <div class="carousel-slide" data-desc="WE ARE HISTORY"><img src="IMMAGINE/bf01.jpg" loading="lazy" decoding="async" alt="WE ARE HISTORY"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-blackstone', 1)">&#10095;</button>
                     </div>
@@ -498,22 +555,22 @@
 
             <div class="model-item">
                 <h3 class="image-title">BAG CHASERS</h3>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-bagchasers" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-bagchasers', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover BAG CHASERS"><img src="IMMAGINE/BAGCHASERS/Front_7.png" alt="Cover BAG CHASERS"></div>
-                            <div class="carousel-slide" data-desc="JUANKY TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_01.jpg" alt="JUANKY TOON SIGN"></div>
-                            <div class="carousel-slide" data-desc="VSN TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_02.jpg" alt="VSN TOON SIGN"></div>
-                            <div class="carousel-slide" data-desc="KFC YUNG CAC & JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_03.jpg" alt="KFC YUNG CAC & JUANKY"></div>
-                            <div class="carousel-slide" data-desc="KFC JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_04.jpg" alt="KFC JUANKY"></div>
-                            <div class="carousel-slide" data-desc="KFC ZODIAK & VSN"><img src="IMMAGINE/BAGCHASERS/BC_05.jpg" alt="KFC ZODIAK & VSN"></div>
-                            <div class="carousel-slide" data-desc="GREEDY SUL POLLO"><img src="IMMAGINE/BAGCHASERS/BC_06.jpg" alt="GREEDY SUL POLLO"></div>
-                            <div class="carousel-slide" data-desc="JUANKY X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_07.jpg" alt="JUANKY X STEF5K"></div>
-                            <div class="carousel-slide" data-desc="ZODIAK X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_09.jpg" alt="ZODIAK X STEF5K"></div>
-                            <div class="carousel-slide" data-desc="VSN DIETRO LA CAMERA"><img src="IMMAGINE/BAGCHASERS/BC_08.jpg" alt="VSN DIETRO LA CAMERA"></div>
-                            
+                            <div class="carousel-slide" data-desc="Cover BAG CHASERS"><img src="IMMAGINE/BAGCHASERS/Front_7.png" loading="lazy" decoding="async" alt="Cover BAG CHASERS"></div>
+                            <div class="carousel-slide" data-desc="JUANKY TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_01.jpg" loading="lazy" decoding="async" alt="JUANKY TOON SIGN"></div>
+                            <div class="carousel-slide" data-desc="VSN TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_02.jpg" loading="lazy" decoding="async" alt="VSN TOON SIGN"></div>
+                            <div class="carousel-slide" data-desc="KFC YUNG CAC & JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_03.jpg" loading="lazy" decoding="async" alt="KFC YUNG CAC & JUANKY"></div>
+                            <div class="carousel-slide" data-desc="KFC JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_04.jpg" loading="lazy" decoding="async" alt="KFC JUANKY"></div>
+                            <div class="carousel-slide" data-desc="KFC ZODIAK & VSN"><img src="IMMAGINE/BAGCHASERS/BC_05.jpg" loading="lazy" decoding="async" alt="KFC ZODIAK & VSN"></div>
+                            <div class="carousel-slide" data-desc="GREEDY SUL POLLO"><img src="IMMAGINE/BAGCHASERS/BC_06.jpg" loading="lazy" decoding="async" alt="GREEDY SUL POLLO"></div>
+                            <div class="carousel-slide" data-desc="JUANKY X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_07.jpg" loading="lazy" decoding="async" alt="JUANKY X STEF5K"></div>
+                            <div class="carousel-slide" data-desc="ZODIAK X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_09.jpg" loading="lazy" decoding="async" alt="ZODIAK X STEF5K"></div>
+                            <div class="carousel-slide" data-desc="VSN DIETRO LA CAMERA"><img src="IMMAGINE/BAGCHASERS/BC_08.jpg" loading="lazy" decoding="async" alt="VSN DIETRO LA CAMERA"></div>
+
                             <div class="carousel-slide" data-desc="LOST">
                                 <div class="video-wrapper">
                                     <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_10.mp4" type="video/mp4"></video>
@@ -527,12 +584,12 @@
                                 </div>
                             </div>
 
-                            <div class="carousel-slide" data-desc="THE CHAIN"><img src="IMMAGINE/BAGCHASERS/BC_12.jpg" alt="THE CHAIN"></div>
-                            <div class="carousel-slide" data-desc="ZODIAK X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_13.jpg" alt="ZODIAK X WICKIBOI"></div>
-                            <div class="carousel-slide" data-desc="JUANKY X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_14.jpg" alt="JUANKY  X WICKIBOI"></div>
-                            <div class="carousel-slide" data-desc="SQUAD"><img src="IMMAGINE/BAGCHASERS/BC_15.jpg" alt="SQUAD"></div>
-                            <div class="carousel-slide" data-desc="LARPER"><img src="IMMAGINE/BAGCHASERS/BC_16.jpg" alt="LARPER"></div>
-                            <div class="carousel-slide" data-desc="LARPER PT.2"><img src="IMMAGINE/BAGCHASERS/BC_17.jpg" alt="LARPER PT.2"></div>
+                            <div class="carousel-slide" data-desc="THE CHAIN"><img src="IMMAGINE/BAGCHASERS/BC_12.jpg" loading="lazy" decoding="async" alt="THE CHAIN"></div>
+                            <div class="carousel-slide" data-desc="ZODIAK X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_13.jpg" loading="lazy" decoding="async" alt="ZODIAK X WICKIBOI"></div>
+                            <div class="carousel-slide" data-desc="JUANKY X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_14.jpg" loading="lazy" decoding="async" alt="JUANKY  X WICKIBOI"></div>
+                            <div class="carousel-slide" data-desc="SQUAD"><img src="IMMAGINE/BAGCHASERS/BC_15.jpg" loading="lazy" decoding="async" alt="SQUAD"></div>
+                            <div class="carousel-slide" data-desc="LARPER"><img src="IMMAGINE/BAGCHASERS/BC_16.jpg" loading="lazy" decoding="async" alt="LARPER"></div>
+                            <div class="carousel-slide" data-desc="LARPER PT.2"><img src="IMMAGINE/BAGCHASERS/BC_17.jpg" loading="lazy" decoding="async" alt="LARPER PT.2"></div>
 
                             <div class="carousel-slide" data-desc="LARPER PT.3">
                                 <div class="video-wrapper">
@@ -541,27 +598,26 @@
                                 </div>
                             </div>
 
-                            <div class="carousel-slide" data-desc="OBAMA"><img src="IMMAGINE/BAGCHASERS/BC_19.jpg" alt="OBAMA"></div>
-                            <div class="carousel-slide" data-desc="STUDIO (PARK)"><img src="IMMAGINE/BAGCHASERS/BC_20.jpg" alt="STUDIO (PARK)"></div>
-                            <div class="carousel-slide" data-desc="FOCUSRITE"><img src="IMMAGINE/BAGCHASERS/BC_21.jpg" alt="FOCUSRITE"></div>
-                            <div class="carousel-slide" data-desc="THE STUDIO"><img src="IMMAGINE/BAGCHASERS/BC_22.jpg" alt="THE STUDIO"></div>
+                            <div class="carousel-slide" data-desc="OBAMA"><img src="IMMAGINE/BAGCHASERS/BC_19.jpg" loading="lazy" decoding="async" alt="OBAMA"></div>
+                            <div class="carousel-slide" data-desc="STUDIO (PARK)"><img src="IMMAGINE/BAGCHASERS/BC_20.jpg" loading="lazy" decoding="async" alt="STUDIO (PARK)"></div>
+                            <div class="carousel-slide" data-desc="FOCUSRITE"><img src="IMMAGINE/BAGCHASERS/BC_21.jpg" loading="lazy" decoding="async" alt="FOCUSRITE"></div>
+                            <div class="carousel-slide" data-desc="THE STUDIO"><img src="IMMAGINE/BAGCHASERS/BC_22.jpg" loading="lazy" decoding="async" alt="THE STUDIO"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-bagchasers', 1)">&#10095;</button>
                     </div>
                     <p class="carousel-description" id="desc-img-bagchasers">BAG CHASERS COVER</p>
                 </div>
-            </div>    
+            </div>
 
             <div class="model-item">
                 <h3 class="image-title">FUFI</h3>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-fufi" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-fufi', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <!-- Inserisci o modifica qui le tue slide (foto o video) per FUFI -->
-                            <div class="carousel-slide" data-desc="FUFI COVER"><img src="IMMAGINE/Front_8.png" alt="FUFI COVER"></div>
-                            <div class="carousel-slide" data-desc="THE STUDIO - MICROPHONE UPGRADE + SWISS GO"><img src="IMMAGINE/Back_8.jpg" alt="THE STUDIO - MICROPHONE UPGRADE + SWISS GO"></div>
+                            <div class="carousel-slide" data-desc="FUFI COVER"><img src="IMMAGINE/Front_8.png" loading="lazy" decoding="async" alt="FUFI COVER"></div>
+                            <div class="carousel-slide" data-desc="THE STUDIO - MICROPHONE UPGRADE + SWISS GO"><img src="IMMAGINE/Back_8.jpg" loading="lazy" decoding="async" alt="THE STUDIO - MICROPHONE UPGRADE + SWISS GO"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-fufi', 1)">&#10095;</button>
                     </div>
@@ -572,13 +628,13 @@
             <div class="model-item unreleased">
                 <h3 class="image-title">STUPRO MUSICA 2</h3>
                 <div class="soon-overlay">SOON</div>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-hate" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-hate', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover STUPRO MUSICA 2"><img src="IMMAGINE/Front_2.jpg" alt="Cover STUPRO MUSICA 2"></div>
-                            <div class="carousel-slide" data-desc="Back cover STUPRO MUSICA 2"><img src="IMMAGINE/Back_2.png" alt="Back cover STUPRO MUSICA 2"></div>
+                            <div class="carousel-slide" data-desc="Cover STUPRO MUSICA 2"><img src="IMMAGINE/Front_2.jpg" loading="lazy" decoding="async" alt="Cover STUPRO MUSICA 2"></div>
+                            <div class="carousel-slide" data-desc="Back cover STUPRO MUSICA 2"><img src="IMMAGINE/Back_2.png" loading="lazy" decoding="async" alt="Back cover STUPRO MUSICA 2"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-hate', 1)">&#10095;</button>
                     </div>
@@ -591,13 +647,13 @@
                         <div class="carousel-track">
                             <div class="carousel-slide" data-desc="PISCIO (esperienza ufficiale)">
                                 <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
+                                    <video controls playsinline preload="none"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
                                     <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
                                 </div>
                             </div>
                             <div class="carousel-slide" data-desc="Descrizione video 2 di Hate Everyone">
                                 <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="VIDEO/hate2.mp4" type="video/mp4"></video>
+                                    <video controls playsinline preload="none"><source src="VIDEO/hate2.mp4" type="video/mp4"></video>
                                     <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
                                 </div>
                             </div>
@@ -611,13 +667,13 @@
             <div class="model-item unreleased">
                 <h3 class="image-title">VULTURES 4</h3>
                 <div class="soon-overlay">SOON</div>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-laundry" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-laundry', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover VULTURES 4"><img src="IMMAGINE/Front_3.png" alt="Cover VULTURES 4"></div>
-                            <div class="carousel-slide" data-desc="Back cover VULTURES 4"><img src="IMMAGINE/Back_3.png" alt="Back cover VULTURES 4"></div>
+                            <div class="carousel-slide" data-desc="Cover VULTURES 4"><img src="IMMAGINE/Front_3.png" loading="lazy" decoding="async" alt="Cover VULTURES 4"></div>
+                            <div class="carousel-slide" data-desc="Back cover VULTURES 4"><img src="IMMAGINE/Back_3.png" loading="lazy" decoding="async" alt="Back cover VULTURES 4"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-laundry', 1)">&#10095;</button>
                     </div>
@@ -630,7 +686,7 @@
                         <div class="carousel-track">
                             <div class="carousel-slide" data-desc="Descrizione video 1 di Laundry">
                                 <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="VIDEO/laundry1.mp4" type="video/mp4"></video>
+                                    <video controls playsinline preload="none"><source src="VIDEO/laundry1.mp4" type="video/mp4"></video>
                                     <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
                                 </div>
                             </div>
@@ -644,13 +700,13 @@
             <div class="model-item unreleased">
                 <h3 class="image-title">CHISSA' COSA DIREBBE FREUD</h3>
                 <div class="soon-overlay">SOON</div>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-echoes" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-echoes', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Front_4.png" alt="Cover CHISSA' COSA DIREBBE FREUD"></div>
-                            <div class="carousel-slide" data-desc="Back cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Back_4.png" alt="Back cover CHISSA' COSA DIREBBE FREUD"></div>
+                            <div class="carousel-slide" data-desc="Cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Front_4.png" loading="lazy" decoding="async" alt="Cover CHISSA' COSA DIREBBE FREUD"></div>
+                            <div class="carousel-slide" data-desc="Back cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Back_4.png" loading="lazy" decoding="async" alt="Back cover CHISSA' COSA DIREBBE FREUD"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-echoes', 1)">&#10095;</button>
                     </div>
@@ -661,13 +717,13 @@
             <div class="model-item unreleased">
                 <h3 class="image-title">ANCHE GLI EROI SI FANNO DI CRACK</h3>
                 <div class="soon-overlay">SOON</div>
-                
+
                 <div class="carousel-container">
                     <div class="carousel" id="img-noise" data-index="0">
                         <button class="carousel-btn prev" onclick="moveSlide('img-noise', -1)">&#10094;</button>
                         <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Front_5.png" alt="Cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
-                            <div class="carousel-slide" data-desc="Back cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Back_5.png" alt="Back cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
+                            <div class="carousel-slide" data-desc="Cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Front_5.png" loading="lazy" decoding="async" alt="Cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
+                            <div class="carousel-slide" data-desc="Back cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Back_5.png" loading="lazy" decoding="async" alt="Back cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
                         </div>
                         <button class="carousel-btn next" onclick="moveSlide('img-noise', 1)">&#10095;</button>
                     </div>
@@ -681,7 +737,6 @@
          GOYCAST PAGE
          ================================================================ -->
     <div id="page-goycast" class="page">
-        
 
         <div class="image-gallery">
             <div class="model-item">
@@ -809,12 +864,12 @@
     <!-- ================================================================
          GLOBAL MODALS & PLAYER (Persistenti)
          ================================================================ -->
-    
+
     <!-- Lightbox (Zoom Immagini) -->
     <div id="image-lightbox" class="lightbox">
         <span class="close-lightbox" id="close-lightbox">&times;</span>
         <div class="lightbox-content">
-            <img id="lightbox-img" src="" alt="Zoom Immagine">
+            <img id="lightbox-img" src="" alt="Zoom Immagine" decoding="async">
         </div>
     </div>
 
@@ -824,12 +879,12 @@
         <button id="close-tracklist-btn">&times;</button>
         <div id="tracklist-content"></div>
     </div>
-    
+
     <!-- Global Player Audio -->
     <div id="global-player-container" class="hidden">
         <div id="player-bar">
             <div class="player-bar-clickable" id="open-expanded-player">
-                <img src="album.jpg" alt="Copertina" id="bar-album-cover">
+                <img src="album.jpg" alt="Copertina" id="bar-album-cover" decoding="async">
                 <div class="bar-track-info">
                     <span id="bar-track-title"></span>
                     <span id="bar-track-artists" style="font-size: 0.85em; color: #888; display: none;"></span>
@@ -838,21 +893,21 @@
             </div>
             <button id="bar-play-pause-btn" class="play-pause-btn"></button>
         </div>
-    
+
         <div id="player-expanded">
             <button id="close-expanded-btn">▼</button>
             <div class="expanded-content">
-                <img src="album.jpg" alt="Copertina album" id="expanded-album-cover">
+                <img src="album.jpg" alt="Copertina album" id="expanded-album-cover" decoding="async">
                 <h3 id="expanded-album-title"></h3>
                 <h4 id="expanded-track-title"></h4>
                 <h5 id="expanded-track-artists" style="margin-top: 0; font-size: 0.9em; color: #555; display: none; font-weight: normal;"></h5>
-                
+
                 <input type="range" id="global-progress-bar" class="progress-bar" value="0" step="0.01">
                 <div class="time-container">
                     <span id="global-current-time">0:00</span>
                     <span id="global-duration">0:00</span>
                 </div>
-                
+
                 <div class="controls">
                     <button class="skip-btn" id="global-prev-btn">⏮</button>
                     <button id="global-play-pause-btn" class="play-pause-btn"></button>
@@ -863,7 +918,7 @@
     </div>
 
     <footer class="site-footer">
-        <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo">
+        <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo" decoding="async">
         <span>Sound & Vision by <a href="https://loveveryone.it" target="_blank" rel="noopener noreferrer">VSN</a></span>
     </footer>
 
@@ -872,6 +927,13 @@
          ================================================================ -->
     <script>
         'use strict';
+
+        // Pre-decodifica immediata delle copertine della pagina SND per eliminare ogni lag in hover
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('#page-snd img').forEach(img => {
+                if ('decode' in img) img.decode().catch(() => {});
+            });
+        });
 
         const PLAY_SVG  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>';
         const PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>';
@@ -886,34 +948,41 @@
         // ==========================================
         const ALL_PAGES = ['snd','art','goycast'];
         let currentPage = null;
-        const mainNav = document.getElementById('main-nav');
+        const mainNav   = document.getElementById('main-nav');
+        const navLinks  = document.querySelectorAll('.text-menu a[data-page]');
+        const allVideos = document.querySelectorAll('video, mux-video');
+
+        function pauseAllVideos() {
+            allVideos.forEach(video => {
+                if (!video.paused) video.pause();
+            });
+        }
 
         function navigateTo(page) {
             if (!ALL_PAGES.includes(page)) page = 'snd';
             if (page === currentPage) return;
-            
+
             if (currentPage) {
                 document.getElementById('page-' + currentPage).classList.remove('active');
             }
-            
+
             currentPage = page;
             document.getElementById('page-' + page).classList.add('active');
-            
-            document.querySelectorAll('.text-menu a').forEach(a => {
+
+            navLinks.forEach(a => {
                 a.classList.toggle('active', a.dataset.page === page);
             });
-            
+
             history.pushState({ page }, '', '#' + page);
             window.scrollTo(0, 0);
 
-            // Mette in pausa eventuali video in riproduzione cambiando tab
-            document.querySelectorAll('video, mux-video').forEach(video => video.pause());
+            pauseAllVideos();
         }
 
-        document.querySelectorAll('.text-menu a[data-page]').forEach(a => {
-            a.addEventListener('click', e => { 
-                e.preventDefault(); 
-                navigateTo(a.dataset.page); 
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                navigateTo(a.dataset.page);
             });
         });
 
@@ -922,7 +991,6 @@
             navigateTo(page);
         });
 
-        // Setup iniziale SPA
         (function() {
             const hash = location.hash.replace('#','');
             navigateTo(ALL_PAGES.includes(hash) ? hash : 'snd');
@@ -943,17 +1011,17 @@
                 ]
             },
             {
-                albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
+                albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg",
                 artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
                 tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
             },
             {
-                albumTitle: "BAG CHASERS", albumCover: "album7.png", 
+                albumTitle: "BAG CHASERS", albumCover: "album7.png",
                 artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
                 tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
             },
             {
-                albumTitle: "FUFI", albumCover: "album8.png", 
+                albumTitle: "FUFI", albumCover: "album8.png",
                 artists: "Yung CAC, VSN", isSingle: true,
                 tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
             },
@@ -986,7 +1054,7 @@
             {
                 albumTitle: "ECHOES OF NOTHING", albumCover: "album4.jpg",
                 tracks: [
-                    { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
+                    { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' },
                     { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
                     { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
                     { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
@@ -999,7 +1067,7 @@
             {
                 albumTitle: "NOISE", albumCover: "album5.jpg",
                 tracks: [
-                    { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
+                    { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' },
                     { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
                     { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
                     { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
@@ -1015,131 +1083,151 @@
         // PLAYER AUDIO GLOBALE E MUTUA ESCLUSIONE
         // ==========================================
         const globalAudio = new Audio();
+        globalAudio.preload = 'metadata';
         let currentAlbumIndex = 0;
         let currentTrackIndex = 0;
         let isPlaying = false;
 
         const globalPlayerContainer = document.getElementById('global-player-container');
-        const barPlayPauseBtn = document.getElementById('bar-play-pause-btn');
-        const globalPlayPauseBtn = document.getElementById('global-play-pause-btn');
-        const globalProgressBar = document.getElementById('global-progress-bar');
-        const globalCurrentTime = document.getElementById('global-current-time');
-        const globalDuration = document.getElementById('global-duration');
-        const allVideos = document.querySelectorAll('video, mux-video');
+        const playerExpanded        = document.getElementById('player-expanded');
+        const barAlbumCover         = document.getElementById('bar-album-cover');
+        const barTrackTitle         = document.getElementById('bar-track-title');
+        const barAlbumTitle         = document.getElementById('bar-album-title');
+        const barTrackArtists       = document.getElementById('bar-track-artists');
+        const expAlbumCover         = document.getElementById('expanded-album-cover');
+        const expTrackTitle         = document.getElementById('expanded-track-title');
+        const expAlbumTitle         = document.getElementById('expanded-album-title');
+        const expTrackArtists       = document.getElementById('expanded-track-artists');
+        const barPlayPauseBtn       = document.getElementById('bar-play-pause-btn');
+        const globalPlayPauseBtn    = document.getElementById('global-play-pause-btn');
+        const globalProgressBar     = document.getElementById('global-progress-bar');
+        const globalCurrentTime     = document.getElementById('global-current-time');
+        const globalDuration        = document.getElementById('global-duration');
 
-        function loadTrack(albumIndex, trackIndex) {
+        function loadTrack(albumIndex, trackIndex, setSource = true) {
             currentAlbumIndex = albumIndex;
             currentTrackIndex = trackIndex;
             const album = allAlbums[albumIndex];
             const track = album.tracks[trackIndex];
-            
-            globalAudio.src = track.src;
-            document.getElementById('bar-album-cover').src = album.albumCover;
-            document.getElementById('bar-track-title').textContent = track.title;
-            document.getElementById('bar-album-title').textContent = album.albumTitle;
-            document.getElementById('expanded-album-cover').src = album.albumCover;
-            document.getElementById('expanded-track-title').textContent = track.title;
-            document.getElementById('expanded-album-title').textContent = album.albumTitle;
-            
-            const expTrackTitle = document.getElementById('expanded-track-title');
-            const barAlbumTitle = document.getElementById('bar-album-title');
-            const barTrackArtists = document.getElementById('bar-track-artists');
-            const expTrackArtists = document.getElementById('expanded-track-artists');
 
-            if (album.isSingle) {
-                expTrackTitle.style.display = 'none';
-                barAlbumTitle.style.display = 'none'; 
-            } else {
-                expTrackTitle.style.display = 'block';
-                barAlbumTitle.style.display = 'block';
+            if (setSource) {
+                globalAudio.src = track.src;
+                globalPlayerContainer.classList.remove('hidden');
             }
+
+            barAlbumCover.src         = album.albumCover;
+            barTrackTitle.textContent = track.title;
+            barAlbumTitle.textContent = album.albumTitle;
+            expAlbumCover.src         = album.albumCover;
+            expTrackTitle.textContent = track.title;
+            expAlbumTitle.textContent = album.albumTitle;
+
+            const singleDisplay = album.isSingle ? 'none' : 'block';
+            expTrackTitle.style.display = singleDisplay;
+            barAlbumTitle.style.display = singleDisplay;
 
             if (album.artists) {
-                barTrackArtists.textContent = album.artists;
-                barTrackArtists.style.display = 'block';
-                expTrackArtists.textContent = album.artists;
-                expTrackArtists.style.display = 'block';
-                expTrackTitle.style.marginBottom = '5px'; 
+                barTrackArtists.textContent      = album.artists;
+                barTrackArtists.style.display    = 'block';
+                expTrackArtists.textContent      = album.artists;
+                expTrackArtists.style.display    = 'block';
+                expTrackTitle.style.marginBottom = '5px';
                 expTrackArtists.style.marginBottom = '20px';
             } else {
-                barTrackArtists.style.display = 'none';
-                expTrackArtists.style.display = 'none';
-                expTrackTitle.style.marginBottom = '20px'; 
+                barTrackArtists.style.display    = 'none';
+                expTrackArtists.style.display    = 'none';
+                expTrackTitle.style.marginBottom = '20px';
             }
 
-            globalPlayerContainer.classList.remove('hidden');
-            globalProgressBar.value = 0;
+            globalProgressBar.value       = 0;
             globalCurrentTime.textContent = '0:00';
-            
-            globalAudio.addEventListener('loadedmetadata', () => {
-                globalDuration.textContent = formatTime(globalAudio.duration || 0);
-            }, { once: true });
-            
+
+            if (setSource) {
+                globalAudio.addEventListener('loadedmetadata', () => {
+                    globalDuration.textContent = formatTime(globalAudio.duration || 0);
+                }, { once: true });
+
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: track.title,
+                        artist: album.artists || 'YNGCAC',
+                        album: album.albumTitle,
+                        artwork: [{ src: album.albumCover }]
+                    });
+                }
+            }
+
             if (isPlaying) playAudio();
         }
 
         function playAudio() {
-            allVideos.forEach(v => v.pause());
-            globalAudio.play();
+            pauseAllVideos();
+            if (!globalAudio.src) {
+                globalAudio.src = allAlbums[currentAlbumIndex].tracks[currentTrackIndex].src;
+            }
+            globalAudio.play().catch(() => {});
             isPlaying = true;
-            barPlayPauseBtn.innerHTML = PAUSE_SVG;
+            barPlayPauseBtn.innerHTML    = PAUSE_SVG;
             globalPlayPauseBtn.innerHTML = PAUSE_SVG;
         }
 
         function pauseAudio() {
             globalAudio.pause();
             isPlaying = false;
-            barPlayPauseBtn.innerHTML = PLAY_SVG;
+            barPlayPauseBtn.innerHTML    = PLAY_SVG;
             globalPlayPauseBtn.innerHTML = PLAY_SVG;
         }
 
         function togglePlayPause() { isPlaying ? pauseAudio() : playAudio(); }
 
         function playNextTrack() {
-            currentTrackIndex++;
             const currentAlbum = allAlbums[currentAlbumIndex];
-            if (currentTrackIndex >= currentAlbum.tracks.length) currentTrackIndex = 0;
+            currentTrackIndex = (currentTrackIndex + 1) % currentAlbum.tracks.length;
             loadTrack(currentAlbumIndex, currentTrackIndex);
         }
 
         function playPrevTrack() {
-            currentTrackIndex--;
-            if (currentTrackIndex < 0) {
-                const currentAlbum = allAlbums[currentAlbumIndex];
-                currentTrackIndex = currentAlbum.tracks.length - 1;
-            }
+            const currentAlbum = allAlbums[currentAlbumIndex];
+            currentTrackIndex = (currentTrackIndex - 1 + currentAlbum.tracks.length) % currentAlbum.tracks.length;
             loadTrack(currentAlbumIndex, currentTrackIndex);
         }
 
         globalAudio.addEventListener('timeupdate', () => {
             const d = globalAudio.duration || 0;
-            globalProgressBar.value = d ? (globalAudio.currentTime / d) * 100 : 0;
+            globalProgressBar.value       = d ? (globalAudio.currentTime / d) * 100 : 0;
             globalCurrentTime.textContent = formatTime(globalAudio.currentTime);
         });
 
         globalProgressBar.addEventListener('input', () => {
             globalAudio.currentTime = (globalProgressBar.value / 100) * (globalAudio.duration || 0);
         });
-        
+
         globalAudio.addEventListener('ended', playNextTrack);
-        
+
         barPlayPauseBtn.addEventListener('click', togglePlayPause);
         globalPlayPauseBtn.addEventListener('click', togglePlayPause);
         document.getElementById('global-next-btn').addEventListener('click', playNextTrack);
         document.getElementById('global-prev-btn').addEventListener('click', playPrevTrack);
 
         document.getElementById('open-expanded-player').addEventListener('click', () => {
-            document.getElementById('player-expanded').classList.add('active');
-            mainNav.classList.add('hidden-by-player'); 
+            playerExpanded.classList.add('active');
+            mainNav.classList.add('hidden-by-player');
         });
         document.getElementById('close-expanded-btn').addEventListener('click', () => {
-            document.getElementById('player-expanded').classList.remove('active');
-            mainNav.classList.remove('hidden-by-player'); 
+            playerExpanded.classList.remove('active');
+            mainNav.classList.remove('hidden-by-player');
         });
 
-        loadTrack(0, 0);
-        globalPlayerContainer.classList.add('hidden');
-        pauseAudio(); 
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', playAudio);
+            navigator.mediaSession.setActionHandler('pause', pauseAudio);
+            navigator.mediaSession.setActionHandler('previoustrack', playPrevTrack);
+            navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
+        }
+
+        // Inizializza la UI del player senza scaricare inutilmente l'MP3 in background
+        loadTrack(0, 0, false);
+        pauseAudio();
 
         // ==========================================
         // GESTIONE VIDEO (ART / GOYCAST)
@@ -1147,11 +1235,15 @@
         allVideos.forEach(video => {
             video.addEventListener('play', () => {
                 if (isPlaying) pauseAudio();
+                // Mette in pausa eventuali altri video aperti contemporaneamente
+                allVideos.forEach(other => {
+                    if (other !== video && !other.paused) other.pause();
+                });
             });
         });
 
         document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-            const video = wrapper.querySelector('video, mux-video');
+            const video   = wrapper.querySelector('video, mux-video');
             const overlay = wrapper.querySelector('.custom-play-overlay');
             if (video && overlay) {
                 overlay.addEventListener('click', () => video.play());
@@ -1163,24 +1255,25 @@
         // ==========================================
         // TRACKLIST MODAL (SND)
         // ==========================================
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        const tracklistModal = document.getElementById('tracklist-modal');
+        const modalBackdrop    = document.getElementById('modal-backdrop');
+        const tracklistModal   = document.getElementById('tracklist-modal');
         const tracklistContent = document.getElementById('tracklist-content');
 
         function showTracklist(albumIndex) {
             const album = allAlbums[albumIndex];
-            tracklistContent.innerHTML = '';
-            
+            const frag  = document.createDocumentFragment();
+
             const modalCover = document.createElement('img');
             modalCover.src = album.albumCover;
             modalCover.className = 'tracklist-cover';
-            tracklistContent.appendChild(modalCover);
-            
+            modalCover.decoding = 'async';
+            frag.appendChild(modalCover);
+
             const modalTitle = document.createElement('h3');
             modalTitle.textContent = album.albumTitle;
             modalTitle.className = 'tracklist-album-title';
-            tracklistContent.appendChild(modalTitle);
-            
+            frag.appendChild(modalTitle);
+
             const trackListElement = document.createElement('ol');
             trackListElement.className = 'tracklist-ol';
             album.tracks.forEach((track, trackIndex) => {
@@ -1191,38 +1284,40 @@
                 trackItem.dataset.trackIndex = trackIndex;
                 trackListElement.appendChild(trackItem);
             });
-            tracklistContent.appendChild(trackListElement);
-            
+            frag.appendChild(trackListElement);
+
+            tracklistContent.replaceChildren(frag);
             modalBackdrop.classList.add('active');
             tracklistModal.classList.add('active');
-            mainNav.classList.add('hidden-by-player'); 
+            mainNav.classList.add('hidden-by-player');
         }
 
         function closeTracklistModal() {
             modalBackdrop.classList.remove('active');
             tracklistModal.classList.remove('active');
-            mainNav.classList.remove('hidden-by-player'); 
+            mainNav.classList.remove('hidden-by-player');
         }
 
         document.querySelectorAll('.album-cover-clickable').forEach(image => {
-            image.addEventListener('click', (e) => {
+            image.addEventListener('click', e => {
                 const albumDiv = e.currentTarget.closest('.album');
                 if (albumDiv && albumDiv.classList.contains('unreleased')) {
                     tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
                     modalBackdrop.classList.add('active');
                     tracklistModal.classList.add('active');
                     mainNav.classList.add('hidden-by-player');
-                    return; 
+                    return;
                 }
-                showTracklist(parseInt(e.currentTarget.dataset.albumIndex)); 
+                showTracklist(parseInt(e.currentTarget.dataset.albumIndex, 10));
             });
         });
 
-        tracklistContent.addEventListener('click', (e) => {
-            if (e.target && e.target.classList.contains('tracklist-item')) {
-                loadTrack(parseInt(e.target.dataset.albumIndex), parseInt(e.target.dataset.trackIndex));
+        tracklistContent.addEventListener('click', e => {
+            const item = e.target.closest('.tracklist-item');
+            if (item) {
+                loadTrack(parseInt(item.dataset.albumIndex, 10), parseInt(item.dataset.trackIndex, 10));
                 playAudio();
-                closeTracklistModal(); 
+                closeTracklistModal();
             }
         });
 
@@ -1233,51 +1328,56 @@
         // CAROUSEL IMMAGINI (ART)
         // ==========================================
         window.moveSlide = function(carouselId, direction) {
-            const carousel = document.getElementById(carouselId);
-            const track = carousel.querySelector('.carousel-track');
-            const slides = carousel.querySelectorAll('.carousel-slide');
-            const descElement = document.getElementById('desc-' + carouselId); 
-            
-            carousel.querySelectorAll('video, mux-video').forEach(video => video.pause());
-            
-            let currentIndex = parseInt(carousel.getAttribute('data-index')) || 0;
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = slides.length - 1;
-            else if (currentIndex >= slides.length) currentIndex = 0;
-            
+            const carousel    = document.getElementById(carouselId);
+            const track       = carousel.querySelector('.carousel-track');
+            const slides      = carousel.querySelectorAll('.carousel-slide');
+            const descElement = document.getElementById('desc-' + carouselId);
+
+            carousel.querySelectorAll('video, mux-video').forEach(video => {
+                if (!video.paused) video.pause();
+            });
+
+            let currentIndex = parseInt(carousel.getAttribute('data-index'), 10) || 0;
+            currentIndex = (currentIndex + direction + slides.length) % slides.length;
+
             carousel.setAttribute('data-index', currentIndex);
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            track.style.transform = `translate3d(-${currentIndex * 100}%, 0, 0)`;
             if (descElement) descElement.textContent = slides[currentIndex].getAttribute('data-desc');
+
+            // Pre-carica la slide adiacente per scorrimento fluido
+            const nextIdx = (currentIndex + direction + slides.length) % slides.length;
+            const nextImg = slides[nextIdx]?.querySelector('img[loading="lazy"]');
+            if (nextImg) nextImg.loading = 'eager';
         };
 
         // ==========================================
         // LIGHTBOX ZOOM IMMAGINI (ART)
         // ==========================================
-        const lightbox = document.getElementById('image-lightbox');
+        const lightbox    = document.getElementById('image-lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
 
         document.querySelectorAll('.carousel-slide img').forEach(img => {
             img.addEventListener('click', function() {
                 lightboxImg.src = this.src;
-                lightboxImg.classList.remove('zoomed'); 
-                lightboxImg.style.transform = 'scale(1)'; 
+                lightboxImg.classList.remove('zoomed');
+                lightboxImg.style.transform = 'scale(1)';
                 lightbox.classList.add('active');
-                document.body.style.overflow = 'hidden'; 
+                document.body.style.overflow = 'hidden';
             });
         });
 
         function closeLightbox() {
             lightbox.classList.remove('active');
-            document.body.style.overflow = ''; 
+            document.body.style.overflow = '';
         }
 
         document.getElementById('close-lightbox').addEventListener('click', closeLightbox);
-        lightbox.addEventListener('click', (e) => {
+        lightbox.addEventListener('click', e => {
             if (e.target === lightbox || e.target.classList.contains('lightbox-content')) closeLightbox();
         });
 
         lightboxImg.addEventListener('click', function(e) {
-            e.stopPropagation(); 
+            e.stopPropagation();
             if (this.classList.contains('zoomed')) {
                 this.classList.remove('zoomed');
                 this.style.transform = 'scale(1)';
@@ -1287,7 +1387,7 @@
                 const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
                 const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
                 this.style.transformOrigin = `${xPercent}% ${yPercent}%`;
-                this.style.transform = 'scale(2.5)'; 
+                this.style.transform = 'scale(2.5)';
             }
         });
 
@@ -1297,7 +1397,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js').then(reg => {
-                    setInterval(() => reg.update(), 60 * 60 * 1000); 
+                    setInterval(() => reg.update(), 60 * 60 * 1000);
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
