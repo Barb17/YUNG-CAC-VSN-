@@ -401,6 +401,13 @@
         </div>
 
         <div class="music-container">
+            <div class="album">
+                <img id="album-cover-8" src="album9.png" alt="Copertina MORAN" class="album-cover-clickable" data-album-index="4">
+                <h3 class="album-title-text">MORAN</h3>
+            </div>
+        </div>
+
+        <div class="music-container">
             <div class="album unreleased">
                 <div class="soon-overlay">SOON</div>
                 <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="4">
@@ -566,6 +573,22 @@
                         <button class="carousel-btn next" onclick="moveSlide('img-fufi', 1)">&#10095;</button>
                     </div>
                     <p class="carousel-description" id="desc-img-fufi">FUFI COVER</p>
+                </div>
+            </div>
+
+            <div class="model-item">
+                <h3 class="image-title">MORAN</h3>
+                
+                <div class="carousel-container">
+                    <div class="carousel" id="img-moran" data-index="0">
+                        <button class="carousel-btn prev" onclick="moveSlide('img-moran', -1)">&#10094;</button>
+                        <div class="carousel-track">
+                            <!-- Inserisci o modifica qui le tue slide (foto o video) per MORAN -->
+                            <div class="carousel-slide" data-desc="MORAN COVER"><img src="IMMAGINE/Front_9.png" alt="MORAN COVER"></div>
+                        </div>
+                        <button class="carousel-btn next" onclick="moveSlide('img-moran', 1)">&#10095;</button>
+                    </div>
+                    <p class="carousel-description" id="desc-img-moran">MORAN COVER</p>
                 </div>
             </div>
 
@@ -956,6 +979,11 @@
                 albumTitle: "FUFI", albumCover: "album8.png", 
                 artists: "Yung CAC, VSN", isSingle: true,
                 tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
+            },
+            {
+                albumTitle: "MORAN", albumCover: "album9.png", 
+                artists: "Yung CAC, VSN", isSingle: true,
+                tracks: [{ title: 'MORAN', src: 'MUSICA/MORAN.mp3' }]
             },
             {
                 albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg",
