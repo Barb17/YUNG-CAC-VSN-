@@ -1102,13 +1102,24 @@
             globalAudio.addEventListener('loadedmetadata', () => {
                 globalDuration.textContent = formatTime(globalAudio.duration || 0);
             }, { once: true });
+
+            // Impostazione Media Session API (Notifica di sistema con cover e artista)
+            if ('mediaSession' in navigator) {
+                const mimeType = album.albumCover.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: album.artists || 'YNGCAC',
+                    album: album.albumTitle,
+                    artwork: [{ src: album.albumCover, type: mimeType }]
+                });
+            }
             
             if (isPlaying) playAudio();
         }
 
         function playAudio() {
             allVideos.forEach(v => v.pause());
-            globalAudio.play();
+            globalAudio.play().catch(() => {});
             isPlaying = true;
             barPlayPauseBtn.innerHTML = PAUSE_SVG;
             globalPlayPauseBtn.innerHTML = PAUSE_SVG;
@@ -1164,6 +1175,14 @@
             document.getElementById('player-expanded').classList.remove('active');
             mainNav.classList.remove('hidden-by-player'); 
         });
+
+        // Gestione controlli notifica di sistema (Media Session Action Handlers)
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', playAudio);
+            navigator.mediaSession.setActionHandler('pause', pauseAudio);
+            navigator.mediaSession.setActionHandler('previoustrack', playPrevTrack);
+            navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
+        }
 
         loadTrack(0, 0);
         globalPlayerContainer.classList.add('hidden');
