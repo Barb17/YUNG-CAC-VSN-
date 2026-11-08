@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YNGCAC — ADMIN PANEL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; padding: 20px; padding-bottom: 120px;
+        background-color: #f4f4f4; color: black;
+        font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    }
+    .container { max-width: 850px; margin: 0 auto; }
+    h1 { font-size: 1.5em; letter-spacing: 2px; text-transform: uppercase; border-bottom: 2px solid black; padding-bottom: 10px; }
+    h2 { font-size: 1.1em; text-transform: uppercase; margin-top: 0; }
+    .card {
+        background: white; padding: 20px; border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    label { display: block; font-size: 0.75em; color: #555; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], input[type="password"], select {
+        width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+        font-family: 'IBM Plex Mono', monospace; font-size: 0.95em; margin-bottom: 12px;
+    }
+    input[type="file"] { font-family: 'IBM Plex Mono', monospace; font-size: 0.85em; margin-bottom: 12px; width: 100%; }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.85em; cursor: pointer; }
+    .checkbox-row input { width: 16px; height: 16px; cursor: pointer; }
+    button {
+        font-family: 'IBM Plex Mono', monospace; cursor: pointer;
+        border: none; border-radius: 4px; padding: 10px 16px;
+        font-size: 0.85em; text-transform: uppercase; font-weight: bold;
+        transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.85; }
+    .btn-black { background: black; color: white; }
+    .btn-toggle { background: #eee; color: black; padding: 6px 10px; font-size: 0.75em; border: 1px solid #ccc; }
+    .btn-danger { background: #d32f2f; color: white; padding: 6px 10px; font-size: 0.75em; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { background: #ddd; color: #555; padding: 12px 18px; }
+    .tab-btn.active { background: black; color: white; }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+    .item-row {
+        display: flex; flex-direction: column;
+        padding: 12px; border-bottom: 1px solid #eee; gap: 8px;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .item-header img { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: #eee; }
+    .item-title { font-weight: bold; }
+    .item-sub { font-size: 0.8em; color: #666; }
+    .sub-list { margin: 4px 0 0 0; padding-left: 20px; font-size: 0.85em; color: #333; }
+    .sub-list li { margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .publish-bar {
+        position: fixed; bottom: 0; left: 0; width: 100%;
+        background: white; border-top: 2px solid black; padding: 15px 20px;
+        display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 1000;
+    }
+    .status-text { font-size: 0.85em; color: #333; }
+    .badge { background: #eee; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; }
+    .badge-soon { background: #ffecb3; color: #8d6e63; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>YNGCAC — PANNELLO CONTENUTI</h1>
+
+    <!-- CONFIGURAZIONE GITHUB -->
+    <div class="card">
+        <h2>1. Connessione GitHub</h2>
+        <div class="grid-2">
+            <div>
+                <label>Username GitHub</label>
+                <input type="text" id="gh-owner" placeholder="es. tuo-username">
+            </div>
+            <div>
+                <label>Nome Repository (YNGCAC)</label>
+                <input type="text" id="gh-repo" placeholder="es. yngcac">
+            </div>
+            <div>
+                <label>Branch (di solito main)</label>
+                <input type="text" id="gh-branch" value="main">
+            </div>
+            <div>
+                <label>Personal Access Token (ghp_...)</label>
+                <input type="password" id="gh-token" placeholder="Incolla il tuo token GitHub">
+            </div>
+        </div>
+        <button class="btn-black" id="save-cfg-btn">Salva Dati Accesso & Sincronizza Sito</button>
+        <span id="sync-status" style="margin-left:10px; font-size:0.85em; color:#555;"></span>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="snd">SND (Musica & Singoli)</button>
+        <button class="tab-btn" data-tab="art">ART (Gallerie & Documentari)</button>
+        <button class="tab-btn" data-tab="goycast">GOYCAST (Episodi Mux)</button>
+    </div>
+
+    <!-- SEZIONE SND -->
+    <div id="tab-snd" class="tab-section active">
+        <div class="card">
+            <h2>Aggiungi Nuovo Album o Singolo in SND</h2>
+            <div class="grid-2">
+                <div>
+                    <label>Titolo Album / Singolo</label>
+                    <input type="text" id="snd-new-title" placeholder="es. NUOVO SINGOLO">
+                </div>
+                <div>
+                    <label>Artisti (opzionale, mostrato nel player e notifica)</label>
+                    <input type="text" id="snd-new-artists" placeholder="es. Yung CAC, VSN">
+                </div>
+            </div>
+            <label>Copertina (.jpg / .png)</label>
+            <input type="file" id="snd-new-cover" accept="image/*">
+            <label class="checkbox-row">
+                <input type="checkbox" id="snd-new-single"> È un Singolo (nasconde il sottotitolo ridondante nel player)
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" id="snd-new-unreleased"> In Arrivo / Unreleased (mostra copertina sfocata con scritta SOON)
+            </label>
+            <button class="btn-black" id="snd-add-album-btn">+ Crea in SND</button>
+        </div>
+
+        <div class="card">
+            <h2>Carica Brano (.mp3) in un Album o Singolo SND</h2>
+            <label>Seleziona Album / Singolo</label>
+            <select id="snd-select-album"></select>
+            <label>Titolo Brano</label>
+            <input type="text" id="snd-track-title" placeholder="es. NOME TRACCIA">
+            <label>File Audio (.mp3)</label>
+            <input type="file" id="snd-track-file" accept="audio/*">
+            <button class="btn-black" id="snd-add-track-btn">+ Aggiungi Brano</button>
+        </div>
+
+        <div class="card">
+            <h2>Album e Singoli attuali in SND</h2>
+            <div id="snd-list"></div>
+        </div>
+    </div>
+
+    <!-- SEZIONE ART -->
+    <div id="tab-art" class="tab-section">
+        <div class="card">
+            <h2>1. Crea Nuovo Progetto in ART</h2>
+            <label>Titolo Progetto</label>
+            <input type="text" id="art-new-title" placeholder="es. NUOVO PROGETTO">
+            <label class="checkbox-row">
+                <input type="checkbox" id="art-new-unreleased"> In Arrivo / Unreleased (mostra sfocato con scritta SOON)
+            </label>
+            <button class="btn-black" id="art-add-proj-btn">+ Crea Progetto ART</button>
+        </div>
+
+        <div class="card">
+            <h2>2. Aggiungi Slide (Foto / Video MP4 / Mux) al Carosello</h2>
+            <label>Seleziona Progetto ART</label>
+            <select id="art-select-proj"></select>
+            <label>Didascalia sotto la slide</label>
+            <input type="text" id="art-slide-desc" placeholder="es. Cover o descrizione foto/video">
+            <label>Tipo di Contenuto</label>
+            <select id="art-slide-type">
+                <option value="image">Immagine (.jpg / .png)</option>
+                <option value="video">File Video breve (.mp4)</option>
+                <option value="mux">Video Mux (Playback ID)</option>
+            </select>
+            <div id="art-slide-file-box">
+                <label>Seleziona File dal dispositivo</label>
+                <input type="file" id="art-slide-file">
+            </div>
+            <div id="art-slide-mux-box" style="display:none;">
+                <label>Incolla Playback ID di Mux</label>
+                <input type="text" id="art-slide-mux" placeholder="es. 2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k">
+            </div>
+            <button class="btn-black" id="art-add-slide-btn">+ Aggiungi Slide al Carosello</button>
+        </div>
+
+        <div class="card">
+            <h2>3. Aggiungi Documentario / Video Dedicato sotto il Carosello</h2>
+            <label>Seleziona Progetto ART</label>
+            <select id="art-doc-select-proj"></select>
+            <label>Titolo / Didascalia Documentario</label>
+            <input type="text" id="art-doc-desc" placeholder="es. NOME DOCUMENTARY">
+            <label>Playback ID di Mux</label>
+            <input type="text" id="art-doc-mux" placeholder="es. u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA">
+            <button class="btn-black" id="art-add-doc-btn">+ Aggiungi Documentario Mux</button>
+        </div>
+
+        <div class="card">
+            <h2>Progetti attuali in ART</h2>
+            <div id="art-list"></div>
+        </div>
+    </div>
+
+    <!-- SEZIONE GOYCAST -->
+    <div id="tab-goycast" class="tab-section">
+        <div class="card">
+            <h2>Aggiungi Nuovo Episodio GOYCAST</h2>
+            <label>Titolo Episodio</label>
+            <input type="text" id="goy-new-title" placeholder="es. EP.5 TITOLO EPISODIO">
+            <label>Data (mostrata sotto il video)</label>
+            <input type="text" id="goy-new-date" placeholder="es. 25-10-2026">
+            <label>Playback ID di Mux</label>
+            <input type="text" id="goy-new-mux" placeholder="es. H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs">
+            <button class="btn-black" id="goy-add-btn">+ Aggiungi Episodio GOYCAST</button>
+        </div>
+
+        <div class="card">
+            <h2>Episodi attuali in GOYCAST</h2>
+            <div id="goy-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- BARRA DI PUBBLICAZIONE -->
+<div class="publish-bar">
+    <div>
+        <div class="status-text" id="publish-status">Pronto. File in coda da caricare: <strong id="queue-count">0</strong></div>
+    </div>
+    <button class="btn-black" id="publish-btn" style="padding: 14px 24px; font-size: 1em;">SALVA E PUBBLICA SUL SITO</button>
+</div>
+
+<script>
+'use strict';
+
+// Dati di base YNGCAC (identici a index.html)
+const DEFAULT_SITE_DATA = {
+    snd: [
+        {
+            albumTitle: "FART MUSIC", albumCover: "album.jpg",
+            tracks: [
+                { title: 'CAVALLI', src: 'MUSICA/FartMusic/CAVALLI.mp3' },
+                { title: 'BERGHAIN', src: 'MUSICA/FartMusic/BERGHAIN.mp3' },
+                { title: 'NINTENDO SWITCH', src: 'MUSICA/FartMusic/NINTENDO SWITCH.mp3' },
+                { title: 'AHAHAHAH', src: 'MUSICA/FartMusic/AHAHAHAH.mp3' },
+                { title: 'OUTRO', src: 'MUSICA/FartMusic/OUTRO.mp3' }
+            ]
+        },
+        {
+            albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
+            artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
+            tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
+        },
+        {
+            albumTitle: "BAG CHASERS", albumCover: "album7.png", 
+            artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
+            tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
+        },
+        {
+            albumTitle: "FUFI", albumCover: "album8.png", 
+            artists: "Yung CAC, VSN", isSingle: true,
+            tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
+        },
+        {
+            albumTitle: "MORAN", albumCover: "album9.png", 
+            artists: "Yung CAC, VSN", isSingle: true,
+            tracks: [{ title: 'MORAN', src: 'MUSICA/MORAN.mp3' }]
+        },
+        {
+            albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg", unreleased: true,
+            tracks: [
+                { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
+                { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
+                { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
+                { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
+                { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
+                { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
+                { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
+                { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
+            ]
+        },
+        {
+            albumTitle: "VULTURES 4", albumCover: "album3.jpg", unreleased: true,
+            tracks: [
+                { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
+                { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
+                { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
+                { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
+                { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
+                { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
+                { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
+                { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
+            ]
+        },
+        {
+            albumTitle: "CHISSA' COSA DIREBBE FREUD", albumCover: "album4.jpg", unreleased: true,
+            tracks: [
+                { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
+                { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
+                { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
+                { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
+                { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
+                { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
+                { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
+                { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
+            ]
+        },
+        {
+            albumTitle: "ANCHE GLI EROI SI FANNO DI CRACK", albumCover: "album5.jpg", unreleased: true,
+            tracks: [
+                { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
+                { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
+                { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
+                { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
+                { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
+                { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
+                { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
+                { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
+            ]
+        }
+    ],
+    art: [
+        {
+            title: "FART MUSIC", unreleased: false,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_1.png", desc: "Cover FART MUSIC" },
+                { type: "image", src: "IMMAGINE/Back_1.png", desc: "Back cover FART MUSIC" }
+            ],
+            documentaries: [
+                { type: "mux", playbackId: "2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k", desc: "FART MUSIC DOCUMENTARY" }
+            ]
+        },
+        {
+            title: "BLACKSTONE FREESTYLE", unreleased: false,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_6.jpg", desc: "Cover BLACKSTONE FREESTYLE" },
+                { type: "image", src: "IMMAGINE/bf01.jpg", desc: "WE ARE HISTORY" }
+            ],
+            documentaries: [
+                { type: "mux", playbackId: "u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA", desc: "BLACKSTONE FREESTYLE DOCUMENTARY" }
+            ]
+        },
+        {
+            title: "BAG CHASERS", unreleased: false, initialDesc: "BAG CHASERS COVER",
+            slides: [
+                { type: "image", src: "IMMAGINE/BAGCHASERS/Front_7.png", desc: "Cover BAG CHASERS" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_01.jpg", desc: "JUANKY TOON SIGN" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_02.jpg", desc: "VSN TOON SIGN" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_03.jpg", desc: "KFC YUNG CAC & JUANKY" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_04.jpg", desc: "KFC JUANKY" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_05.jpg", desc: "KFC ZODIAK & VSN" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_06.jpg", desc: "GREEDY SUL POLLO" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_07.jpg", desc: "JUANKY X STEF5K" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_09.jpg", desc: "ZODIAK X STEF5K" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_08.jpg", desc: "VSN DIETRO LA CAMERA" },
+                { type: "video", src: "IMMAGINE/BAGCHASERS/BC_10.mp4", desc: "LOST" },
+                { type: "video", src: "IMMAGINE/BAGCHASERS/BC_11.mp4", desc: "JUANKY ESCLUSO PERCHE' NERO" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_12.jpg", desc: "THE CHAIN" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_13.jpg", desc: "ZODIAK X WICKIBOI" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_14.jpg", desc: "JUANKY X WICKIBOI" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_15.jpg", desc: "SQUAD" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_16.jpg", desc: "LARPER" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_17.jpg", desc: "LARPER PT.2" },
+                { type: "video", src: "IMMAGINE/BAGCHASERS/BC_18.mp4", desc: "LARPER PT.3" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_19.jpg", desc: "OBAMA" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_20.jpg", desc: "STUDIO (PARK)" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_21.jpg", desc: "FOCUSRITE" },
+                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_22.jpg", desc: "THE STUDIO" }
+            ],
+            documentaries: []
+        },
+        {
+            title: "FUFI", unreleased: false,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_8.png", desc: "FUFI COVER" },
+                { type: "image", src: "IMMAGINE/Back_8.jpg", desc: "THE STUDIO - MICROPHONE UPGRADE + SWISS GO" }
+            ],
+            documentaries: []
+        },
+        {
+            title: "MORAN", unreleased: false,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_9.png", desc: "MORAN COVER" }
+            ],
+            documentaries: []
+        },
+        {
+            title: "STUPRO MUSICA 2", unreleased: true,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_2.jpg", desc: "Cover STUPRO MUSICA 2" },
+                { type: "image", src: "IMMAGINE/Back_2.png", desc: "Back cover STUPRO MUSICA 2" }
+            ],
+            documentaries: [
+                { type: "video", src: "VIDEO/PISCIO (esperienza ufficiale).mp4", desc: "PISCIO (esperienza ufficiale)" }
+            ]
+        },
+        {
+            title: "VULTURES 4", unreleased: true,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_3.png", desc: "Cover VULTURES 4" },
+                { type: "image", src: "IMMAGINE/Back_3.png", desc: "Back cover VULTURES 4" }
+            ],
+            documentaries: []
+        },
+        {
+            title: "CHISSA' COSA DIREBBE FREUD", unreleased: true,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_4.png", desc: "Cover CHISSA' COSA DIREBBE FREUD" },
+                { type: "image", src: "IMMAGINE/Back_4.png", desc: "Back cover CHISSA' COSA DIREBBE FREUD" }
+            ],
+            documentaries: []
+        },
+        {
+            title: "ANCHE GLI EROI SI FANNO DI CRACK", unreleased: true,
+            slides: [
+                { type: "image", src: "IMMAGINE/Front_5.png", desc: "Cover ANCHE GLI EROI SI FANNO DI CRACK" },
+                { type: "image", src: "IMMAGINE/Back_5.png", desc: "Back cover ANCHE GLI EROI SI FANNO DI CRACK" }
+            ],
+            documentaries: []
+        }
+    ],
+    goycast: [
+        { title: "EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE", date: "16-05-2026 ", playbackId: "2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00" },
+        { title: "EP.1 LA CAVERNA DI PLATONE", date: "25-06-2026 ", playbackId: "RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI" },
+        { title: "EP.1.5 PORTIAMO DA MANGIARE ALLE HOES", date: "28-06-2026 ", playbackId: "iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c" },
+        { title: "EP.2 ECCO COSA PROVAVANO", date: "11-07-2026 ", playbackId: "s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U" },
+        { title: "EP.2.5 IL VIAGGIO DI ULISSE", date: "18-07-2026 ", playbackId: "tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo" },
+        { title: "EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)", date: "18-07-2026 ", playbackId: "HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ" },
+        { title: "EP.3.5 HA BACIATO IL MICROFONO", date: "01-08-2026 ", playbackId: "scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc" },
+        { title: "EP.4 PROTESTIAMO DA MCDONALD'S", date: "17-10-2026 ", playbackId: "H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs" }
+    ]
+};
+
+let siteData = JSON.parse(JSON.stringify(DEFAULT_SITE_DATA));
+let uploadQueue = [];
+
+function updateQueueUI() {
+    document.getElementById('queue-count').textContent = uploadQueue.length;
+}
+
+function queueFile(repoPath, fileObj) {
+    uploadQueue = uploadQueue.filter(item => item.path !== repoPath);
+    uploadQueue.push({ path: repoPath, file: fileObj });
+    updateQueueUI();
+}
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+// Mostra/nascondi campo file o Mux ID nella sezione ART
+document.getElementById('art-slide-type').addEventListener('change', e => {
+    const isMux = e.target.value === 'mux';
+    document.getElementById('art-slide-file-box').style.display = isMux ? 'none' : 'block';
+    document.getElementById('art-slide-mux-box').style.display  = isMux ? 'block' : 'none';
+});
+
+// Carica credenziali salvate nel browser (chiavi separate da LVEVR)
+const ghOwner  = document.getElementById('gh-owner');
+const ghRepo   = document.getElementById('gh-repo');
+const ghBranch = document.getElementById('gh-branch');
+const ghToken  = document.getElementById('gh-token');
+
+ghOwner.value  = localStorage.getItem('yngcac_gh_owner')  || localStorage.getItem('lvevr_gh_owner') || '';
+ghRepo.value   = localStorage.getItem('yngcac_gh_repo')   || '';
+ghBranch.value = localStorage.getItem('yngcac_gh_branch') || 'main';
+ghToken.value  = localStorage.getItem('yngcac_gh_token')  || localStorage.getItem('lvevr_gh_token') || '';
+
+document.getElementById('save-cfg-btn').addEventListener('click', async () => {
+    localStorage.setItem('yngcac_gh_owner',  ghOwner.value.trim());
+    localStorage.setItem('yngcac_gh_repo',   ghRepo.value.trim());
+    localStorage.setItem('yngcac_gh_branch', ghBranch.value.trim() || 'main');
+    localStorage.setItem('yngcac_gh_token',  ghToken.value.trim());
+    await syncFromSite();
+});
+
+async function syncFromSite() {
+    const status = document.getElementById('sync-status');
+    status.textContent = 'Sincronizzazione in corso...';
+    try {
+        const resp = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
+        if (resp.ok) {
+            siteData = await resp.json();
+            status.textContent = '✓ Dati caricati da data.json';
+        } else {
+            status.textContent = '✓ Dati base YNGCAC pronti (data.json verrà creato al primo salvataggio)';
+        }
+    } catch(e) {
+        status.textContent = '✓ Dati base YNGCAC pronti';
+    }
+    renderAdminLists();
+}
+
+/* ── RENDER LISTE NELL'ADMIN ───────────────────────────── */
+function renderAdminLists() {
+    // 1. SND
+    const sndSelect = document.getElementById('snd-select-album');
+    const sndList   = document.getElementById('snd-list');
+    sndSelect.innerHTML = '';
+    sndList.innerHTML   = '';
+    siteData.snd.forEach((alb, ai) => {
+        const opt = document.createElement('option');
+        opt.value = ai; opt.textContent = alb.albumTitle;
+        sndSelect.appendChild(opt);
+
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <div class="item-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${alb.albumCover}" alt="">
+                    <div>
+                        <div class="item-title">
+                            ${alb.albumTitle}
+                            ${alb.isSingle ? '<span class="badge">SINGOLO</span>' : ''}
+                            ${alb.unreleased ? '<span class="badge-soon">SOON (SFOCATO)</span>' : ''}
+                        </div>
+                        <div class="item-sub">${alb.artists ? alb.artists + ' — ' : ''}${alb.tracks.length} brani</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-toggle" data-toggle-snd-soon="${ai}">
+                        ${alb.unreleased ? 'Sblocca (Rendi Pubblico)' : 'Metti SOON'}
+                    </button>
+                    <button class="btn-danger" data-del-snd-album="${ai}">Elimina</button>
+                </div>
+            </div>
+        `;
+        const ol = document.createElement('ol');
+        ol.className = 'sub-list';
+        alb.tracks.forEach((t, ti) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${t.title} <span class="badge">${t.src}</span></span>
+                            <button class="btn-danger" data-del-snd-track="${ai}:${ti}">✕</button>`;
+            ol.appendChild(li);
+        });
+        div.appendChild(ol);
+        sndList.appendChild(div);
+    });
+
+    // 2. ART
+    const artSelect    = document.getElementById('art-select-proj');
+    const artDocSelect = document.getElementById('art-doc-select-proj');
+    const artList      = document.getElementById('art-list');
+    artSelect.innerHTML    = '';
+    artDocSelect.innerHTML = '';
+    artList.innerHTML      = '';
+    siteData.art.forEach((proj, pi) => {
+        const opt1 = document.createElement('option');
+        opt1.value = pi; opt1.textContent = proj.title;
+        artSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = pi; opt2.textContent = proj.title;
+        artDocSelect.appendChild(opt2);
+
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <div class="item-header">
+                <div>
+                    <div class="item-title">
+                        ${proj.title}
+                        ${proj.unreleased ? '<span class="badge-soon">SOON (SFOCATO)</span>' : ''}
+                    </div>
+                    <div class="item-sub">${(proj.slides || []).length} slide nel carosello — ${(proj.documentaries || []).length} documentari</div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-toggle" data-toggle-art-soon="${pi}">
+                        ${proj.unreleased ? 'Sblocca (Rendi Pubblico)' : 'Metti SOON'}
+                    </button>
+                    <button class="btn-danger" data-del-art-proj="${pi}">Elimina Progetto</button>
+                </div>
+            </div>
+        `;
+
+        const ul = document.createElement('ol');
+        ul.className = 'sub-list';
+        (proj.slides || []).forEach((s, si) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>[Slide ${s.type.toUpperCase()}] ${s.desc || ''} <span class="badge">${s.src || s.playbackId}</span></span>
+                            <button class="btn-danger" data-del-art-slide="${pi}:${si}">✕</button>`;
+            ul.appendChild(li);
+        });
+        (proj.documentaries || []).forEach((d, di) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>[DOCUMENTARIO] ${d.desc || ''} <span class="badge">${d.playbackId || d.src}</span></span>
+                            <button class="btn-danger" data-del-art-doc="${pi}:${di}">✕</button>`;
+            ul.appendChild(li);
+        });
+        div.appendChild(ul);
+        artList.appendChild(div);
+    });
+
+    // 3. GOYCAST
+    const goyList = document.getElementById('goy-list');
+    goyList.innerHTML = '';
+    siteData.goycast.forEach((ep, gi) => {
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <div class="item-header">
+                <div>
+                    <div class="item-title">${ep.title}</div>
+                    <div class="item-sub">Data: ${ep.date} — Mux ID: <span class="badge">${ep.playbackId}</span></div>
+                </div>
+                <button class="btn-danger" data-del-goy="${gi}">Elimina</button>
+            </div>
+        `;
+        goyList.appendChild(div);
+    });
+}
+
+/* ── AZIONI AGGIUNTA / MODIFICA ────────────────────────── */
+
+// SND: Nuovo Album / Singolo
+document.getElementById('snd-add-album-btn').addEventListener('click', () => {
+    const title      = document.getElementById('snd-new-title').value.trim();
+    const artists    = document.getElementById('snd-new-artists').value.trim();
+    const file       = document.getElementById('snd-new-cover').files[0];
+    const isSingle   = document.getElementById('snd-new-single').checked;
+    const unreleased = document.getElementById('snd-new-unreleased').checked;
+
+    if (!title || !file) { alert('Inserisci il titolo e scegli l\'immagine di copertina.'); return; }
+    const coverPath = file.name;
+    queueFile(coverPath, file);
+
+    const newEntry = { albumTitle: title, albumCover: coverPath, tracks: [] };
+    if (artists) newEntry.artists = artists;
+    if (isSingle) newEntry.isSingle = true;
+    if (unreleased) newEntry.unreleased = true;
+
+    siteData.snd.push(newEntry);
+    document.getElementById('snd-new-title').value = '';
+    document.getElementById('snd-new-artists').value = '';
+    document.getElementById('snd-new-cover').value = '';
+    document.getElementById('snd-new-single').checked = false;
+    document.getElementById('snd-new-unreleased').checked = false;
+    renderAdminLists();
+});
+
+// SND: Nuova Traccia
+document.getElementById('snd-add-track-btn').addEventListener('click', () => {
+    const albIdx = parseInt(document.getElementById('snd-select-album').value);
+    const title  = document.getElementById('snd-track-title').value.trim();
+    const file   = document.getElementById('snd-track-file').files[0];
+    if (isNaN(albIdx) || !title || !file) { alert('Seleziona un album/singolo, scrivi il titolo e scegli il file MP3.'); return; }
+    const audioPath = 'MUSICA/' + file.name;
+    queueFile(audioPath, file);
+    siteData.snd[albIdx].tracks.push({ title, src: audioPath });
+    document.getElementById('snd-track-title').value = '';
+    document.getElementById('snd-track-file').value = '';
+    renderAdminLists();
+});
+
+// ART: Nuovo Progetto
+document.getElementById('art-add-proj-btn').addEventListener('click', () => {
+    const title      = document.getElementById('art-new-title').value.trim();
+    const unreleased = document.getElementById('art-new-unreleased').checked;
+    if (!title) { alert('Inserisci il titolo del progetto ART.'); return; }
+    siteData.art.push({ title, unreleased, slides: [], documentaries: [] });
+    document.getElementById('art-new-title').value = '';
+    document.getElementById('art-new-unreleased').checked = false;
+    renderAdminLists();
+});
+
+// ART: Nuova Slide nel Carosello
+document.getElementById('art-add-slide-btn').addEventListener('click', () => {
+    const projIdx = parseInt(document.getElementById('art-select-proj').value);
+    const desc    = document.getElementById('art-slide-desc').value.trim();
+    const type    = document.getElementById('art-slide-type').value;
+
+    if (isNaN(projIdx)) { alert('Seleziona un progetto ART.'); return; }
+
+    if (type === 'mux') {
+        const muxId = document.getElementById('art-slide-mux').value.trim();
+        if (!muxId) { alert('Inserisci il Playback ID di Mux.'); return; }
+        siteData.art[projIdx].slides.push({ type: 'mux', playbackId: muxId, desc });
+        document.getElementById('art-slide-mux').value = '';
+    } else {
+        const file = document.getElementById('art-slide-file').files[0];
+        if (!file) { alert('Seleziona il file da caricare.'); return; }
+        const folder = type === 'video' ? 'VIDEO/' : 'IMMAGINE/';
+        const filePath = folder + file.name;
+        queueFile(filePath, file);
+        siteData.art[projIdx].slides.push({ type, src: filePath, desc });
+        document.getElementById('art-slide-file').value = '';
+    }
+    document.getElementById('art-slide-desc').value = '';
+    renderAdminLists();
+});
+
+// ART: Nuovo Documentario Mux
+document.getElementById('art-add-doc-btn').addEventListener('click', () => {
+    const projIdx = parseInt(document.getElementById('art-doc-select-proj').value);
+    const desc    = document.getElementById('art-doc-desc').value.trim();
+    const muxId   = document.getElementById('art-doc-mux').value.trim();
+    if (isNaN(projIdx) || !muxId) { alert('Seleziona un progetto e incolla il Playback ID di Mux.'); return; }
+    if (!siteData.art[projIdx].documentaries) siteData.art[projIdx].documentaries = [];
+    siteData.art[projIdx].documentaries.push({ type: 'mux', playbackId: muxId, desc });
+    document.getElementById('art-doc-desc').value = '';
+    document.getElementById('art-doc-mux').value  = '';
+    renderAdminLists();
+});
+
+// GOYCAST: Nuovo Episodio
+document.getElementById('goy-add-btn').addEventListener('click', () => {
+    const title = document.getElementById('goy-new-title').value.trim();
+    const date  = document.getElementById('goy-new-date').value.trim();
+    const muxId = document.getElementById('goy-new-mux').value.trim();
+    if (!title || !muxId) { alert('Inserisci il titolo dell\'episodio e il Playback ID di Mux.'); return; }
+    siteData.goycast.push({ title, date, playbackId: muxId });
+    document.getElementById('goy-new-title').value = '';
+    document.getElementById('goy-new-date').value  = '';
+    document.getElementById('goy-new-mux').value   = '';
+    renderAdminLists();
+});
+
+// Delegazione click per pulsanti Elimina e Sblocca SOON
+document.body.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    if (btn.dataset.toggleSndSoon !== undefined) {
+        const idx = parseInt(btn.dataset.toggleSndSoon);
+        siteData.snd[idx].unreleased = !siteData.snd[idx].unreleased;
+        renderAdminLists();
+    } else if (btn.dataset.delSndAlbum !== undefined) {
+        siteData.snd.splice(parseInt(btn.dataset.delSndAlbum), 1);
+        renderAdminLists();
+    } else if (btn.dataset.delSndTrack !== undefined) {
+        const [a, t] = btn.dataset.delSndTrack.split(':').map(Number);
+        siteData.snd[a].tracks.splice(t, 1);
+        renderAdminLists();
+    } else if (btn.dataset.toggleArtSoon !== undefined) {
+        const idx = parseInt(btn.dataset.toggleArtSoon);
+        siteData.art[idx].unreleased = !siteData.art[idx].unreleased;
+        renderAdminLists();
+    } else if (btn.dataset.delArtProj !== undefined) {
+        siteData.art.splice(parseInt(btn.dataset.delArtProj), 1);
+        renderAdminLists();
+    } else if (btn.dataset.delArtSlide !== undefined) {
+        const [p, s] = btn.dataset.delArtSlide.split(':').map(Number);
+        siteData.art[p].slides.splice(s, 1);
+        renderAdminLists();
+    } else if (btn.dataset.delArtDoc !== undefined) {
+        const [p, d] = btn.dataset.delArtDoc.split(':').map(Number);
+        siteData.art[p].documentaries.splice(d, 1);
+        renderAdminLists();
+    } else if (btn.dataset.delGoy !== undefined) {
+        siteData.goycast.splice(parseInt(btn.dataset.delGoy), 1);
+        renderAdminLists();
+    }
+});
+
+/* ── UPLOAD SU GITHUB API ──────────────────────────────── */
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function utf8ToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+}
+
+async function githubUploadFile(owner, repo, branch, token, path, base64Content, message) {
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`;
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+    };
+
+    let sha = null;
+    const getResp = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+    if (getResp.ok) {
+        const existing = await getResp.json();
+        sha = existing.sha;
+    }
+
+    const body = { message, content: base64Content, branch };
+    if (sha) body.sha = sha;
+
+    const putResp = await fetch(apiUrl, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(body)
+    });
+
+    if (!putResp.ok) {
+        const errText = await putResp.text();
+        throw new Error(`Errore caricamento ${path}: ${putResp.status} ${errText}`);
+    }
+}
+
+document.getElementById('publish-btn').addEventListener('click', async () => {
+    const owner  = ghOwner.value.trim();
+    const repo   = ghRepo.value.trim();
+    const branch = ghBranch.value.trim() || 'main';
+    const token  = ghToken.value.trim();
+
+    if (!owner || !repo || !token) {
+        alert('Inserisci Username, Nome Repository e Personal Access Token in alto prima di pubblicare.');
+        return;
+    }
+
+    localStorage.setItem('yngcac_gh_owner',  owner);
+    localStorage.setItem('yngcac_gh_repo',   repo);
+    localStorage.setItem('yngcac_gh_branch', branch);
+    localStorage.setItem('yngcac_gh_token',  token);
+
+    const btn    = document.getElementById('publish-btn');
+    const status = document.getElementById('publish-status');
+    btn.disabled = true;
+
+    try {
+        for (let i = 0; i < uploadQueue.length; i++) {
+            const item = uploadQueue[i];
+            status.textContent = `Caricamento file (${i + 1}/${uploadQueue.length}): ${item.path}...`;
+            const b64 = await fileToBase64(item.file);
+            await githubUploadFile(owner, repo, branch, token, item.path, b64, `Upload ${item.path} via Admin Panel`);
+        }
+
+        status.textContent = 'Aggiornamento catalogo data.json sul sito...';
+        const jsonBase64 = utf8ToBase64(JSON.stringify(siteData, null, 2));
+        await githubUploadFile(owner, repo, branch, token, 'data.json', jsonBase64, 'Update data.json via Admin Panel');
+
+        uploadQueue = [];
+        updateQueueUI();
+        status.innerHTML = '✓ <strong>PUBBLICATO CON SUCCESSO!</strong> Il sito sarà aggiornato su GitHub Pages tra circa 30-60 secondi.';
+    } catch (err) {
+        console.error(err);
+        status.textContent = 'Errore durante la pubblicazione: ' + err.message;
+        alert('Errore: ' + err.message);
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+// Avvio iniziale
+syncFromSite();
+</script>
+</body>
+</html>

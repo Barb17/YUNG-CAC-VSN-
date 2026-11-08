@@ -338,7 +338,7 @@
         #close-tracklist-btn { position: absolute; top: 10px; right: 15px; font-size: 2em; color: #aaa; background: none; border: none; cursor: pointer; line-height: 1; padding: 0; }
         #close-tracklist-btn:hover { color: #333; }
         #tracklist-content { padding: 20px; text-align: center; overflow-y: auto; }
-        .tracklist-cover { width: 150px; height: 150px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tracklist-cover { width: 150px; height: 150px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); object-fit: cover; }
         .tracklist-album-title { font-size: 1.2em; font-weight: bold; margin: 0 0 20px 0; }
         .tracklist-ol { list-style-type: decimal; padding-left: 30px; margin: 0; text-align: left; }
         .tracklist-item { padding: 12px 10px; font-size: 0.9em; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s ease; }
@@ -366,467 +366,17 @@
         <a href="#goycast" data-page="goycast">GOYCAST</a>
     </nav>
 
-    <!-- ================================================================
-         SND PAGE
-         ================================================================ -->
-    <div id="page-snd" class="page">
-        
+    <!-- SND PAGE (Popolata dinamicamente) -->
+    <div id="page-snd" class="page"></div>
 
-        <div class="music-container">
-            <div class="album">
-                <img src="album.jpg" alt="Copertina album" class="album-cover-clickable" data-album-index="0">
-                <h3 class="album-title-text">FART MUSIC</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album">
-                <img id="album-cover-6" src="album6.jpg" alt="Copertina BLACKSTONE FREESTYLE" class="album-cover-clickable" data-album-index="1">
-                <h3 class="album-title-text">BLACKSTONE FREESTYLE</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album">
-                <img id="album-cover-7" src="album7.png" alt="Copertina BAG CHASERS" class="album-cover-clickable" data-album-index="2">
-                <h3 class="album-title-text">BAG CHASERS</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album">
-                <img id="album-cover-8" src="album8.png" alt="Copertina FUFI" class="album-cover-clickable" data-album-index="3">
-                <h3 class="album-title-text">FUFI</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album">
-                <img id="album-cover-8" src="album9.png" alt="Copertina MORAN" class="album-cover-clickable" data-album-index="4">
-                <h3 class="album-title-text">MORAN</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album unreleased">
-                <div class="soon-overlay">SOON</div>
-                <img id="album-cover-2" src="album2.jpg" alt="Copertina album secondo" class="album-cover-clickable" data-album-index="4">
-                <h3 class="album-title-text">STUPRO MUSICA 2</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album unreleased">
-                <div class="soon-overlay">SOON</div>
-                <img id="album-cover-3" src="album3.jpg" alt="Copertina album terzo" class="album-cover-clickable" data-album-index="5">
-                <h3 class="album-title-text">VULTURES 4</h3>
-            </div>
-        </div>
-
-        <div class="music-container">
-            <div class="album unreleased">
-                <div class="soon-overlay">SOON</div>
-                <img id="album-cover-4" src="album4.jpg" alt="Copertina album quarto" class="album-cover-clickable" data-album-index="6">
-                <h3 class="album-title-text">CHISSA' COSA DIREBBE FREUD</h3>
-            </div>
-        </div>
-        
-        <div class="music-container">
-            <div class="album unreleased">
-                <div class="soon-overlay">SOON</div>
-                <img id="album-cover-5" src="album5.jpg" alt="Copertina album quinto" class="album-cover-clickable" data-album-index="7">
-                <h3 class="album-title-text">ANCHE GLI EROI SI FANNO DI CRACK</h3>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================================================================
-         ART PAGE
-         ================================================================ -->
+    <!-- ART PAGE (Popolata dinamicamente) -->
     <div id="page-art" class="page">
-        
-
-        <div class="image-gallery">
-            <div class="model-item">
-                <h3 class="image-title">FART MUSIC</h3>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-love" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-love', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover FART MUSIC"><img src="IMMAGINE/Front_1.png" alt="Cover FART MUSIC"></div>
-                            <div class="carousel-slide" data-desc="Back cover FART MUSIC"><img src="IMMAGINE/Back_1.png" alt="Back cover FART MUSIC"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-love', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-love">Cover FART MUSIC</p>
-                </div>
-
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">FART MUSIC DOCUMENTARY</p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">BLACKSTONE FREESTYLE</h3>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-blackstone" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-blackstone', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover BLACKSTONE FREESTYLE"><img src="IMMAGINE/Front_6.jpg" alt="Cover BLACKSTONE FREESTYLE"></div>
-                            <div class="carousel-slide" data-desc="WE ARE HISTORY"><img src="IMMAGINE/bf01.jpg" alt="WE ARE HISTORY"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-blackstone', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-blackstone">Cover BLACKSTONE FREESTYLE</p>
-                </div>
-
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">BLACKSTONE FREESTYLE DOCUMENTARY</p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">BAG CHASERS</h3>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-bagchasers" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-bagchasers', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover BAG CHASERS"><img src="IMMAGINE/BAGCHASERS/Front_7.png" alt="Cover BAG CHASERS"></div>
-                            <div class="carousel-slide" data-desc="JUANKY TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_01.jpg" alt="JUANKY TOON SIGN"></div>
-                            <div class="carousel-slide" data-desc="VSN TOON SIGN"><img src="IMMAGINE/BAGCHASERS/BC_02.jpg" alt="VSN TOON SIGN"></div>
-                            <div class="carousel-slide" data-desc="KFC YUNG CAC & JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_03.jpg" alt="KFC YUNG CAC & JUANKY"></div>
-                            <div class="carousel-slide" data-desc="KFC JUANKY"><img src="IMMAGINE/BAGCHASERS/BC_04.jpg" alt="KFC JUANKY"></div>
-                            <div class="carousel-slide" data-desc="KFC ZODIAK & VSN"><img src="IMMAGINE/BAGCHASERS/BC_05.jpg" alt="KFC ZODIAK & VSN"></div>
-                            <div class="carousel-slide" data-desc="GREEDY SUL POLLO"><img src="IMMAGINE/BAGCHASERS/BC_06.jpg" alt="GREEDY SUL POLLO"></div>
-                            <div class="carousel-slide" data-desc="JUANKY X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_07.jpg" alt="JUANKY X STEF5K"></div>
-                            <div class="carousel-slide" data-desc="ZODIAK X STEF5K"><img src="IMMAGINE/BAGCHASERS/BC_09.jpg" alt="ZODIAK X STEF5K"></div>
-                            <div class="carousel-slide" data-desc="VSN DIETRO LA CAMERA"><img src="IMMAGINE/BAGCHASERS/BC_08.jpg" alt="VSN DIETRO LA CAMERA"></div>
-                            
-                            <div class="carousel-slide" data-desc="LOST">
-                                <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_10.mp4" type="video/mp4"></video>
-                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="carousel-slide" data-desc="JUANKY ESCLUSO PERCHE' NERO">
-                                <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_11.mp4" type="video/mp4"></video>
-                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-desc="THE CHAIN"><img src="IMMAGINE/BAGCHASERS/BC_12.jpg" alt="THE CHAIN"></div>
-                            <div class="carousel-slide" data-desc="ZODIAK X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_13.jpg" alt="ZODIAK X WICKIBOI"></div>
-                            <div class="carousel-slide" data-desc="JUANKY X WICKIBOI"><img src="IMMAGINE/BAGCHASERS/BC_14.jpg" alt="JUANKY  X WICKIBOI"></div>
-                            <div class="carousel-slide" data-desc="SQUAD"><img src="IMMAGINE/BAGCHASERS/BC_15.jpg" alt="SQUAD"></div>
-                            <div class="carousel-slide" data-desc="LARPER"><img src="IMMAGINE/BAGCHASERS/BC_16.jpg" alt="LARPER"></div>
-                            <div class="carousel-slide" data-desc="LARPER PT.2"><img src="IMMAGINE/BAGCHASERS/BC_17.jpg" alt="LARPER PT.2"></div>
-
-                            <div class="carousel-slide" data-desc="LARPER PT.3">
-                                <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="IMMAGINE/BAGCHASERS/BC_18.mp4" type="video/mp4"></video>
-                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-desc="OBAMA"><img src="IMMAGINE/BAGCHASERS/BC_19.jpg" alt="OBAMA"></div>
-                            <div class="carousel-slide" data-desc="STUDIO (PARK)"><img src="IMMAGINE/BAGCHASERS/BC_20.jpg" alt="STUDIO (PARK)"></div>
-                            <div class="carousel-slide" data-desc="FOCUSRITE"><img src="IMMAGINE/BAGCHASERS/BC_21.jpg" alt="FOCUSRITE"></div>
-                            <div class="carousel-slide" data-desc="THE STUDIO"><img src="IMMAGINE/BAGCHASERS/BC_22.jpg" alt="THE STUDIO"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-bagchasers', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-bagchasers">BAG CHASERS COVER</p>
-                </div>
-            </div>    
-
-            <div class="model-item">
-                <h3 class="image-title">FUFI</h3>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-fufi" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-fufi', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <!-- Inserisci o modifica qui le tue slide (foto o video) per FUFI -->
-                            <div class="carousel-slide" data-desc="FUFI COVER"><img src="IMMAGINE/Front_8.png" alt="FUFI COVER"></div>
-                            <div class="carousel-slide" data-desc="THE STUDIO - MICROPHONE UPGRADE + SWISS GO"><img src="IMMAGINE/Back_8.jpg" alt="THE STUDIO - MICROPHONE UPGRADE + SWISS GO"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-fufi', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-fufi">FUFI COVER</p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">MORAN</h3>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-moran" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-moran', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <!-- Inserisci o modifica qui le tue slide (foto o video) per MORAN -->
-                            <div class="carousel-slide" data-desc="MORAN COVER"><img src="IMMAGINE/Front_9.png" alt="MORAN COVER"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-moran', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-moran">MORAN COVER</p>
-                </div>
-            </div>
-
-            <div class="model-item unreleased">
-                <h3 class="image-title">STUPRO MUSICA 2</h3>
-                <div class="soon-overlay">SOON</div>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-hate" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-hate', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover STUPRO MUSICA 2"><img src="IMMAGINE/Front_2.jpg" alt="Cover STUPRO MUSICA 2"></div>
-                            <div class="carousel-slide" data-desc="Back cover STUPRO MUSICA 2"><img src="IMMAGINE/Back_2.png" alt="Back cover STUPRO MUSICA 2"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-hate', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-hate">Cover STUPRO MUSICA 2</p>
-                </div>
-
-                <div class="carousel-container">
-                    <div class="carousel" id="vid-hate" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('vid-hate', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="PISCIO (esperienza ufficiale)">
-                                <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="VIDEO/PISCIO (esperienza ufficiale).mp4" type="video/mp4"></video>
-                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="carousel-slide" data-desc="Descrizione video 2 di Hate Everyone">
-                                <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="VIDEO/hate2.mp4" type="video/mp4"></video>
-                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('vid-hate', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-vid-hate">PISCIO (esperienza ufficiale)</p>
-                </div>
-            </div>
-
-            <div class="model-item unreleased">
-                <h3 class="image-title">VULTURES 4</h3>
-                <div class="soon-overlay">SOON</div>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-laundry" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-laundry', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover VULTURES 4"><img src="IMMAGINE/Front_3.png" alt="Cover VULTURES 4"></div>
-                            <div class="carousel-slide" data-desc="Back cover VULTURES 4"><img src="IMMAGINE/Back_3.png" alt="Back cover VULTURES 4"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-laundry', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-laundry">Cover VULTURES 4</p>
-                </div>
-
-                <div class="carousel-container" style="display: none;">
-                    <div class="carousel" id="vid-laundry" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('vid-laundry', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Descrizione video 1 di Laundry">
-                                <div class="video-wrapper">
-                                    <video controls playsinline preload="metadata"><source src="VIDEO/laundry1.mp4" type="video/mp4"></video>
-                                    <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('vid-laundry', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-vid-laundry">Descrizione video 1 di Laundry</p>
-                </div>
-            </div>
-
-            <div class="model-item unreleased">
-                <h3 class="image-title">CHISSA' COSA DIREBBE FREUD</h3>
-                <div class="soon-overlay">SOON</div>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-echoes" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-echoes', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Front_4.png" alt="Cover CHISSA' COSA DIREBBE FREUD"></div>
-                            <div class="carousel-slide" data-desc="Back cover CHISSA' COSA DIREBBE FREUD"><img src="IMMAGINE/Back_4.png" alt="Back cover CHISSA' COSA DIREBBE FREUD"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-echoes', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-echoes">Cover CHISSA' COSA DIREBBE FREUD</p>
-                </div>
-            </div>
-
-            <div class="model-item unreleased">
-                <h3 class="image-title">ANCHE GLI EROI SI FANNO DI CRACK</h3>
-                <div class="soon-overlay">SOON</div>
-                
-                <div class="carousel-container">
-                    <div class="carousel" id="img-noise" data-index="0">
-                        <button class="carousel-btn prev" onclick="moveSlide('img-noise', -1)">&#10094;</button>
-                        <div class="carousel-track">
-                            <div class="carousel-slide" data-desc="Cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Front_5.png" alt="Cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
-                            <div class="carousel-slide" data-desc="Back cover ANCHE GLI EROI SI FANNO DI CRACK"><img src="IMMAGINE/Back_5.png" alt="Back cover ANCHE GLI EROI SI FANNO DI CRACK"></div>
-                        </div>
-                        <button class="carousel-btn next" onclick="moveSlide('img-noise', 1)">&#10095;</button>
-                    </div>
-                    <p class="carousel-description" id="desc-img-noise">Cover ANCHE GLI EROI SI FANNO DI CRACK</p>
-                </div>
-            </div>
-        </div>
+        <div class="image-gallery" id="art-gallery"></div>
     </div>
 
-    <!-- ================================================================
-         GOYCAST PAGE
-         ================================================================ -->
+    <!-- GOYCAST PAGE (Popolata dinamicamente) -->
     <div id="page-goycast" class="page">
-        
-
-        <div class="image-gallery">
-            <div class="model-item">
-                <h3 class="image-title">EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">16-05-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.1 LA CAVERNA DI PLATONE</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">25-06-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.1.5 PORTIAMO DA MANGIARE ALLE HOES</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">28-06-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.2 ECCO COSA PROVAVANO</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">11-07-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.2.5 IL VIAGGIO DI ULISSE</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">18-07-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">18-07-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.3.5 HA BACIATO IL MICROFONO</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">01-08-2026 </p>
-                </div>
-            </div>
-
-            <div class="model-item">
-                <h3 class="image-title">EP.4 PROTESTIAMO DA MCDONALD'S</h3>
-                <div class="carousel-container">
-                    <div class="carousel">
-                        <div class="carousel-slide">
-                            <div class="video-wrapper">
-                                <mux-video controls playsinline preload="metadata" playback-id="H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs"></mux-video>
-                                <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="carousel-description">17-10-2026 </p>
-                </div>
-            </div>
-        </div>
+        <div class="image-gallery" id="goycast-gallery"></div>
     </div>
 
     <!-- ================================================================
@@ -905,6 +455,210 @@
         }
 
         // ==========================================
+        // DATI DI DEFAULT (Sovrascritti da data.json se presente)
+        // ==========================================
+        const DEFAULT_SITE_DATA = {
+            snd: [
+                {
+                    albumTitle: "FART MUSIC", albumCover: "album.jpg",
+                    tracks: [
+                        { title: 'CAVALLI', src: 'MUSICA/FartMusic/CAVALLI.mp3' },
+                        { title: 'BERGHAIN', src: 'MUSICA/FartMusic/BERGHAIN.mp3' },
+                        { title: 'NINTENDO SWITCH', src: 'MUSICA/FartMusic/NINTENDO SWITCH.mp3' },
+                        { title: 'AHAHAHAH', src: 'MUSICA/FartMusic/AHAHAHAH.mp3' },
+                        { title: 'OUTRO', src: 'MUSICA/FartMusic/OUTRO.mp3' }
+                    ]
+                },
+                {
+                    albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
+                    artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
+                    tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
+                },
+                {
+                    albumTitle: "BAG CHASERS", albumCover: "album7.png", 
+                    artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
+                    tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
+                },
+                {
+                    albumTitle: "FUFI", albumCover: "album8.png", 
+                    artists: "Yung CAC, VSN", isSingle: true,
+                    tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
+                },
+                {
+                    albumTitle: "MORAN", albumCover: "album9.png", 
+                    artists: "Yung CAC, VSN", isSingle: true,
+                    tracks: [{ title: 'MORAN', src: 'MUSICA/MORAN.mp3' }]
+                },
+                {
+                    albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg", unreleased: true,
+                    tracks: [
+                        { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
+                        { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
+                        { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
+                        { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
+                        { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
+                        { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
+                        { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
+                        { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
+                    ]
+                },
+                {
+                    albumTitle: "VULTURES 4", albumCover: "album3.jpg", unreleased: true,
+                    tracks: [
+                        { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
+                        { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
+                        { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
+                        { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
+                        { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
+                        { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
+                        { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
+                        { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
+                    ]
+                },
+                {
+                    albumTitle: "CHISSA' COSA DIREBBE FREUD", albumCover: "album4.jpg", unreleased: true,
+                    tracks: [
+                        { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
+                        { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
+                        { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
+                        { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
+                        { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
+                        { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
+                        { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
+                        { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
+                    ]
+                },
+                {
+                    albumTitle: "ANCHE GLI EROI SI FANNO DI CRACK", albumCover: "album5.jpg", unreleased: true,
+                    tracks: [
+                        { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
+                        { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
+                        { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
+                        { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
+                        { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
+                        { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
+                        { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
+                        { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
+                    ]
+                }
+            ],
+            art: [
+                {
+                    title: "FART MUSIC", unreleased: false,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_1.png", desc: "Cover FART MUSIC" },
+                        { type: "image", src: "IMMAGINE/Back_1.png", desc: "Back cover FART MUSIC" }
+                    ],
+                    documentaries: [
+                        { type: "mux", playbackId: "2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k", desc: "FART MUSIC DOCUMENTARY" }
+                    ]
+                },
+                {
+                    title: "BLACKSTONE FREESTYLE", unreleased: false,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_6.jpg", desc: "Cover BLACKSTONE FREESTYLE" },
+                        { type: "image", src: "IMMAGINE/bf01.jpg", desc: "WE ARE HISTORY" }
+                    ],
+                    documentaries: [
+                        { type: "mux", playbackId: "u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA", desc: "BLACKSTONE FREESTYLE DOCUMENTARY" }
+                    ]
+                },
+                {
+                    title: "BAG CHASERS", unreleased: false, initialDesc: "BAG CHASERS COVER",
+                    slides: [
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/Front_7.png", desc: "Cover BAG CHASERS" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_01.jpg", desc: "JUANKY TOON SIGN" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_02.jpg", desc: "VSN TOON SIGN" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_03.jpg", desc: "KFC YUNG CAC & JUANKY" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_04.jpg", desc: "KFC JUANKY" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_05.jpg", desc: "KFC ZODIAK & VSN" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_06.jpg", desc: "GREEDY SUL POLLO" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_07.jpg", desc: "JUANKY X STEF5K" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_09.jpg", desc: "ZODIAK X STEF5K" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_08.jpg", desc: "VSN DIETRO LA CAMERA" },
+                        { type: "video", src: "IMMAGINE/BAGCHASERS/BC_10.mp4", desc: "LOST" },
+                        { type: "video", src: "IMMAGINE/BAGCHASERS/BC_11.mp4", desc: "JUANKY ESCLUSO PERCHE' NERO" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_12.jpg", desc: "THE CHAIN" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_13.jpg", desc: "ZODIAK X WICKIBOI" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_14.jpg", desc: "JUANKY X WICKIBOI" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_15.jpg", desc: "SQUAD" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_16.jpg", desc: "LARPER" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_17.jpg", desc: "LARPER PT.2" },
+                        { type: "video", src: "IMMAGINE/BAGCHASERS/BC_18.mp4", desc: "LARPER PT.3" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_19.jpg", desc: "OBAMA" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_20.jpg", desc: "STUDIO (PARK)" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_21.jpg", desc: "FOCUSRITE" },
+                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_22.jpg", desc: "THE STUDIO" }
+                    ],
+                    documentaries: []
+                },
+                {
+                    title: "FUFI", unreleased: false,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_8.png", desc: "FUFI COVER" },
+                        { type: "image", src: "IMMAGINE/Back_8.jpg", desc: "THE STUDIO - MICROPHONE UPGRADE + SWISS GO" }
+                    ],
+                    documentaries: []
+                },
+                {
+                    title: "MORAN", unreleased: false,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_9.png", desc: "MORAN COVER" }
+                    ],
+                    documentaries: []
+                },
+                {
+                    title: "STUPRO MUSICA 2", unreleased: true,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_2.jpg", desc: "Cover STUPRO MUSICA 2" },
+                        { type: "image", src: "IMMAGINE/Back_2.png", desc: "Back cover STUPRO MUSICA 2" }
+                    ],
+                    documentaries: [
+                        { type: "video", src: "VIDEO/PISCIO (esperienza ufficiale).mp4", desc: "PISCIO (esperienza ufficiale)" }
+                    ]
+                },
+                {
+                    title: "VULTURES 4", unreleased: true,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_3.png", desc: "Cover VULTURES 4" },
+                        { type: "image", src: "IMMAGINE/Back_3.png", desc: "Back cover VULTURES 4" }
+                    ],
+                    documentaries: []
+                },
+                {
+                    title: "CHISSA' COSA DIREBBE FREUD", unreleased: true,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_4.png", desc: "Cover CHISSA' COSA DIREBBE FREUD" },
+                        { type: "image", src: "IMMAGINE/Back_4.png", desc: "Back cover CHISSA' COSA DIREBBE FREUD" }
+                    ],
+                    documentaries: []
+                },
+                {
+                    title: "ANCHE GLI EROI SI FANNO DI CRACK", unreleased: true,
+                    slides: [
+                        { type: "image", src: "IMMAGINE/Front_5.png", desc: "Cover ANCHE GLI EROI SI FANNO DI CRACK" },
+                        { type: "image", src: "IMMAGINE/Back_5.png", desc: "Back cover ANCHE GLI EROI SI FANNO DI CRACK" }
+                    ],
+                    documentaries: []
+                }
+            ],
+            goycast: [
+                { title: "EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE", date: "16-05-2026 ", playbackId: "2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00" },
+                { title: "EP.1 LA CAVERNA DI PLATONE", date: "25-06-2026 ", playbackId: "RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI" },
+                { title: "EP.1.5 PORTIAMO DA MANGIARE ALLE HOES", date: "28-06-2026 ", playbackId: "iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c" },
+                { title: "EP.2 ECCO COSA PROVAVANO", date: "11-07-2026 ", playbackId: "s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U" },
+                { title: "EP.2.5 IL VIAGGIO DI ULISSE", date: "18-07-2026 ", playbackId: "tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo" },
+                { title: "EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)", date: "18-07-2026 ", playbackId: "HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ" },
+                { title: "EP.3.5 HA BACIATO IL MICROFONO", date: "01-08-2026 ", playbackId: "scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc" },
+                { title: "EP.4 PROTESTIAMO DA MCDONALD'S", date: "17-10-2026 ", playbackId: "H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs" }
+            ]
+        };
+
+        let allAlbums       = DEFAULT_SITE_DATA.snd;
+        let artProjects     = DEFAULT_SITE_DATA.art;
+        let goycastEpisodes = DEFAULT_SITE_DATA.goycast;
+
+        // ==========================================
         // SPA ROUTING
         // ==========================================
         const ALL_PAGES = ['snd','art','goycast'];
@@ -929,7 +683,6 @@
             history.pushState({ page }, '', '#' + page);
             window.scrollTo(0, 0);
 
-            // Mette in pausa eventuali video in riproduzione cambiando tab
             document.querySelectorAll('video, mux-video').forEach(video => video.pause());
         }
 
@@ -945,102 +698,8 @@
             navigateTo(page);
         });
 
-        // Setup iniziale SPA
-        (function() {
-            const hash = location.hash.replace('#','');
-            navigateTo(ALL_PAGES.includes(hash) ? hash : 'snd');
-        })();
-
         // ==========================================
-        // DATI ALBUM (SND)
-        // ==========================================
-        const allAlbums = [
-            {
-                albumTitle: "FART MUSIC", albumCover: "album.jpg",
-                tracks: [
-                    { title: 'CAVALLI', src: 'MUSICA/FartMusic/CAVALLI.mp3' },
-                    { title: 'BERGHAIN', src: 'MUSICA/FartMusic/BERGHAIN.mp3' },
-                    { title: 'NINTENDO SWITCH', src: 'MUSICA/FartMusic/NINTENDO SWITCH.mp3' },
-                    { title: 'AHAHAHAH', src: 'MUSICA/FartMusic/AHAHAHAH.mp3' },
-                    { title: 'OUTRO', src: 'MUSICA/FartMusic/OUTRO.mp3' }
-                ]
-            },
-            {
-                albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
-                artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
-                tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
-            },
-            {
-                albumTitle: "BAG CHASERS", albumCover: "album7.png", 
-                artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
-                tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
-            },
-            {
-                albumTitle: "FUFI", albumCover: "album8.png", 
-                artists: "Yung CAC, VSN", isSingle: true,
-                tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
-            },
-            {
-                albumTitle: "MORAN", albumCover: "album9.png", 
-                artists: "Yung CAC, VSN", isSingle: true,
-                tracks: [{ title: 'MORAN', src: 'MUSICA/MORAN.mp3' }]
-            },
-            {
-                albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg",
-                tracks: [
-                    { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
-                    { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
-                    { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
-                    { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
-                    { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
-                    { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
-                    { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
-                    { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
-                ]
-            },
-            {
-                albumTitle: "LAUNDRY", albumCover: "album3.jpg",
-                tracks: [
-                    { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
-                    { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
-                    { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
-                    { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
-                    { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
-                    { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
-                    { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
-                    { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
-                ]
-            },
-            {
-                albumTitle: "ECHOES OF NOTHING", albumCover: "album4.jpg",
-                tracks: [
-                    { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
-                    { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
-                    { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
-                    { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
-                    { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
-                    { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
-                    { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
-                    { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
-                ]
-            },
-            {
-                albumTitle: "NOISE", albumCover: "album5.jpg",
-                tracks: [
-                    { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
-                    { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
-                    { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
-                    { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
-                    { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
-                    { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
-                    { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
-                    { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
-                ]
-            }
-        ];
-
-        // ==========================================
-        // PLAYER AUDIO GLOBALE E MUTUA ESCLUSIONE
+        // PLAYER AUDIO GLOBALE + MEDIA SESSION API
         // ==========================================
         const globalAudio = new Audio();
         let currentAlbumIndex = 0;
@@ -1048,14 +707,14 @@
         let isPlaying = false;
 
         const globalPlayerContainer = document.getElementById('global-player-container');
-        const barPlayPauseBtn = document.getElementById('bar-play-pause-btn');
-        const globalPlayPauseBtn = document.getElementById('global-play-pause-btn');
-        const globalProgressBar = document.getElementById('global-progress-bar');
-        const globalCurrentTime = document.getElementById('global-current-time');
-        const globalDuration = document.getElementById('global-duration');
-        const allVideos = document.querySelectorAll('video, mux-video');
+        const barPlayPauseBtn       = document.getElementById('bar-play-pause-btn');
+        const globalPlayPauseBtn    = document.getElementById('global-play-pause-btn');
+        const globalProgressBar     = document.getElementById('global-progress-bar');
+        const globalCurrentTime     = document.getElementById('global-current-time');
+        const globalDuration        = document.getElementById('global-duration');
 
         function loadTrack(albumIndex, trackIndex) {
+            if (!allAlbums[albumIndex] || !allAlbums[albumIndex].tracks[trackIndex]) return;
             currentAlbumIndex = albumIndex;
             currentTrackIndex = trackIndex;
             const album = allAlbums[albumIndex];
@@ -1069,8 +728,8 @@
             document.getElementById('expanded-track-title').textContent = track.title;
             document.getElementById('expanded-album-title').textContent = album.albumTitle;
             
-            const expTrackTitle = document.getElementById('expanded-track-title');
-            const barAlbumTitle = document.getElementById('bar-album-title');
+            const expTrackTitle   = document.getElementById('expanded-track-title');
+            const barAlbumTitle   = document.getElementById('bar-album-title');
             const barTrackArtists = document.getElementById('bar-track-artists');
             const expTrackArtists = document.getElementById('expanded-track-artists');
 
@@ -1103,7 +762,7 @@
                 globalDuration.textContent = formatTime(globalAudio.duration || 0);
             }, { once: true });
 
-            // Impostazione Media Session API (Notifica di sistema con cover e artista)
+            // Notifica di sistema (Media Session API) con cover e artista
             if ('mediaSession' in navigator) {
                 const mimeType = album.albumCover.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -1118,7 +777,7 @@
         }
 
         function playAudio() {
-            allVideos.forEach(v => v.pause());
+            document.querySelectorAll('video, mux-video').forEach(v => v.pause());
             globalAudio.play().catch(() => {});
             isPlaying = true;
             barPlayPauseBtn.innerHTML = PAUSE_SVG;
@@ -1176,7 +835,6 @@
             mainNav.classList.remove('hidden-by-player'); 
         });
 
-        // Gestione controlli notifica di sistema (Media Session Action Handlers)
         if ('mediaSession' in navigator) {
             navigator.mediaSession.setActionHandler('play', playAudio);
             navigator.mediaSession.setActionHandler('pause', pauseAudio);
@@ -1184,34 +842,11 @@
             navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
         }
 
-        loadTrack(0, 0);
-        globalPlayerContainer.classList.add('hidden');
-        pauseAudio(); 
-
-        // ==========================================
-        // GESTIONE VIDEO (ART / GOYCAST)
-        // ==========================================
-        allVideos.forEach(video => {
-            video.addEventListener('play', () => {
-                if (isPlaying) pauseAudio();
-            });
-        });
-
-        document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-            const video = wrapper.querySelector('video, mux-video');
-            const overlay = wrapper.querySelector('.custom-play-overlay');
-            if (video && overlay) {
-                overlay.addEventListener('click', () => video.play());
-                video.addEventListener('play', () => overlay.classList.add('hidden'));
-                video.addEventListener('pause', () => overlay.classList.remove('hidden'));
-            }
-        });
-
         // ==========================================
         // TRACKLIST MODAL (SND)
         // ==========================================
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        const tracklistModal = document.getElementById('tracklist-modal');
+        const modalBackdrop    = document.getElementById('modal-backdrop');
+        const tracklistModal   = document.getElementById('tracklist-modal');
         const tracklistContent = document.getElementById('tracklist-content');
 
         function showTracklist(albumIndex) {
@@ -1251,20 +886,6 @@
             mainNav.classList.remove('hidden-by-player'); 
         }
 
-        document.querySelectorAll('.album-cover-clickable').forEach(image => {
-            image.addEventListener('click', (e) => {
-                const albumDiv = e.currentTarget.closest('.album');
-                if (albumDiv && albumDiv.classList.contains('unreleased')) {
-                    tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
-                    modalBackdrop.classList.add('active');
-                    tracklistModal.classList.add('active');
-                    mainNav.classList.add('hidden-by-player');
-                    return; 
-                }
-                showTracklist(parseInt(e.currentTarget.dataset.albumIndex)); 
-            });
-        });
-
         tracklistContent.addEventListener('click', (e) => {
             if (e.target && e.target.classList.contains('tracklist-item')) {
                 loadTrack(parseInt(e.target.dataset.albumIndex), parseInt(e.target.dataset.trackIndex));
@@ -1277,10 +898,11 @@
         modalBackdrop.addEventListener('click', closeTracklistModal);
 
         // ==========================================
-        // CAROUSEL IMMAGINI (ART)
+        // CAROUSEL & LIGHTBOX (ART / GOYCAST)
         // ==========================================
         window.moveSlide = function(carouselId, direction) {
             const carousel = document.getElementById(carouselId);
+            if (!carousel) return;
             const track = carousel.querySelector('.carousel-track');
             const slides = carousel.querySelectorAll('.carousel-slide');
             const descElement = document.getElementById('desc-' + carouselId); 
@@ -1294,24 +916,13 @@
             
             carousel.setAttribute('data-index', currentIndex);
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
-            if (descElement) descElement.textContent = slides[currentIndex].getAttribute('data-desc');
+            if (descElement && slides[currentIndex]) {
+                descElement.textContent = slides[currentIndex].getAttribute('data-desc');
+            }
         };
 
-        // ==========================================
-        // LIGHTBOX ZOOM IMMAGINI (ART)
-        // ==========================================
-        const lightbox = document.getElementById('image-lightbox');
+        const lightbox    = document.getElementById('image-lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
-
-        document.querySelectorAll('.carousel-slide img').forEach(img => {
-            img.addEventListener('click', function() {
-                lightboxImg.src = this.src;
-                lightboxImg.classList.remove('zoomed'); 
-                lightboxImg.style.transform = 'scale(1)'; 
-                lightbox.classList.add('active');
-                document.body.style.overflow = 'hidden'; 
-            });
-        });
 
         function closeLightbox() {
             lightbox.classList.remove('active');
@@ -1337,6 +948,255 @@
                 this.style.transform = 'scale(2.5)'; 
             }
         });
+
+        function bindMediaInteractions() {
+            document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+                if (wrapper.dataset.bound === 'true') return;
+                wrapper.dataset.bound = 'true';
+                const video   = wrapper.querySelector('video, mux-video');
+                const overlay = wrapper.querySelector('.custom-play-overlay');
+                if (video && overlay) {
+                    overlay.addEventListener('click', () => video.play());
+                    video.addEventListener('play', () => {
+                        overlay.classList.add('hidden');
+                        if (isPlaying) pauseAudio();
+                    });
+                    video.addEventListener('pause', () => overlay.classList.remove('hidden'));
+                }
+            });
+
+            document.querySelectorAll('.carousel-slide img').forEach(img => {
+                if (img.dataset.bound === 'true') return;
+                img.dataset.bound = 'true';
+                img.addEventListener('click', function() {
+                    lightboxImg.src = this.src;
+                    lightboxImg.classList.remove('zoomed'); 
+                    lightboxImg.style.transform = 'scale(1)'; 
+                    lightbox.classList.add('active');
+                    document.body.style.overflow = 'hidden'; 
+                });
+            });
+        }
+
+        function createSlideElement(slide) {
+            const slideDiv = document.createElement('div');
+            slideDiv.className = 'carousel-slide';
+            if (slide.desc) slideDiv.setAttribute('data-desc', slide.desc);
+
+            if (slide.type === 'image') {
+                const img = document.createElement('img');
+                img.src = slide.src;
+                img.alt = slide.desc || '';
+                slideDiv.appendChild(img);
+            } else if (slide.type === 'video') {
+                slideDiv.innerHTML = `
+                    <div class="video-wrapper">
+                        <video controls playsinline preload="metadata"><source src="${slide.src}" type="video/mp4"></video>
+                        <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                    </div>`;
+            } else if (slide.type === 'mux') {
+                slideDiv.innerHTML = `
+                    <div class="video-wrapper">
+                        <mux-video controls playsinline preload="metadata" playback-id="${slide.playbackId || slide.src}"></mux-video>
+                        <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
+                    </div>`;
+            }
+            return slideDiv;
+        }
+
+        // ==========================================
+        // RENDER DINAMICO DELLE SEZIONI (Da data.json)
+        // ==========================================
+        function renderAllSections(data) {
+            allAlbums       = data.snd     || DEFAULT_SITE_DATA.snd;
+            artProjects     = data.art     || DEFAULT_SITE_DATA.art;
+            goycastEpisodes = data.goycast || DEFAULT_SITE_DATA.goycast;
+
+            // 1. Render SND
+            const pageSnd = document.getElementById('page-snd');
+            pageSnd.innerHTML = '';
+            allAlbums.forEach((album, idx) => {
+                const container = document.createElement('div');
+                container.className = 'music-container';
+
+                const albumDiv = document.createElement('div');
+                albumDiv.className = 'album' + (album.unreleased ? ' unreleased' : '');
+
+                if (album.unreleased) {
+                    const soon = document.createElement('div');
+                    soon.className = 'soon-overlay';
+                    soon.textContent = 'SOON';
+                    albumDiv.appendChild(soon);
+                }
+
+                const img = document.createElement('img');
+                img.src = album.albumCover;
+                img.alt = 'Copertina ' + album.albumTitle;
+                img.className = 'album-cover-clickable';
+                img.dataset.albumIndex = idx;
+
+                img.addEventListener('click', () => {
+                    if (album.unreleased) {
+                        tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
+                        modalBackdrop.classList.add('active');
+                        tracklistModal.classList.add('active');
+                        mainNav.classList.add('hidden-by-player');
+                        return;
+                    }
+                    showTracklist(idx);
+                });
+
+                const h3 = document.createElement('h3');
+                h3.className = 'album-title-text';
+                h3.textContent = album.albumTitle;
+
+                albumDiv.appendChild(img);
+                albumDiv.appendChild(h3);
+                container.appendChild(albumDiv);
+                pageSnd.appendChild(container);
+            });
+
+            // 2. Render ART
+            const artGallery = document.getElementById('art-gallery');
+            artGallery.innerHTML = '';
+            artProjects.forEach((proj, pIdx) => {
+                const item = document.createElement('div');
+                item.className = 'model-item' + (proj.unreleased ? ' unreleased' : '');
+
+                const h3 = document.createElement('h3');
+                h3.className = 'image-title';
+                h3.textContent = proj.title;
+                item.appendChild(h3);
+
+                if (proj.unreleased) {
+                    const soon = document.createElement('div');
+                    soon.className = 'soon-overlay';
+                    soon.textContent = 'SOON';
+                    item.appendChild(soon);
+                }
+
+                // Carosello principale
+                if (proj.slides && proj.slides.length > 0) {
+                    const cId = 'art-carousel-' + pIdx;
+                    const cContainer = document.createElement('div');
+                    cContainer.className = 'carousel-container';
+
+                    const carousel = document.createElement('div');
+                    carousel.className = 'carousel';
+                    carousel.id = cId;
+                    carousel.setAttribute('data-index', '0');
+
+                    const prevBtn = document.createElement('button');
+                    prevBtn.className = 'carousel-btn prev';
+                    prevBtn.innerHTML = '&#10094;';
+                    prevBtn.setAttribute('onclick', `moveSlide('${cId}', -1)`);
+
+                    const nextBtn = document.createElement('button');
+                    nextBtn.className = 'carousel-btn next';
+                    nextBtn.innerHTML = '&#10095;';
+                    nextBtn.setAttribute('onclick', `moveSlide('${cId}', 1)`);
+
+                    const track = document.createElement('div');
+                    track.className = 'carousel-track';
+                    proj.slides.forEach(s => track.appendChild(createSlideElement(s)));
+
+                    carousel.appendChild(prevBtn);
+                    carousel.appendChild(track);
+                    carousel.appendChild(nextBtn);
+                    cContainer.appendChild(carousel);
+
+                    const descP = document.createElement('p');
+                    descP.className = 'carousel-description';
+                    descP.id = 'desc-' + cId;
+                    descP.textContent = proj.initialDesc || proj.slides[0].desc || '';
+                    cContainer.appendChild(descP);
+
+                    item.appendChild(cContainer);
+                }
+
+                // Documentari / Video aggiuntivi sotto il carosello
+                if (proj.documentaries && proj.documentaries.length > 0) {
+                    proj.documentaries.forEach(doc => {
+                        const docContainer = document.createElement('div');
+                        docContainer.className = 'carousel-container';
+
+                        const docCarousel = document.createElement('div');
+                        docCarousel.className = 'carousel';
+                        docCarousel.appendChild(createSlideElement(doc));
+                        docContainer.appendChild(docCarousel);
+
+                        const docDesc = document.createElement('p');
+                        docDesc.className = 'carousel-description';
+                        docDesc.textContent = doc.desc || '';
+                        docContainer.appendChild(docDesc);
+
+                        item.appendChild(docContainer);
+                    });
+                }
+
+                artGallery.appendChild(item);
+            });
+
+            // 3. Render GOYCAST
+            const goycastGallery = document.getElementById('goycast-gallery');
+            goycastGallery.innerHTML = '';
+            goycastEpisodes.forEach(ep => {
+                const item = document.createElement('div');
+                item.className = 'model-item';
+
+                const h3 = document.createElement('h3');
+                h3.className = 'image-title';
+                h3.textContent = ep.title;
+                item.appendChild(h3);
+
+                const cContainer = document.createElement('div');
+                cContainer.className = 'carousel-container';
+
+                const carousel = document.createElement('div');
+                carousel.className = 'carousel';
+
+                const slideType = ep.videoSrc ? 'video' : 'mux';
+                carousel.appendChild(createSlideElement({
+                    type: slideType,
+                    src: ep.videoSrc || ep.playbackId,
+                    playbackId: ep.playbackId
+                }));
+
+                cContainer.appendChild(carousel);
+
+                const descP = document.createElement('p');
+                descP.className = 'carousel-description';
+                descP.textContent = ep.date || '';
+                cContainer.appendChild(descP);
+
+                item.appendChild(cContainer);
+                goycastGallery.appendChild(item);
+            });
+
+            bindMediaInteractions();
+        }
+
+        // Render iniziale immediato + aggiornamento da data.json
+        renderAllSections(DEFAULT_SITE_DATA);
+        loadTrack(0, 0);
+        globalPlayerContainer.classList.add('hidden');
+        pauseAudio();
+
+        fetch('./data.json?t=' + Date.now(), {
+            cache: 'no-store',
+            headers: { 'Accept': 'text/html,application/json' }
+        })
+        .then(r => r.ok ? r.json() : null)
+        .then(customData => {
+            if (customData) renderAllSections(customData);
+        })
+        .catch(() => {});
+
+        // Setup iniziale SPA
+        (function() {
+            const hash = location.hash.replace('#','');
+            navigateTo(ALL_PAGES.includes(hash) ? hash : 'snd');
+        })();
 
         // ==========================================
         // REGISTRAZIONE SERVICE WORKER (PWA)
