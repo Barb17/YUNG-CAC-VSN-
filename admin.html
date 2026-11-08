@@ -37,9 +37,11 @@
         font-size: 0.85em; text-transform: uppercase; font-weight: bold;
         transition: opacity 0.2s;
     }
-    button:hover { opacity: 0.85; }
+    button:hover:not(:disabled) { opacity: 0.85; }
+    button:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-black { background: black; color: white; }
     .btn-toggle { background: #eee; color: black; padding: 6px 10px; font-size: 0.75em; border: 1px solid #ccc; }
+    .btn-move { background: #e0e0e0; color: black; padding: 6px 9px; font-size: 0.75em; border: 1px solid #bbb; line-height: 1; }
     .btn-danger { background: #d32f2f; color: white; padding: 6px 10px; font-size: 0.75em; }
     .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
     .tab-btn { background: #ddd; color: #555; padding: 12px 18px; }
@@ -56,7 +58,8 @@
     .item-title { font-weight: bold; }
     .item-sub { font-size: 0.8em; color: #666; }
     .sub-list { margin: 4px 0 0 0; padding-left: 20px; font-size: 0.85em; color: #333; }
-    .sub-list li { margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .sub-list li { margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .action-group { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
     .publish-bar {
         position: fixed; bottom: 0; left: 0; width: 100%;
         background: white; border-top: 2px solid black; padding: 15px 20px;
@@ -141,7 +144,7 @@
         </div>
 
         <div class="card">
-            <h2>Album e Singoli attuali in SND</h2>
+            <h2>Album e Singoli attuali in SND (Usa ▲ e ▼ per cambiare ordine)</h2>
             <div id="snd-list"></div>
         </div>
     </div>
@@ -193,7 +196,7 @@
         </div>
 
         <div class="card">
-            <h2>Progetti attuali in ART</h2>
+            <h2>Progetti attuali in ART (Usa ▲ e ▼ per cambiare ordine)</h2>
             <div id="art-list"></div>
         </div>
     </div>
@@ -212,7 +215,7 @@
         </div>
 
         <div class="card">
-            <h2>Episodi attuali in GOYCAST</h2>
+            <h2>Episodi attuali in GOYCAST (Usa ▲ e ▼ per cambiare ordine)</h2>
             <div id="goy-list"></div>
         </div>
     </div>
@@ -440,6 +443,14 @@ function queueFile(repoPath, fileObj) {
     updateQueueUI();
 }
 
+function moveArrayItem(arr, index, direction) {
+    const target = index + direction;
+    if (target < 0 || target >= arr.length) return;
+    const temp = arr[index];
+    arr[index] = arr[target];
+    arr[target] = temp;
+}
+
 // Tabs
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -457,7 +468,7 @@ document.getElementById('art-slide-type').addEventListener('change', e => {
     document.getElementById('art-slide-mux-box').style.display  = isMux ? 'block' : 'none';
 });
 
-// Carica credenziali salvate nel browser (chiavi separate da LVEVR)
+// Carica credenziali salvate nel browser
 const ghOwner  = document.getElementById('gh-owner');
 const ghRepo   = document.getElementById('gh-repo');
 const ghBranch = document.getElementById('gh-branch');
@@ -493,11 +504,12 @@ async function syncFromSite() {
     renderAdminLists();
 }
 
-/* ── RENDER LISTE NELL'ADMIN ───────────────────────────── */
+/* ── RENDER LISTE NELL'ADMIN CON PULSANTI RIORDINO (▲ / ▼) ── */
 function renderAdminLists() {
     // 1. SND
     const sndSelect = document.getElementById('snd-select-album');
     const sndList   = document.getElementById('snd-list');
+    const prevSndVal = sndSelect.value;
     sndSelect.innerHTML = '';
     sndList.innerHTML   = '';
     siteData.snd.forEach((alb, ai) => {
@@ -513,14 +525,16 @@ function renderAdminLists() {
                     <img src="${alb.albumCover}" alt="">
                     <div>
                         <div class="item-title">
-                            ${alb.albumTitle}
+                            #${ai + 1} — ${alb.albumTitle}
                             ${alb.isSingle ? '<span class="badge">SINGOLO</span>' : ''}
                             ${alb.unreleased ? '<span class="badge-soon">SOON (SFOCATO)</span>' : ''}
                         </div>
                         <div class="item-sub">${alb.artists ? alb.artists + ' — ' : ''}${alb.tracks.length} brani</div>
                     </div>
                 </div>
-                <div style="display:flex; gap:6px;">
+                <div class="action-group">
+                    <button class="btn-move" title="Sposta Su" data-move-snd-album="${ai}:-1" ${ai === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="btn-move" title="Sposta Giù" data-move-snd-album="${ai}:1" ${ai === siteData.snd.length - 1 ? 'disabled' : ''}>▼</button>
                     <button class="btn-toggle" data-toggle-snd-soon="${ai}">
                         ${alb.unreleased ? 'Sblocca (Rendi Pubblico)' : 'Metti SOON'}
                     </button>
@@ -532,18 +546,27 @@ function renderAdminLists() {
         ol.className = 'sub-list';
         alb.tracks.forEach((t, ti) => {
             const li = document.createElement('li');
-            li.innerHTML = `<span>${t.title} <span class="badge">${t.src}</span></span>
-                            <button class="btn-danger" data-del-snd-track="${ai}:${ti}">✕</button>`;
+            li.innerHTML = `
+                <span>${t.title} <span class="badge">${t.src}</span></span>
+                <div class="action-group">
+                    <button class="btn-move" title="Sposta Traccia Su" data-move-snd-track="${ai}:${ti}:-1" ${ti === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="btn-move" title="Sposta Traccia Giù" data-move-snd-track="${ai}:${ti}:1" ${ti === alb.tracks.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button class="btn-danger" data-del-snd-track="${ai}:${ti}">✕</button>
+                </div>`;
             ol.appendChild(li);
         });
         div.appendChild(ol);
         sndList.appendChild(div);
     });
+    if (prevSndVal && sndSelect.querySelector(`option[value="${prevSndVal}"]`)) {
+        sndSelect.value = prevSndVal;
+    }
 
     // 2. ART
     const artSelect    = document.getElementById('art-select-proj');
     const artDocSelect = document.getElementById('art-doc-select-proj');
     const artList      = document.getElementById('art-list');
+    const prevArtVal   = artSelect.value;
     artSelect.innerHTML    = '';
     artDocSelect.innerHTML = '';
     artList.innerHTML      = '';
@@ -562,12 +585,14 @@ function renderAdminLists() {
             <div class="item-header">
                 <div>
                     <div class="item-title">
-                        ${proj.title}
+                        #${pi + 1} — ${proj.title}
                         ${proj.unreleased ? '<span class="badge-soon">SOON (SFOCATO)</span>' : ''}
                     </div>
                     <div class="item-sub">${(proj.slides || []).length} slide nel carosello — ${(proj.documentaries || []).length} documentari</div>
                 </div>
-                <div style="display:flex; gap:6px;">
+                <div class="action-group">
+                    <button class="btn-move" title="Sposta Su" data-move-art-proj="${pi}:-1" ${pi === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="btn-move" title="Sposta Giù" data-move-art-proj="${pi}:1" ${pi === siteData.art.length - 1 ? 'disabled' : ''}>▼</button>
                     <button class="btn-toggle" data-toggle-art-soon="${pi}">
                         ${proj.unreleased ? 'Sblocca (Rendi Pubblico)' : 'Metti SOON'}
                     </button>
@@ -578,21 +603,36 @@ function renderAdminLists() {
 
         const ul = document.createElement('ol');
         ul.className = 'sub-list';
-        (proj.slides || []).forEach((s, si) => {
+        const slidesArr = proj.slides || [];
+        slidesArr.forEach((s, si) => {
             const li = document.createElement('li');
-            li.innerHTML = `<span>[Slide ${s.type.toUpperCase()}] ${s.desc || ''} <span class="badge">${s.src || s.playbackId}</span></span>
-                            <button class="btn-danger" data-del-art-slide="${pi}:${si}">✕</button>`;
+            li.innerHTML = `
+                <span>[Slide ${s.type.toUpperCase()}] ${s.desc || ''} <span class="badge">${s.src || s.playbackId}</span></span>
+                <div class="action-group">
+                    <button class="btn-move" title="Sposta Slide Su" data-move-art-slide="${pi}:${si}:-1" ${si === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="btn-move" title="Sposta Slide Giù" data-move-art-slide="${pi}:${si}:1" ${si === slidesArr.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button class="btn-danger" data-del-art-slide="${pi}:${si}">✕</button>
+                </div>`;
             ul.appendChild(li);
         });
-        (proj.documentaries || []).forEach((d, di) => {
+        const docsArr = proj.documentaries || [];
+        docsArr.forEach((d, di) => {
             const li = document.createElement('li');
-            li.innerHTML = `<span>[DOCUMENTARIO] ${d.desc || ''} <span class="badge">${d.playbackId || d.src}</span></span>
-                            <button class="btn-danger" data-del-art-doc="${pi}:${di}">✕</button>`;
+            li.innerHTML = `
+                <span>[DOCUMENTARIO] ${d.desc || ''} <span class="badge">${d.playbackId || d.src}</span></span>
+                <div class="action-group">
+                    <button class="btn-move" title="Sposta Doc Su" data-move-art-doc="${pi}:${di}:-1" ${di === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="btn-move" title="Sposta Doc Giù" data-move-art-doc="${pi}:${di}:1" ${di === docsArr.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button class="btn-danger" data-del-art-doc="${pi}:${di}">✕</button>
+                </div>`;
             ul.appendChild(li);
         });
         div.appendChild(ul);
         artList.appendChild(div);
     });
+    if (prevArtVal && artSelect.querySelector(`option[value="${prevArtVal}"]`)) {
+        artSelect.value = prevArtVal;
+    }
 
     // 3. GOYCAST
     const goyList = document.getElementById('goy-list');
@@ -603,10 +643,14 @@ function renderAdminLists() {
         div.innerHTML = `
             <div class="item-header">
                 <div>
-                    <div class="item-title">${ep.title}</div>
+                    <div class="item-title">#${gi + 1} — ${ep.title}</div>
                     <div class="item-sub">Data: ${ep.date} — Mux ID: <span class="badge">${ep.playbackId}</span></div>
                 </div>
-                <button class="btn-danger" data-del-goy="${gi}">Elimina</button>
+                <div class="action-group">
+                    <button class="btn-move" title="Sposta Su" data-move-goy="${gi}:-1" ${gi === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="btn-move" title="Sposta Giù" data-move-goy="${gi}:1" ${gi === siteData.goycast.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button class="btn-danger" data-del-goy="${gi}">Elimina</button>
+                </div>
             </div>
         `;
         goyList.appendChild(div);
@@ -615,7 +659,7 @@ function renderAdminLists() {
 
 /* ── AZIONI AGGIUNTA / MODIFICA ────────────────────────── */
 
-// SND: Nuovo Album / Singolo
+// SND: Nuovo Album / Singolo (inserito automaticamente prima dei SOON se è pubblico)
 document.getElementById('snd-add-album-btn').addEventListener('click', () => {
     const title      = document.getElementById('snd-new-title').value.trim();
     const artists    = document.getElementById('snd-new-artists').value.trim();
@@ -632,13 +676,22 @@ document.getElementById('snd-add-album-btn').addEventListener('click', () => {
     if (isSingle) newEntry.isSingle = true;
     if (unreleased) newEntry.unreleased = true;
 
-    siteData.snd.push(newEntry);
+    const firstSoonIdx = siteData.snd.findIndex(a => a.unreleased);
+    let insertedIndex = siteData.snd.length;
+    if (!unreleased && firstSoonIdx !== -1) {
+        siteData.snd.splice(firstSoonIdx, 0, newEntry);
+        insertedIndex = firstSoonIdx;
+    } else {
+        siteData.snd.push(newEntry);
+    }
+
     document.getElementById('snd-new-title').value = '';
     document.getElementById('snd-new-artists').value = '';
     document.getElementById('snd-new-cover').value = '';
     document.getElementById('snd-new-single').checked = false;
     document.getElementById('snd-new-unreleased').checked = false;
     renderAdminLists();
+    document.getElementById('snd-select-album').value = insertedIndex;
 });
 
 // SND: Nuova Traccia
@@ -655,15 +708,27 @@ document.getElementById('snd-add-track-btn').addEventListener('click', () => {
     renderAdminLists();
 });
 
-// ART: Nuovo Progetto
+// ART: Nuovo Progetto (inserito automaticamente prima dei SOON se è pubblico)
 document.getElementById('art-add-proj-btn').addEventListener('click', () => {
     const title      = document.getElementById('art-new-title').value.trim();
     const unreleased = document.getElementById('art-new-unreleased').checked;
     if (!title) { alert('Inserisci il titolo del progetto ART.'); return; }
-    siteData.art.push({ title, unreleased, slides: [], documentaries: [] });
+
+    const newProj = { title, unreleased, slides: [], documentaries: [] };
+    const firstSoonIdx = siteData.art.findIndex(p => p.unreleased);
+    let insertedIndex = siteData.art.length;
+    if (!unreleased && firstSoonIdx !== -1) {
+        siteData.art.splice(firstSoonIdx, 0, newProj);
+        insertedIndex = firstSoonIdx;
+    } else {
+        siteData.art.push(newProj);
+    }
+
     document.getElementById('art-new-title').value = '';
     document.getElementById('art-new-unreleased').checked = false;
     renderAdminLists();
+    document.getElementById('art-select-proj').value = insertedIndex;
+    document.getElementById('art-doc-select-proj').value = insertedIndex;
 });
 
 // ART: Nuova Slide nel Carosello
@@ -718,12 +783,36 @@ document.getElementById('goy-add-btn').addEventListener('click', () => {
     renderAdminLists();
 });
 
-// Delegazione click per pulsanti Elimina e Sblocca SOON
+// Delegazione click per pulsanti Riordina (▲/▼), Sblocca SOON ed Elimina
 document.body.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
 
-    if (btn.dataset.toggleSndSoon !== undefined) {
+    if (btn.dataset.moveSndAlbum !== undefined) {
+        const [idx, dir] = btn.dataset.moveSndAlbum.split(':').map(Number);
+        moveArrayItem(siteData.snd, idx, dir);
+        renderAdminLists();
+    } else if (btn.dataset.moveSndTrack !== undefined) {
+        const [a, t, dir] = btn.dataset.moveSndTrack.split(':').map(Number);
+        moveArrayItem(siteData.snd[a].tracks, t, dir);
+        renderAdminLists();
+    } else if (btn.dataset.moveArtProj !== undefined) {
+        const [idx, dir] = btn.dataset.moveArtProj.split(':').map(Number);
+        moveArrayItem(siteData.art, idx, dir);
+        renderAdminLists();
+    } else if (btn.dataset.moveArtSlide !== undefined) {
+        const [p, s, dir] = btn.dataset.moveArtSlide.split(':').map(Number);
+        moveArrayItem(siteData.art[p].slides, s, dir);
+        renderAdminLists();
+    } else if (btn.dataset.moveArtDoc !== undefined) {
+        const [p, d, dir] = btn.dataset.moveArtDoc.split(':').map(Number);
+        moveArrayItem(siteData.art[p].documentaries, d, dir);
+        renderAdminLists();
+    } else if (btn.dataset.moveGoy !== undefined) {
+        const [idx, dir] = btn.dataset.moveGoy.split(':').map(Number);
+        moveArrayItem(siteData.goycast, idx, dir);
+        renderAdminLists();
+    } else if (btn.dataset.toggleSndSoon !== undefined) {
         const idx = parseInt(btn.dataset.toggleSndSoon);
         siteData.snd[idx].unreleased = !siteData.snd[idx].unreleased;
         renderAdminLists();
