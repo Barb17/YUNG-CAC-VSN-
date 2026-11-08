@@ -1,0 +1,581 @@
+{
+  "snd": [
+    {
+      "albumTitle": "FART MUSIC",
+      "albumCover": "album.jpg",
+      "tracks": [
+        {
+          "title": "CAVALLI",
+          "src": "MUSICA/FartMusic/CAVALLI.mp3"
+        },
+        {
+          "title": "BERGHAIN",
+          "src": "MUSICA/FartMusic/BERGHAIN.mp3"
+        },
+        {
+          "title": "NINTENDO SWITCH",
+          "src": "MUSICA/FartMusic/NINTENDO SWITCH.mp3"
+        },
+        {
+          "title": "AHAHAHAH",
+          "src": "MUSICA/FartMusic/AHAHAHAH.mp3"
+        },
+        {
+          "title": "OUTRO",
+          "src": "MUSICA/FartMusic/OUTRO.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "BLACKSTONE FREESTYLE",
+      "albumCover": "album6.jpg",
+      "artists": "Juanky, Zodiak, Yung CAC, VSN",
+      "isSingle": true,
+      "tracks": [
+        {
+          "title": "BLACKSTONE FREESTYLE",
+          "src": "MUSICA/BLACKSTONE FREESTYLE.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "BAG CHASERS",
+      "albumCover": "album7.png",
+      "artists": "Juanky, Zodiak, Yung CAC",
+      "isSingle": true,
+      "tracks": [
+        {
+          "title": "BAG CHASERS",
+          "src": "MUSICA/BAG CHASERS.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "FUFI",
+      "albumCover": "album8.png",
+      "artists": "Yung CAC, VSN",
+      "isSingle": true,
+      "tracks": [
+        {
+          "title": "FUFI",
+          "src": "MUSICA/FUFI.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "MORAN",
+      "albumCover": "album9.png",
+      "artists": "Yung CAC, VSN",
+      "isSingle": true,
+      "tracks": [
+        {
+          "title": "MORAN",
+          "src": "MUSICA/MORAN.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "B4SM",
+      "albumCover": "cover b4sp.png",
+      "tracks": [
+        {
+          "title": "SALTO LEZIONE",
+          "src": "MUSICA/SALTO LEZIONE.mp3"
+        },
+        {
+          "title": "NIENTE COME TE",
+          "src": "MUSICA/NIENTE COME TE.mp3"
+        },
+        {
+          "title": "SONRI6",
+          "src": "MUSICA/SONRI6.mp3"
+        }
+      ],
+      "artists": "Yung CAC, VSN"
+    },
+    {
+      "albumTitle": "STUPRO MUSICA 2",
+      "albumCover": "album2.jpg",
+      "unreleased": true,
+      "tracks": [
+        {
+          "title": "JEWS HANDS",
+          "src": "MUSICA/1.1JEWSHANDS.mp3"
+        },
+        {
+          "title": "ANGEL",
+          "src": "MUSICA/1.2ANGEL.mp3"
+        },
+        {
+          "title": "BLIND",
+          "src": "MUSICA/1.3BLIND.mp3"
+        },
+        {
+          "title": "BARK",
+          "src": "MUSICA/1.4BARK.mp3"
+        },
+        {
+          "title": "GHOST",
+          "src": "MUSICA/1.5GHOST.mp3"
+        },
+        {
+          "title": "FLY",
+          "src": "MUSICA/1.6FLY.mp3"
+        },
+        {
+          "title": "MARIA",
+          "src": "MUSICA/1.7MARIA.mp3"
+        },
+        {
+          "title": "POPE",
+          "src": "MUSICA/1.8POPE.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "VULTURES 4",
+      "albumCover": "album3.jpg",
+      "unreleased": true,
+      "tracks": [
+        {
+          "title": "OH MY",
+          "src": "MUSICA/1.1.1OH MY.mp3"
+        },
+        {
+          "title": "BELL",
+          "src": "MUSICA/1.2.2BELL.mp3"
+        },
+        {
+          "title": "HEAVEN",
+          "src": "MUSICA/1.3.3HEAVEN.mp3"
+        },
+        {
+          "title": "ZZ",
+          "src": "MUSICA/1.4.4ZZ.mp3"
+        },
+        {
+          "title": "RISE",
+          "src": "MUSICA/1.5.5RISE.mp3"
+        },
+        {
+          "title": "OHH",
+          "src": "MUSICA/1.6.6OHH.mp3"
+        },
+        {
+          "title": "LAUNDRY",
+          "src": "MUSICA/1.7.7LAUNDRY.mp3"
+        },
+        {
+          "title": "END",
+          "src": "MUSICA/1.8.8END.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "CHISSA' COSA DIREBBE FREUD",
+      "albumCover": "album4.jpg",
+      "unreleased": true,
+      "tracks": [
+        {
+          "title": "WHISPERS",
+          "src": "MUSICA/1.1.1.1WHISPERS.mp3"
+        },
+        {
+          "title": "HONEY LIGHT",
+          "src": "MUSICA/1.2.2.2HONEYLIGHT.mp3"
+        },
+        {
+          "title": "BETWEEN SHADOWS",
+          "src": "MUSICA/1.3.3.3BETWEEN SHADOWS.mp3"
+        },
+        {
+          "title": "FIELDS",
+          "src": "MUSICA/1.4.4.4FIELDS.mp3"
+        },
+        {
+          "title": "GOLDEN HUNGER",
+          "src": "MUSICA/1.5.5.5GOLDEN HUNGER.mp3"
+        },
+        {
+          "title": "WHERE THE SKY MELTS",
+          "src": "MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3"
+        },
+        {
+          "title": "LANTERN",
+          "src": "MUSICA/1.7.7.7LANTERN.mp3"
+        },
+        {
+          "title": "THE HOURS THAT FLOW",
+          "src": "MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3"
+        }
+      ]
+    },
+    {
+      "albumTitle": "ANCHE GLI EROI SI FANNO DI CRACK",
+      "albumCover": "album5.jpg",
+      "unreleased": true,
+      "tracks": [
+        {
+          "title": "CONCRETE",
+          "src": "MUSICA/1.1.1.1.1CONCRETE.mp3"
+        },
+        {
+          "title": "PARTICLES",
+          "src": "MUSICA/1.2.2.2.2PARTICLES.mp3"
+        },
+        {
+          "title": "TRACE",
+          "src": "MUSICA/1.3.3.3.3TRACE.mp3"
+        },
+        {
+          "title": "LURK",
+          "src": "MUSICA/1.4.4.4.4LURK.mp3"
+        },
+        {
+          "title": "BREATHE",
+          "src": "MUSICA/1.5.5.5.5BREATHE.mp3"
+        },
+        {
+          "title": "GRID",
+          "src": "MUSICA/1.6.6.6.6GRID.mp3"
+        },
+        {
+          "title": "GEAR",
+          "src": "MUSICA/1.7.7.7.7GEAR.mp3"
+        },
+        {
+          "title": "NOISE",
+          "src": "MUSICA/1.8.8.8.8NOISE.mp3"
+        }
+      ]
+    }
+  ],
+  "art": [
+    {
+      "title": "FART MUSIC",
+      "unreleased": false,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_1.png",
+          "desc": "Cover FART MUSIC"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/Back_1.png",
+          "desc": "Back cover FART MUSIC"
+        }
+      ],
+      "documentaries": [
+        {
+          "type": "mux",
+          "playbackId": "2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k",
+          "desc": "FART MUSIC DOCUMENTARY"
+        }
+      ]
+    },
+    {
+      "title": "BLACKSTONE FREESTYLE",
+      "unreleased": false,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_6.jpg",
+          "desc": "Cover BLACKSTONE FREESTYLE"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/bf01.jpg",
+          "desc": "WE ARE HISTORY"
+        }
+      ],
+      "documentaries": [
+        {
+          "type": "mux",
+          "playbackId": "u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA",
+          "desc": "BLACKSTONE FREESTYLE DOCUMENTARY"
+        }
+      ]
+    },
+    {
+      "title": "BAG CHASERS",
+      "unreleased": false,
+      "initialDesc": "BAG CHASERS COVER",
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/Front_7.png",
+          "desc": "Cover BAG CHASERS"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_01.jpg",
+          "desc": "JUANKY TOON SIGN"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_02.jpg",
+          "desc": "VSN TOON SIGN"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_03.jpg",
+          "desc": "KFC YUNG CAC & JUANKY"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_04.jpg",
+          "desc": "KFC JUANKY"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_05.jpg",
+          "desc": "KFC ZODIAK & VSN"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_06.jpg",
+          "desc": "GREEDY SUL POLLO"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_07.jpg",
+          "desc": "JUANKY X STEF5K"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_09.jpg",
+          "desc": "ZODIAK X STEF5K"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_08.jpg",
+          "desc": "VSN DIETRO LA CAMERA"
+        },
+        {
+          "type": "video",
+          "src": "IMMAGINE/BAGCHASERS/BC_10.mp4",
+          "desc": "LOST"
+        },
+        {
+          "type": "video",
+          "src": "IMMAGINE/BAGCHASERS/BC_11.mp4",
+          "desc": "JUANKY ESCLUSO PERCHE' NERO"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_12.jpg",
+          "desc": "THE CHAIN"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_13.jpg",
+          "desc": "ZODIAK X WICKIBOI"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_14.jpg",
+          "desc": "JUANKY X WICKIBOI"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_15.jpg",
+          "desc": "SQUAD"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_16.jpg",
+          "desc": "LARPER"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_17.jpg",
+          "desc": "LARPER PT.2"
+        },
+        {
+          "type": "video",
+          "src": "IMMAGINE/BAGCHASERS/BC_18.mp4",
+          "desc": "LARPER PT.3"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_19.jpg",
+          "desc": "OBAMA"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_20.jpg",
+          "desc": "STUDIO (PARK)"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_21.jpg",
+          "desc": "FOCUSRITE"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/BAGCHASERS/BC_22.jpg",
+          "desc": "THE STUDIO"
+        }
+      ],
+      "documentaries": []
+    },
+    {
+      "title": "FUFI",
+      "unreleased": false,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_8.png",
+          "desc": "FUFI COVER"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/Back_8.jpg",
+          "desc": "THE STUDIO - MICROPHONE UPGRADE + SWISS GO"
+        }
+      ],
+      "documentaries": []
+    },
+    {
+      "title": "MORAN",
+      "unreleased": false,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_9.png",
+          "desc": "MORAN COVER"
+        }
+      ],
+      "documentaries": []
+    },
+    {
+      "title": "B4SM",
+      "unreleased": false,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/cover b4sp.png",
+          "desc": "B4SM COVER"
+        }
+      ],
+      "documentaries": []
+    },
+    {
+      "title": "STUPRO MUSICA 2",
+      "unreleased": true,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_2.jpg",
+          "desc": "Cover STUPRO MUSICA 2"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/Back_2.png",
+          "desc": "Back cover STUPRO MUSICA 2"
+        }
+      ],
+      "documentaries": [
+        {
+          "type": "video",
+          "src": "VIDEO/PISCIO (esperienza ufficiale).mp4",
+          "desc": "PISCIO (esperienza ufficiale)"
+        }
+      ]
+    },
+    {
+      "title": "VULTURES 4",
+      "unreleased": true,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_3.png",
+          "desc": "Cover VULTURES 4"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/Back_3.png",
+          "desc": "Back cover VULTURES 4"
+        }
+      ],
+      "documentaries": []
+    },
+    {
+      "title": "CHISSA' COSA DIREBBE FREUD",
+      "unreleased": true,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_4.png",
+          "desc": "Cover CHISSA' COSA DIREBBE FREUD"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/Back_4.png",
+          "desc": "Back cover CHISSA' COSA DIREBBE FREUD"
+        }
+      ],
+      "documentaries": []
+    },
+    {
+      "title": "ANCHE GLI EROI SI FANNO DI CRACK",
+      "unreleased": true,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/Front_5.png",
+          "desc": "Cover ANCHE GLI EROI SI FANNO DI CRACK"
+        },
+        {
+          "type": "image",
+          "src": "IMMAGINE/Back_5.png",
+          "desc": "Back cover ANCHE GLI EROI SI FANNO DI CRACK"
+        }
+      ],
+      "documentaries": []
+    }
+  ],
+  "goycast": [
+    {
+      "title": "EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE",
+      "date": "16-05-2026 ",
+      "playbackId": "2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00"
+    },
+    {
+      "title": "EP.1 LA CAVERNA DI PLATONE",
+      "date": "25-06-2026 ",
+      "playbackId": "RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI"
+    },
+    {
+      "title": "EP.1.5 PORTIAMO DA MANGIARE ALLE HOES",
+      "date": "28-06-2026 ",
+      "playbackId": "iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c"
+    },
+    {
+      "title": "EP.2 ECCO COSA PROVAVANO",
+      "date": "11-07-2026 ",
+      "playbackId": "s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U"
+    },
+    {
+      "title": "EP.2.5 IL VIAGGIO DI ULISSE",
+      "date": "18-07-2026 ",
+      "playbackId": "tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo"
+    },
+    {
+      "title": "EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)",
+      "date": "18-07-2026 ",
+      "playbackId": "HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ"
+    },
+    {
+      "title": "EP.3.5 HA BACIATO IL MICROFONO",
+      "date": "01-08-2026 ",
+      "playbackId": "scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc"
+    },
+    {
+      "title": "EP.4 PROTESTIAMO DA MCDONALD'S",
+      "date": "17-10-2026 ",
+      "playbackId": "H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs"
+    }
+  ]
+}
