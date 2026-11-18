@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yngcac-cache-v1';
+const CACHE_NAME = 'yngcac-cache-v2';
 
 const PRECACHE_URLS = [
     './index.html',
@@ -29,12 +29,46 @@ self.addEventListener('fetch', event => {
     const request = event.request;
     if (request.method !== 'GET') return;
 
-    if (request.mode === 'navigate' || (request.method === 'GET' && request.headers.get('accept')?.includes('text/html'))) {
+    const url = new URL(request.url);
+
+    // Ignora domini esterni (API GitHub, stream Mux, CDN)
+    if (url.origin !== self.location.origin) return;
+
+    // Ignora richieste Range e file multimediali pesanti (audio/video) e pannello admin
+    if (
+        request.headers.has('range') ||
+        /\.(mp3|mp4|wav|ogg|webm|m3u8|ts)$/i.test(url.pathname) ||
+        url.pathname.endsWith('/admin.html')
+    ) {
+        return;
+    }
+
+    // Strategia Network-First con chiave canonica per data.json (sempre aggiornato dopo pubblicazione da admin.html)
+    if (url.pathname.endsWith('/data.json')) {
+        const canonicalDataReq = new Request(url.origin + url.pathname);
         event.respondWith(
             fetch(request)
                 .then(networkResponse => {
-                    const clone = networkResponse.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+                    if (networkResponse && networkResponse.status === 200) {
+                        const clone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then(cache => cache.put(canonicalDataReq, clone));
+                    }
+                    return networkResponse;
+                })
+                .catch(() => caches.match(canonicalDataReq))
+        );
+        return;
+    }
+
+    // Strategia Network-First per la navigazione HTML
+    if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
+        event.respondWith(
+            fetch(request)
+                .then(networkResponse => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const clone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+                    }
                     return networkResponse;
                 })
                 .catch(() =>
@@ -44,12 +78,13 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // Strategia Stale-While-Revalidate per asset leggeri (icone, copertine, manifest)
     event.respondWith(
         caches.open(CACHE_NAME).then(cache =>
             cache.match(request).then(cachedResponse => {
                 const fetchPromise = fetch(request)
                     .then(networkResponse => {
-                        if (networkResponse && networkResponse.status === 200) {
+                        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
                             cache.put(request, networkResponse.clone());
                         }
                         return networkResponse;

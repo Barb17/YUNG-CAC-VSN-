@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<script>
+    // Protegge anche il pannello Admin con lo stesso token di sessione SHA-256
+    if (sessionStorage.getItem('vsn_authenticated') !== '819e34cd66a7a8fce6ee47516533ede4ebc1f7516faca551b3587a6c32dd8e30') {
+        sessionStorage.setItem('vsn_redirect', window.location.href);
+        window.location.href = 'login.html';
+    }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YNGCAC — ADMIN PANEL</title>
@@ -234,206 +241,27 @@
 <script>
 'use strict';
 
-// Dati di base YNGCAC (identici a index.html)
-const DEFAULT_SITE_DATA = {
-    snd: [
-        {
-            albumTitle: "FART MUSIC", albumCover: "album.jpg",
-            tracks: [
-                { title: 'CAVALLI', src: 'MUSICA/FartMusic/CAVALLI.mp3' },
-                { title: 'BERGHAIN', src: 'MUSICA/FartMusic/BERGHAIN.mp3' },
-                { title: 'NINTENDO SWITCH', src: 'MUSICA/FartMusic/NINTENDO SWITCH.mp3' },
-                { title: 'AHAHAHAH', src: 'MUSICA/FartMusic/AHAHAHAH.mp3' },
-                { title: 'OUTRO', src: 'MUSICA/FartMusic/OUTRO.mp3' }
-            ]
-        },
-        {
-            albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
-            artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
-            tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
-        },
-        {
-            albumTitle: "BAG CHASERS", albumCover: "album7.png", 
-            artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
-            tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
-        },
-        {
-            albumTitle: "FUFI", albumCover: "album8.png", 
-            artists: "Yung CAC, VSN", isSingle: true,
-            tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
-        },
-        {
-            albumTitle: "MORAN", albumCover: "album9.png", 
-            artists: "Yung CAC, VSN", isSingle: true,
-            tracks: [{ title: 'MORAN', src: 'MUSICA/MORAN.mp3' }]
-        },
-        {
-            albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg", unreleased: true,
-            tracks: [
-                { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
-                { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
-                { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
-                { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
-                { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
-                { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
-                { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
-                { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
-            ]
-        },
-        {
-            albumTitle: "VULTURES 4", albumCover: "album3.jpg", unreleased: true,
-            tracks: [
-                { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
-                { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
-                { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
-                { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
-                { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
-                { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
-                { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
-                { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
-            ]
-        },
-        {
-            albumTitle: "CHISSA' COSA DIREBBE FREUD", albumCover: "album4.jpg", unreleased: true,
-            tracks: [
-                { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
-                { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
-                { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
-                { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
-                { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
-                { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
-                { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
-                { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
-            ]
-        },
-        {
-            albumTitle: "ANCHE GLI EROI SI FANNO DI CRACK", albumCover: "album5.jpg", unreleased: true,
-            tracks: [
-                { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
-                { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
-                { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
-                { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
-                { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
-                { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
-                { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
-                { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
-            ]
-        }
-    ],
-    art: [
-        {
-            title: "FART MUSIC", unreleased: false,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_1.png", desc: "Cover FART MUSIC" },
-                { type: "image", src: "IMMAGINE/Back_1.png", desc: "Back cover FART MUSIC" }
-            ],
-            documentaries: [
-                { type: "mux", playbackId: "2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k", desc: "FART MUSIC DOCUMENTARY" }
-            ]
-        },
-        {
-            title: "BLACKSTONE FREESTYLE", unreleased: false,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_6.jpg", desc: "Cover BLACKSTONE FREESTYLE" },
-                { type: "image", src: "IMMAGINE/bf01.jpg", desc: "WE ARE HISTORY" }
-            ],
-            documentaries: [
-                { type: "mux", playbackId: "u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA", desc: "BLACKSTONE FREESTYLE DOCUMENTARY" }
-            ]
-        },
-        {
-            title: "BAG CHASERS", unreleased: false, initialDesc: "BAG CHASERS COVER",
-            slides: [
-                { type: "image", src: "IMMAGINE/BAGCHASERS/Front_7.png", desc: "Cover BAG CHASERS" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_01.jpg", desc: "JUANKY TOON SIGN" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_02.jpg", desc: "VSN TOON SIGN" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_03.jpg", desc: "KFC YUNG CAC & JUANKY" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_04.jpg", desc: "KFC JUANKY" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_05.jpg", desc: "KFC ZODIAK & VSN" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_06.jpg", desc: "GREEDY SUL POLLO" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_07.jpg", desc: "JUANKY X STEF5K" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_09.jpg", desc: "ZODIAK X STEF5K" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_08.jpg", desc: "VSN DIETRO LA CAMERA" },
-                { type: "video", src: "IMMAGINE/BAGCHASERS/BC_10.mp4", desc: "LOST" },
-                { type: "video", src: "IMMAGINE/BAGCHASERS/BC_11.mp4", desc: "JUANKY ESCLUSO PERCHE' NERO" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_12.jpg", desc: "THE CHAIN" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_13.jpg", desc: "ZODIAK X WICKIBOI" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_14.jpg", desc: "JUANKY X WICKIBOI" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_15.jpg", desc: "SQUAD" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_16.jpg", desc: "LARPER" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_17.jpg", desc: "LARPER PT.2" },
-                { type: "video", src: "IMMAGINE/BAGCHASERS/BC_18.mp4", desc: "LARPER PT.3" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_19.jpg", desc: "OBAMA" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_20.jpg", desc: "STUDIO (PARK)" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_21.jpg", desc: "FOCUSRITE" },
-                { type: "image", src: "IMMAGINE/BAGCHASERS/BC_22.jpg", desc: "THE STUDIO" }
-            ],
-            documentaries: []
-        },
-        {
-            title: "FUFI", unreleased: false,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_8.png", desc: "FUFI COVER" },
-                { type: "image", src: "IMMAGINE/Back_8.jpg", desc: "THE STUDIO - MICROPHONE UPGRADE + SWISS GO" }
-            ],
-            documentaries: []
-        },
-        {
-            title: "MORAN", unreleased: false,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_9.png", desc: "MORAN COVER" }
-            ],
-            documentaries: []
-        },
-        {
-            title: "STUPRO MUSICA 2", unreleased: true,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_2.jpg", desc: "Cover STUPRO MUSICA 2" },
-                { type: "image", src: "IMMAGINE/Back_2.png", desc: "Back cover STUPRO MUSICA 2" }
-            ],
-            documentaries: [
-                { type: "video", src: "VIDEO/PISCIO (esperienza ufficiale).mp4", desc: "PISCIO (esperienza ufficiale)" }
-            ]
-        },
-        {
-            title: "VULTURES 4", unreleased: true,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_3.png", desc: "Cover VULTURES 4" },
-                { type: "image", src: "IMMAGINE/Back_3.png", desc: "Back cover VULTURES 4" }
-            ],
-            documentaries: []
-        },
-        {
-            title: "CHISSA' COSA DIREBBE FREUD", unreleased: true,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_4.png", desc: "Cover CHISSA' COSA DIREBBE FREUD" },
-                { type: "image", src: "IMMAGINE/Back_4.png", desc: "Back cover CHISSA' COSA DIREBBE FREUD" }
-            ],
-            documentaries: []
-        },
-        {
-            title: "ANCHE GLI EROI SI FANNO DI CRACK", unreleased: true,
-            slides: [
-                { type: "image", src: "IMMAGINE/Front_5.png", desc: "Cover ANCHE GLI EROI SI FANNO DI CRACK" },
-                { type: "image", src: "IMMAGINE/Back_5.png", desc: "Back cover ANCHE GLI EROI SI FANNO DI CRACK" }
-            ],
-            documentaries: []
-        }
-    ],
-    goycast: [
-        { title: "EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE", date: "16-05-2026 ", playbackId: "2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00" },
-        { title: "EP.1 LA CAVERNA DI PLATONE", date: "25-06-2026 ", playbackId: "RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI" },
-        { title: "EP.1.5 PORTIAMO DA MANGIARE ALLE HOES", date: "28-06-2026 ", playbackId: "iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c" },
-        { title: "EP.2 ECCO COSA PROVAVANO", date: "11-07-2026 ", playbackId: "s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U" },
-        { title: "EP.2.5 IL VIAGGIO DI ULISSE", date: "18-07-2026 ", playbackId: "tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo" },
-        { title: "EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)", date: "18-07-2026 ", playbackId: "HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ" },
-        { title: "EP.3.5 HA BACIATO IL MICROFONO", date: "01-08-2026 ", playbackId: "scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc" },
-        { title: "EP.4 PROTESTIAMO DA MCDONALD'S", date: "17-10-2026 ", playbackId: "H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs" }
-    ]
-};
+const FALLBACK_SITE_DATA = {"snd":[{"albumTitle":"FART MUSIC","albumCover":"album.jpg","tracks":[{"title":"CAVALLI","src":"MUSICA/FartMusic/CAVALLI.mp3"},{"title":"BERGHAIN","src":"MUSICA/FartMusic/BERGHAIN.mp3"},{"title":"NINTENDO SWITCH","src":"MUSICA/FartMusic/NINTENDO SWITCH.mp3"},{"title":"AHAHAHAH","src":"MUSICA/FartMusic/AHAHAHAH.mp3"},{"title":"OUTRO","src":"MUSICA/FartMusic/OUTRO.mp3"}]},{"albumTitle":"BLACKSTONE FREESTYLE","albumCover":"album6.jpg","artists":"Juanky, Zodiak, Yung CAC, VSN","isSingle":true,"tracks":[{"title":"BLACKSTONE FREESTYLE","src":"MUSICA/BLACKSTONE FREESTYLE.mp3"}]},{"albumTitle":"BAG CHASERS","albumCover":"album7.png","artists":"Juanky, Zodiak, Yung CAC","isSingle":true,"tracks":[{"title":"BAG CHASERS","src":"MUSICA/BAG CHASERS.mp3"}]},{"albumTitle":"FUFI","albumCover":"album8.png","artists":"Yung CAC, VSN","isSingle":true,"tracks":[{"title":"FUFI","src":"MUSICA/FUFI.mp3"}]},{"albumTitle":"MORAN","albumCover":"album9.png","artists":"Yung CAC, VSN","isSingle":true,"tracks":[{"title":"MORAN","src":"MUSICA/MORAN.mp3"}]},{"albumTitle":"B4SM","albumCover":"cover b4sp.png","tracks":[{"title":"SALTO LEZIONE","src":"MUSICA/SALTO LEZIONE.mp3"},{"title":"NIENTE COME TE","src":"MUSICA/NIENTE COME TE.mp3"},{"title":"SONRI6","src":"MUSICA/SONRI6.mp3"}],"artists":"Yung CAC, VSN"},{"albumTitle":"PAM (THE EP)","albumCover":"pam ep.png","tracks":[{"title":"WHY ALWAYS ME 2","src":"MUSICA/why always me.mp3"},{"title":"COCCOLE","src":"MUSICA/COCCOLE.mp3"},{"title":"CIAO (FROCI DAL CENTRO)","src":"MUSICA/CIAO_FROCI_DAL_CENTRO.mp3"},{"title":"LABUBU","src":"MUSICA/LABUBU.mp3"}],"artists":"Yung CAC, Zodiak, Juanky, VSN"},{"albumTitle":"STUPRO MUSICA 2","albumCover":"album2.jpg","unreleased":true,"tracks":[{"title":"JEWS HANDS","src":"MUSICA/1.1JEWSHANDS.mp3"},{"title":"ANGEL","src":"MUSICA/1.2ANGEL.mp3"},{"title":"BLIND","src":"MUSICA/1.3BLIND.mp3"},{"title":"BARK","src":"MUSICA/1.4BARK.mp3"},{"title":"GHOST","src":"MUSICA/1.5GHOST.mp3"},{"title":"FLY","src":"MUSICA/1.6FLY.mp3"},{"title":"MARIA","src":"MUSICA/1.7MARIA.mp3"},{"title":"POPE","src":"MUSICA/1.8POPE.mp3"}]},{"albumTitle":"VULTURES 4","albumCover":"album3.jpg","unreleased":true,"tracks":[{"title":"OH MY","src":"MUSICA/1.1.1OH MY.mp3"},{"title":"BELL","src":"MUSICA/1.2.2BELL.mp3"},{"title":"HEAVEN","src":"MUSICA/1.3.3HEAVEN.mp3"},{"title":"ZZ","src":"MUSICA/1.4.4ZZ.mp3"},{"title":"RISE","src":"MUSICA/1.5.5RISE.mp3"},{"title":"OHH","src":"MUSICA/1.6.6OHH.mp3"},{"title":"LAUNDRY","src":"MUSICA/1.7.7LAUNDRY.mp3"},{"title":"END","src":"MUSICA/1.8.8END.mp3"}]},{"albumTitle":"CHISSA' COSA DIREBBE FREUD","albumCover":"album4.jpg","unreleased":true,"tracks":[{"title":"WHISPERS","src":"MUSICA/1.1.1.1WHISPERS.mp3"},{"title":"HONEY LIGHT","src":"MUSICA/1.2.2.2HONEYLIGHT.mp3"},{"title":"BETWEEN SHADOWS","src":"MUSICA/1.3.3.3BETWEEN SHADOWS.mp3"},{"title":"FIELDS","src":"MUSICA/1.4.4.4FIELDS.mp3"},{"title":"GOLDEN HUNGER","src":"MUSICA/1.5.5.5GOLDEN HUNGER.mp3"},{"title":"WHERE THE SKY MELTS","src":"MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3"},{"title":"LANTERN","src":"MUSICA/1.7.7.7LANTERN.mp3"},{"title":"THE HOURS THAT FLOW","src":"MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3"}]},{"albumTitle":"ANCHE GLI EROI SI FANNO DI CRACK","albumCover":"album5.jpg","unreleased":true,"tracks":[{"title":"CONCRETE","src":"MUSICA/1.1.1.1.1CONCRETE.mp3"},{"title":"PARTICLES","src":"MUSICA/1.2.2.2.2PARTICLES.mp3"},{"title":"TRACE","src":"MUSICA/1.3.3.3.3TRACE.mp3"},{"title":"LURK","src":"MUSICA/1.4.4.4.4LURK.mp3"},{"title":"BREATHE","src":"MUSICA/1.5.5.5.5BREATHE.mp3"},{"title":"GRID","src":"MUSICA/1.6.6.6.6GRID.mp3"},{"title":"GEAR","src":"MUSICA/1.7.7.7.7GEAR.mp3"},{"title":"NOISE","src":"MUSICA/1.8.8.8.8NOISE.mp3"}]}],"art":[{"title":"FART MUSIC","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_1.png","desc":"Cover FART MUSIC"},{"type":"image","src":"IMMAGINE/Back_1.png","desc":"Back cover FART MUSIC"}],"documentaries":[{"type":"mux","playbackId":"2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k","desc":"FART MUSIC DOCUMENTARY"}]},{"title":"BLACKSTONE FREESTYLE","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_6.jpg","desc":"Cover BLACKSTONE FREESTYLE"},{"type":"image","src":"IMMAGINE/bf01.jpg","desc":"WE ARE HISTORY"}],"documentaries":[{"type":"mux","playbackId":"u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA","desc":"BLACKSTONE FREESTYLE DOCUMENTARY"}]},{"title":"BAG CHASERS","unreleased":false,"initialDesc":"BAG CHASERS COVER","slides":[{"type":"image","src":"IMMAGINE/BAGCHASERS/Front_7.png","desc":"Cover BAG CHASERS"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_01.jpg","desc":"JUANKY TOON SIGN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_02.jpg","desc":"VSN TOON SIGN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_03.jpg","desc":"KFC YUNG CAC & JUANKY"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_04.jpg","desc":"KFC JUANKY"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_05.jpg","desc":"KFC ZODIAK & VSN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_06.jpg","desc":"GREEDY SUL POLLO"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_07.jpg","desc":"JUANKY X STEF5K"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_09.jpg","desc":"ZODIAK X STEF5K"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_08.jpg","desc":"VSN DIETRO LA CAMERA"},{"type":"video","src":"IMMAGINE/BAGCHASERS/BC_10.mp4","desc":"LOST"},{"type":"video","src":"IMMAGINE/BAGCHASERS/BC_11.mp4","desc":"JUANKY ESCLUSO PERCHE' NERO"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_12.jpg","desc":"THE CHAIN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_13.jpg","desc":"ZODIAK X WICKIBOI"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_14.jpg","desc":"JUANKY X WICKIBOI"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_15.jpg","desc":"SQUAD"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_16.jpg","desc":"LARPER"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_17.jpg","desc":"LARPER PT.2"},{"type":"video","src":"IMMAGINE/BAGCHASERS/BC_18.mp4","desc":"LARPER PT.3"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_19.jpg","desc":"OBAMA"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_20.jpg","desc":"STUDIO (PARK)"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_21.jpg","desc":"FOCUSRITE"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_22.jpg","desc":"THE STUDIO"}],"documentaries":[]},{"title":"FUFI","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_8.png","desc":"FUFI COVER"},{"type":"image","src":"IMMAGINE/Back_8.jpg","desc":"THE STUDIO - MICROPHONE UPGRADE + SWISS GO"}],"documentaries":[]},{"title":"MORAN","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_9.png","desc":"MORAN COVER"}],"documentaries":[]},{"title":"B4SM","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/cover b4sp.png","desc":"B4SM COVER"}],"documentaries":[]},{"title":"STUPRO MUSICA 2","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_2.jpg","desc":"Cover STUPRO MUSICA 2"},{"type":"image","src":"IMMAGINE/Back_2.png","desc":"Back cover STUPRO MUSICA 2"}],"documentaries":[{"type":"video","src":"VIDEO/PISCIO (esperienza ufficiale).mp4","desc":"PISCIO (esperienza ufficiale)"}]},{"title":"VULTURES 4","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_3.png","desc":"Cover VULTURES 4"},{"type":"image","src":"IMMAGINE/Back_3.png","desc":"Back cover VULTURES 4"}],"documentaries":[]},{"title":"CHISSA' COSA DIREBBE FREUD","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_4.png","desc":"Cover CHISSA' COSA DIREBBE FREUD"},{"type":"image","src":"IMMAGINE/Back_4.png","desc":"Back cover CHISSA' COSA DIREBBE FREUD"}],"documentaries":[]},{"title":"ANCHE GLI EROI SI FANNO DI CRACK","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_5.png","desc":"Cover ANCHE GLI EROI SI FANNO DI CRACK"},{"type":"image","src":"IMMAGINE/Back_5.png","desc":"Back cover ANCHE GLI EROI SI FANNO DI CRACK"}],"documentaries":[]}],"goycast":[{"title":"EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE","date":"16-05-2026 ","playbackId":"2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00"},{"title":"EP.1 LA CAVERNA DI PLATONE","date":"25-06-2026 ","playbackId":"RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI"},{"title":"EP.1.5 PORTIAMO DA MANGIARE ALLE HOES","date":"28-06-2026 ","playbackId":"iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c"},{"title":"EP.2 ECCO COSA PROVAVANO","date":"11-07-2026 ","playbackId":"s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U"},{"title":"EP.2.5 IL VIAGGIO DI ULISSE","date":"18-07-2026 ","playbackId":"tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo"},{"title":"EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)","date":"18-07-2026 ","playbackId":"HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ"},{"title":"EP.3.5 HA BACIATO IL MICROFONO","date":"01-08-2026 ","playbackId":"scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc"},{"title":"EP.4 PROTESTIAMO DA MCDONALD'S","date":"17-10-2026 ","playbackId":"H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs"}]};
 
-let siteData = JSON.parse(JSON.stringify(DEFAULT_SITE_DATA));
+let siteData = JSON.parse(JSON.stringify(FALLBACK_SITE_DATA));
 let uploadQueue = [];
+
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function encodeRepoPath(repoPath) {
+    return String(repoPath)
+        .split('/')
+        .filter(Boolean)
+        .map(segment => encodeURIComponent(segment))
+        .join('/');
+}
 
 function updateQueueUI() {
     const qEl = document.getElementById('queue-count');
@@ -493,46 +321,87 @@ document.getElementById('save-cfg-btn').addEventListener('click', async () => {
 async function syncFromSite() {
     const status = document.getElementById('sync-status');
     status.textContent = 'Sincronizzazione in corso...';
-    try {
-        const resp = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
-        if (resp.ok) {
-            siteData = await resp.json();
-            status.textContent = '✓ Dati caricati da data.json';
-        } else {
-            status.textContent = '✓ Dati base YNGCAC pronti (data.json verrà creato al primo salvataggio)';
+
+    const owner  = ghOwner.value.trim();
+    const repo   = ghRepo.value.trim();
+    const branch = ghBranch.value.trim() || 'main';
+    const token  = ghToken.value.trim();
+
+    let loaded = false;
+
+    // 1. Se le credenziali GitHub sono presenti, legge data.json direttamente dal branch GitHub (evita ritardi di cache CDN)
+    if (owner && repo && token) {
+        try {
+            const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/data.json?ref=${encodeURIComponent(branch)}`;
+            const ghResp = await fetch(apiUrl, {
+                cache: 'no-store',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github.raw+json'
+                }
+            });
+            if (ghResp.ok) {
+                siteData = await ghResp.json();
+                status.textContent = '✓ Dati sincronizzati da GitHub (' + branch + ')';
+                loaded = true;
+            }
+        } catch (e) {
+            // Fallback automatico su ./data.json locale
         }
-    } catch(e) {
-        status.textContent = '✓ Dati base YNGCAC pronti';
     }
+
+    // 2. Fallback lettura da ./data.json del sito
+    if (!loaded) {
+        try {
+            const resp = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
+            if (resp.ok) {
+                siteData = await resp.json();
+                status.textContent = '✓ Dati caricati da data.json';
+            } else {
+                status.textContent = '✓ Pronto (data.json verrà creato al primo salvataggio)';
+            }
+        } catch (e) {
+            status.textContent = '⚠ Impossibile leggere data.json locale; verifica la connessione GitHub';
+        }
+    }
+
+    if (!siteData || typeof siteData !== 'object') siteData = { snd: [], art: [], goycast: [] };
+    if (!Array.isArray(siteData.snd)) siteData.snd = [];
+    if (!Array.isArray(siteData.art)) siteData.art = [];
+    if (!Array.isArray(siteData.goycast)) siteData.goycast = [];
+
     renderAdminLists();
 }
 
 /* ── RENDER LISTE NELL'ADMIN CON PULSANTI RIORDINO (▲ / ▼) ── */
 function renderAdminLists() {
     // 1. SND
-    const sndSelect = document.getElementById('snd-select-album');
-    const sndList   = document.getElementById('snd-list');
+    const sndSelect  = document.getElementById('snd-select-album');
+    const sndList    = document.getElementById('snd-list');
     const prevSndVal = sndSelect.value;
-    sndSelect.innerHTML = '';
-    sndList.innerHTML   = '';
+    const sndOptFrag = document.createDocumentFragment();
+    const sndListFrag = document.createDocumentFragment();
+
     siteData.snd.forEach((alb, ai) => {
         const opt = document.createElement('option');
-        opt.value = ai; opt.textContent = alb.albumTitle;
-        sndSelect.appendChild(opt);
+        opt.value = ai;
+        opt.textContent = alb.albumTitle;
+        sndOptFrag.appendChild(opt);
 
+        const tracks = alb.tracks || [];
         const div = document.createElement('div');
         div.className = 'item-row';
         div.innerHTML = `
             <div class="item-header">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="${alb.albumCover}" alt="">
+                    <img src="${escapeHtml(alb.albumCover)}" alt="" loading="lazy" decoding="async">
                     <div>
                         <div class="item-title">
-                            #${ai + 1} — ${alb.albumTitle}
+                            #${ai + 1} — ${escapeHtml(alb.albumTitle)}
                             ${alb.isSingle ? '<span class="badge">SINGOLO</span>' : ''}
                             ${alb.unreleased ? '<span class="badge-soon">SOON (SFOCATO)</span>' : ''}
                         </div>
-                        <div class="item-sub">${alb.artists ? alb.artists + ' — ' : ''}${alb.tracks.length} brani</div>
+                        <div class="item-sub">${alb.artists ? escapeHtml(alb.artists) + ' — ' : ''}${tracks.length} brani</div>
                     </div>
                 </div>
                 <div class="action-group">
@@ -547,20 +416,23 @@ function renderAdminLists() {
         `;
         const ol = document.createElement('ol');
         ol.className = 'sub-list';
-        alb.tracks.forEach((t, ti) => {
+        tracks.forEach((t, ti) => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>${t.title} <span class="badge">${t.src}</span></span>
+                <span>${escapeHtml(t.title)} <span class="badge">${escapeHtml(t.src)}</span></span>
                 <div class="action-group">
                     <button class="btn-move" title="Sposta Traccia Su" data-move-snd-track="${ai}:${ti}:-1" ${ti === 0 ? 'disabled' : ''}>▲</button>
-                    <button class="btn-move" title="Sposta Traccia Giù" data-move-snd-track="${ai}:${ti}:1" ${ti === alb.tracks.length - 1 ? 'disabled' : ''}>▼</button>
+                    <button class="btn-move" title="Sposta Traccia Giù" data-move-snd-track="${ai}:${ti}:1" ${ti === tracks.length - 1 ? 'disabled' : ''}>▼</button>
                     <button class="btn-danger" data-del-snd-track="${ai}:${ti}">✕</button>
                 </div>`;
             ol.appendChild(li);
         });
         div.appendChild(ol);
-        sndList.appendChild(div);
+        sndListFrag.appendChild(div);
     });
+
+    sndSelect.replaceChildren(sndOptFrag);
+    sndList.replaceChildren(sndListFrag);
     if (prevSndVal && sndSelect.querySelector(`option[value="${prevSndVal}"]`)) {
         sndSelect.value = prevSndVal;
     }
@@ -570,17 +442,24 @@ function renderAdminLists() {
     const artDocSelect = document.getElementById('art-doc-select-proj');
     const artList      = document.getElementById('art-list');
     const prevArtVal   = artSelect.value;
-    artSelect.innerHTML    = '';
-    artDocSelect.innerHTML = '';
-    artList.innerHTML      = '';
+    const prevDocVal   = artDocSelect.value;
+    const artOptFrag1  = document.createDocumentFragment();
+    const artOptFrag2  = document.createDocumentFragment();
+    const artListFrag  = document.createDocumentFragment();
+
     siteData.art.forEach((proj, pi) => {
         const opt1 = document.createElement('option');
-        opt1.value = pi; opt1.textContent = proj.title;
-        artSelect.appendChild(opt1);
+        opt1.value = pi;
+        opt1.textContent = proj.title;
+        artOptFrag1.appendChild(opt1);
 
         const opt2 = document.createElement('option');
-        opt2.value = pi; opt2.textContent = proj.title;
-        artDocSelect.appendChild(opt2);
+        opt2.value = pi;
+        opt2.textContent = proj.title;
+        artOptFrag2.appendChild(opt2);
+
+        const slidesArr = proj.slides || [];
+        const docsArr   = proj.documentaries || [];
 
         const div = document.createElement('div');
         div.className = 'item-row';
@@ -588,10 +467,10 @@ function renderAdminLists() {
             <div class="item-header">
                 <div>
                     <div class="item-title">
-                        #${pi + 1} — ${proj.title}
+                        #${pi + 1} — ${escapeHtml(proj.title)}
                         ${proj.unreleased ? '<span class="badge-soon">SOON (SFOCATO)</span>' : ''}
                     </div>
-                    <div class="item-sub">${(proj.slides || []).length} slide nel carosello — ${(proj.documentaries || []).length} documentari</div>
+                    <div class="item-sub">${slidesArr.length} slide nel carosello — ${docsArr.length} documentari</div>
                 </div>
                 <div class="action-group">
                     <button class="btn-move" title="Sposta Su" data-move-art-proj="${pi}:-1" ${pi === 0 ? 'disabled' : ''}>▲</button>
@@ -606,11 +485,10 @@ function renderAdminLists() {
 
         const ul = document.createElement('ol');
         ul.className = 'sub-list';
-        const slidesArr = proj.slides || [];
         slidesArr.forEach((s, si) => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>[Slide ${s.type.toUpperCase()}] ${s.desc || ''} <span class="badge">${s.src || s.playbackId}</span></span>
+                <span>[Slide ${escapeHtml((s.type || '').toUpperCase())}] ${escapeHtml(s.desc || '')} <span class="badge">${escapeHtml(s.src || s.playbackId || '')}</span></span>
                 <div class="action-group">
                     <button class="btn-move" title="Sposta Slide Su" data-move-art-slide="${pi}:${si}:-1" ${si === 0 ? 'disabled' : ''}>▲</button>
                     <button class="btn-move" title="Sposta Slide Giù" data-move-art-slide="${pi}:${si}:1" ${si === slidesArr.length - 1 ? 'disabled' : ''}>▼</button>
@@ -618,11 +496,10 @@ function renderAdminLists() {
                 </div>`;
             ul.appendChild(li);
         });
-        const docsArr = proj.documentaries || [];
         docsArr.forEach((d, di) => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>[DOCUMENTARIO] ${d.desc || ''} <span class="badge">${d.playbackId || d.src}</span></span>
+                <span>[DOCUMENTARIO] ${escapeHtml(d.desc || '')} <span class="badge">${escapeHtml(d.playbackId || d.src || '')}</span></span>
                 <div class="action-group">
                     <button class="btn-move" title="Sposta Doc Su" data-move-art-doc="${pi}:${di}:-1" ${di === 0 ? 'disabled' : ''}>▲</button>
                     <button class="btn-move" title="Sposta Doc Giù" data-move-art-doc="${pi}:${di}:1" ${di === docsArr.length - 1 ? 'disabled' : ''}>▼</button>
@@ -631,23 +508,30 @@ function renderAdminLists() {
             ul.appendChild(li);
         });
         div.appendChild(ul);
-        artList.appendChild(div);
+        artListFrag.appendChild(div);
     });
+
+    artSelect.replaceChildren(artOptFrag1);
+    artDocSelect.replaceChildren(artOptFrag2);
+    artList.replaceChildren(artListFrag);
     if (prevArtVal && artSelect.querySelector(`option[value="${prevArtVal}"]`)) {
         artSelect.value = prevArtVal;
     }
+    if (prevDocVal && artDocSelect.querySelector(`option[value="${prevDocVal}"]`)) {
+        artDocSelect.value = prevDocVal;
+    }
 
     // 3. GOYCAST
-    const goyList = document.getElementById('goy-list');
-    goyList.innerHTML = '';
+    const goyList     = document.getElementById('goy-list');
+    const goyListFrag = document.createDocumentFragment();
     siteData.goycast.forEach((ep, gi) => {
         const div = document.createElement('div');
         div.className = 'item-row';
         div.innerHTML = `
             <div class="item-header">
                 <div>
-                    <div class="item-title">#${gi + 1} — ${ep.title}</div>
-                    <div class="item-sub">Data: ${ep.date} — Mux ID: <span class="badge">${ep.playbackId}</span></div>
+                    <div class="item-title">#${gi + 1} — ${escapeHtml(ep.title)}</div>
+                    <div class="item-sub">Data: ${escapeHtml(ep.date || '')} — Mux ID: <span class="badge">${escapeHtml(ep.playbackId || '')}</span></div>
                 </div>
                 <div class="action-group">
                     <button class="btn-move" title="Sposta Su" data-move-goy="${gi}:-1" ${gi === 0 ? 'disabled' : ''}>▲</button>
@@ -656,8 +540,9 @@ function renderAdminLists() {
                 </div>
             </div>
         `;
-        goyList.appendChild(div);
+        goyListFrag.appendChild(div);
     });
+    goyList.replaceChildren(goyListFrag);
 }
 
 /* ── AZIONI AGGIUNTA / MODIFICA ────────────────────────── */
@@ -697,7 +582,7 @@ document.getElementById('snd-add-album-btn').addEventListener('click', () => {
 });
 
 document.getElementById('snd-add-track-btn').addEventListener('click', () => {
-    const albIdx = parseInt(document.getElementById('snd-select-album').value);
+    const albIdx = parseInt(document.getElementById('snd-select-album').value, 10);
     const title  = document.getElementById('snd-track-title').value.trim();
     const file   = document.getElementById('snd-track-file').files[0];
     if (isNaN(albIdx) || !title || !file) { alert('Seleziona un album/singolo, scrivi il titolo e scegli il file MP3.'); return; }
@@ -732,7 +617,7 @@ document.getElementById('art-add-proj-btn').addEventListener('click', () => {
 });
 
 document.getElementById('art-add-slide-btn').addEventListener('click', () => {
-    const projIdx = parseInt(document.getElementById('art-select-proj').value);
+    const projIdx = parseInt(document.getElementById('art-select-proj').value, 10);
     const desc    = document.getElementById('art-slide-desc').value.trim();
     const type    = document.getElementById('art-slide-type').value;
 
@@ -757,7 +642,7 @@ document.getElementById('art-add-slide-btn').addEventListener('click', () => {
 });
 
 document.getElementById('art-add-doc-btn').addEventListener('click', () => {
-    const projIdx = parseInt(document.getElementById('art-doc-select-proj').value);
+    const projIdx = parseInt(document.getElementById('art-doc-select-proj').value, 10);
     const desc    = document.getElementById('art-doc-desc').value.trim();
     const muxId   = document.getElementById('art-doc-mux').value.trim();
     if (isNaN(projIdx) || !muxId) { alert('Seleziona un progetto e incolla il Playback ID di Mux.'); return; }
@@ -809,22 +694,22 @@ document.body.addEventListener('click', e => {
         moveArrayItem(siteData.goycast, idx, dir);
         renderAdminLists();
     } else if (btn.dataset.toggleSndSoon !== undefined) {
-        const idx = parseInt(btn.dataset.toggleSndSoon);
+        const idx = parseInt(btn.dataset.toggleSndSoon, 10);
         siteData.snd[idx].unreleased = !siteData.snd[idx].unreleased;
         renderAdminLists();
     } else if (btn.dataset.delSndAlbum !== undefined) {
-        siteData.snd.splice(parseInt(btn.dataset.delSndAlbum), 1);
+        siteData.snd.splice(parseInt(btn.dataset.delSndAlbum, 10), 1);
         renderAdminLists();
     } else if (btn.dataset.delSndTrack !== undefined) {
         const [a, t] = btn.dataset.delSndTrack.split(':').map(Number);
         siteData.snd[a].tracks.splice(t, 1);
         renderAdminLists();
     } else if (btn.dataset.toggleArtSoon !== undefined) {
-        const idx = parseInt(btn.dataset.toggleArtSoon);
+        const idx = parseInt(btn.dataset.toggleArtSoon, 10);
         siteData.art[idx].unreleased = !siteData.art[idx].unreleased;
         renderAdminLists();
     } else if (btn.dataset.delArtProj !== undefined) {
-        siteData.art.splice(parseInt(btn.dataset.delArtProj), 1);
+        siteData.art.splice(parseInt(btn.dataset.delArtProj, 10), 1);
         renderAdminLists();
     } else if (btn.dataset.delArtSlide !== undefined) {
         const [p, s] = btn.dataset.delArtSlide.split(':').map(Number);
@@ -835,7 +720,7 @@ document.body.addEventListener('click', e => {
         siteData.art[p].documentaries.splice(d, 1);
         renderAdminLists();
     } else if (btn.dataset.delGoy !== undefined) {
-        siteData.goycast.splice(parseInt(btn.dataset.delGoy), 1);
+        siteData.goycast.splice(parseInt(btn.dataset.delGoy, 10), 1);
         renderAdminLists();
     }
 });
@@ -851,11 +736,18 @@ function fileToBase64(file) {
 }
 
 function utf8ToBase64(str) {
-    return btoa(unescape(encodeURIComponent(str)));
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(binary);
 }
 
 async function githubUploadFile(owner, repo, branch, token, path, base64Content, message) {
-    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`;
+    const encodedPath = encodeRepoPath(path);
+    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodedPath}`;
     const headers = {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github+json',
@@ -863,7 +755,10 @@ async function githubUploadFile(owner, repo, branch, token, path, base64Content,
     };
 
     let sha = null;
-    const getResp = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+    const getResp = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
+        cache: 'no-store',
+        headers
+    });
     if (getResp.ok) {
         const existing = await getResp.json();
         sha = existing.sha;

@@ -2,11 +2,9 @@
 <html lang="it">
 <head>
     <script>
-        // Controlla se l'utente ha la chiave di accesso per questa sessione
-        if (sessionStorage.getItem('vsn_authenticated') !== 'true') {
-            // Salva l'URL della pagina che voleva visitare per riportarcelo dopo il login
+        // Controlla se l'utente ha il token di sessione SHA-256 valido
+        if (sessionStorage.getItem('vsn_authenticated') !== '819e34cd66a7a8fce6ee47516533ede4ebc1f7516faca551b3587a6c32dd8e30') {
             sessionStorage.setItem('vsn_redirect', window.location.href);
-            // Lo sbatte fuori sulla pagina di login
             window.location.href = 'login.html';
         }
     </script>
@@ -27,8 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
     
-    <!-- Mux Video Script -->
-    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video"></script>
+    <!-- Mux Video Script (defer per non bloccare il rendering iniziale) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video" defer></script>
     
     <style>
         /* ================================================================
@@ -49,15 +47,9 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            min-height: 100dvh;
             overflow-x: hidden;
             overflow-y: scroll;
-        }
-
-        #page-title {
-            margin-top: 10px;
-            text-align: center;
-            width: 100%;
-            font-family: 'IBM Plex Mono', monospace;
         }
 
         /* ================================================================
@@ -128,7 +120,7 @@
             align-items: center;
         }
         .album { margin-bottom: 20px; }
-        .album img { max-width: 200px; width: 200px; border-radius: 5px; }
+        .album img { max-width: 200px; width: 200px; border-radius: 5px; display: block; margin: 0 auto; }
         
         .album-cover-clickable {
             cursor: pointer;
@@ -198,10 +190,12 @@
         }
         .carousel {
             position: relative; width: 100%; height: auto; overflow: hidden;
-            border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: transparent; 
+            border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: transparent;
+            touch-action: pan-y pinch-zoom;
         }
         .carousel-track {
-            display: flex; transition: transform 0.4s ease-in-out; width: 100%; align-items: center; 
+            display: flex; transition: transform 0.4s ease-in-out; width: 100%; align-items: center;
+            will-change: transform;
         }
         .carousel-slide {
             min-width: 100%; display: flex; justify-content: center; align-items: center;
@@ -222,7 +216,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         .custom-play-overlay:hover { transform: translate(-50%, -50%) scale(1.05); }
-        .custom-play-overlay svg { width: 28px; height: 28px; fill: black; margin-left: 5px; }
+        .custom-play-overlay svg { width: 28px; height: 28px; fill: black; margin-left: 5px; pointer-events: none; }
         .custom-play-overlay.hidden { opacity: 0; pointer-events: none; }
 
         .carousel-description {
@@ -261,12 +255,12 @@
 
         /* Lightbox (Zoom Immagini) */
         .lightbox {
-            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; height: 100dvh;
             background-color: rgba(0, 0, 0, 0.93); 
         }
         .lightbox.active { display: flex; justify-content: center; align-items: center; }
         .lightbox-content { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        #lightbox-img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: zoom-in; transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); transform-origin: center center; }
+        #lightbox-img { max-width: 95vw; max-height: 95vh; max-height: 95dvh; object-fit: contain; cursor: zoom-in; transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); transform-origin: center center; }
         #lightbox-img.zoomed { cursor: zoom-out; }
         .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; font-weight: bold; cursor: pointer; z-index: 10000; text-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: color 0.2s; line-height: 1; }
         .close-lightbox:hover { color: #ccc; }
@@ -300,7 +294,7 @@
         .play-pause-btn svg { width: 1em; height: 1em; fill: currentColor; vertical-align: middle; flex-shrink: 0; }
         
         #player-expanded {
-            position: fixed; top: 100%; left: 0; width: 100%; height: 100vh;
+            position: fixed; top: 100%; left: 0; width: 100%; height: 100vh; height: 100dvh;
             background-color: white; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.4s; visibility: hidden;
         }
@@ -330,7 +324,7 @@
         #modal-backdrop.active { visibility: visible; opacity: 1; }
         #tracklist-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 400px; max-height: 80vh; background-color: #ffffff; border-radius: 8px;
+            width: 90%; max-width: 400px; max-height: 80vh; max-height: 80dvh; background-color: #ffffff; border-radius: 8px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1002; visibility: hidden; opacity: 0;
             transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease; display: flex; flex-direction: column;
         }
@@ -387,7 +381,7 @@
     <div id="image-lightbox" class="lightbox">
         <span class="close-lightbox" id="close-lightbox">&times;</span>
         <div class="lightbox-content">
-            <img id="lightbox-img" src="" alt="Zoom Immagine">
+            <img id="lightbox-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Zoom Immagine">
         </div>
     </div>
 
@@ -402,20 +396,20 @@
     <div id="global-player-container" class="hidden">
         <div id="player-bar">
             <div class="player-bar-clickable" id="open-expanded-player">
-                <img src="album.jpg" alt="Copertina" id="bar-album-cover">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Copertina" id="bar-album-cover" decoding="async">
                 <div class="bar-track-info">
                     <span id="bar-track-title"></span>
                     <span id="bar-track-artists" style="font-size: 0.85em; color: #888; display: none;"></span>
                     <span id="bar-album-title"></span>
                 </div>
             </div>
-            <button id="bar-play-pause-btn" class="play-pause-btn"></button>
+            <button id="bar-play-pause-btn" class="play-pause-btn" aria-label="Play/Pausa"></button>
         </div>
     
         <div id="player-expanded">
-            <button id="close-expanded-btn">▼</button>
+            <button id="close-expanded-btn" aria-label="Chiudi player">▼</button>
             <div class="expanded-content">
-                <img src="album.jpg" alt="Copertina album" id="expanded-album-cover">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Copertina album" id="expanded-album-cover" decoding="async">
                 <h3 id="expanded-album-title"></h3>
                 <h4 id="expanded-track-title"></h4>
                 <h5 id="expanded-track-artists" style="margin-top: 0; font-size: 0.9em; color: #555; display: none; font-weight: normal;"></h5>
@@ -427,16 +421,16 @@
                 </div>
                 
                 <div class="controls">
-                    <button class="skip-btn" id="global-prev-btn">⏮</button>
-                    <button id="global-play-pause-btn" class="play-pause-btn"></button>
-                    <button class="skip-btn" id="global-next-btn">⏭</button>
+                    <button class="skip-btn" id="global-prev-btn" aria-label="Traccia precedente">⏮</button>
+                    <button id="global-play-pause-btn" class="play-pause-btn" aria-label="Play/Pausa"></button>
+                    <button class="skip-btn" id="global-next-btn" aria-label="Traccia successiva">⏭</button>
                 </div>
             </div>
         </div>
     </div>
 
     <footer class="site-footer">
-        <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo">
+        <img src="IMMAGINE/immagine3.png" alt="Icona" class="footer-logo" loading="lazy" decoding="async">
         <span>Sound & Vision by <a href="https://loveveryone.it" target="_blank" rel="noopener noreferrer">VSN</a></span>
     </footer>
 
@@ -448,224 +442,73 @@
 
         const PLAY_SVG  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>';
         const PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>';
+        const EMPTY_IMG = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
         function formatTime(s) {
             const m = Math.floor(s / 60);
             return m + ':' + Math.floor(s % 60).toString().padStart(2, '0');
         }
 
-        // ==========================================
-        // DATI DI DEFAULT (Sovrascritti da data.json se presente)
-        // ==========================================
-        const DEFAULT_SITE_DATA = {
-            snd: [
-                {
-                    albumTitle: "FART MUSIC", albumCover: "album.jpg",
-                    tracks: [
-                        { title: 'CAVALLI', src: 'MUSICA/FartMusic/CAVALLI.mp3' },
-                        { title: 'BERGHAIN', src: 'MUSICA/FartMusic/BERGHAIN.mp3' },
-                        { title: 'NINTENDO SWITCH', src: 'MUSICA/FartMusic/NINTENDO SWITCH.mp3' },
-                        { title: 'AHAHAHAH', src: 'MUSICA/FartMusic/AHAHAHAH.mp3' },
-                        { title: 'OUTRO', src: 'MUSICA/FartMusic/OUTRO.mp3' }
-                    ]
-                },
-                {
-                    albumTitle: "BLACKSTONE FREESTYLE", albumCover: "album6.jpg", 
-                    artists: "Juanky, Zodiak, Yung CAC, VSN", isSingle: true,
-                    tracks: [{ title: 'BLACKSTONE FREESTYLE', src: 'MUSICA/BLACKSTONE FREESTYLE.mp3' }]
-                },
-                {
-                    albumTitle: "BAG CHASERS", albumCover: "album7.png", 
-                    artists: "Juanky, Zodiak, Yung CAC", isSingle: true,
-                    tracks: [{ title: 'BAG CHASERS', src: 'MUSICA/BAG CHASERS.mp3' }]
-                },
-                {
-                    albumTitle: "FUFI", albumCover: "album8.png", 
-                    artists: "Yung CAC, VSN", isSingle: true,
-                    tracks: [{ title: 'FUFI', src: 'MUSICA/FUFI.mp3' }]
-                },
-                {
-                    albumTitle: "MORAN", albumCover: "album9.png", 
-                    artists: "Yung CAC, VSN", isSingle: true,
-                    tracks: [{ title: 'MORAN', src: 'MUSICA/MORAN.mp3' }]
-                },
-                {
-                    albumTitle: "STUPRO MUSICA 2", albumCover: "album2.jpg", unreleased: true,
-                    tracks: [
-                        { title: 'JEWS HANDS', src: 'MUSICA/1.1JEWSHANDS.mp3' },
-                        { title: 'ANGEL', src: 'MUSICA/1.2ANGEL.mp3' },
-                        { title: 'BLIND', src: 'MUSICA/1.3BLIND.mp3' },
-                        { title: 'BARK', src: 'MUSICA/1.4BARK.mp3' },
-                        { title: 'GHOST', src: 'MUSICA/1.5GHOST.mp3' },
-                        { title: 'FLY', src: 'MUSICA/1.6FLY.mp3' },
-                        { title: 'MARIA', src: 'MUSICA/1.7MARIA.mp3' },
-                        { title: 'POPE', src: 'MUSICA/1.8POPE.mp3' }
-                    ]
-                },
-                {
-                    albumTitle: "VULTURES 4", albumCover: "album3.jpg", unreleased: true,
-                    tracks: [
-                        { title: 'OH MY', src: 'MUSICA/1.1.1OH MY.mp3' },
-                        { title: 'BELL', src: 'MUSICA/1.2.2BELL.mp3' },
-                        { title: 'HEAVEN', src: 'MUSICA/1.3.3HEAVEN.mp3' },
-                        { title: 'ZZ', src: 'MUSICA/1.4.4ZZ.mp3' },
-                        { title: 'RISE', src: 'MUSICA/1.5.5RISE.mp3' },
-                        { title: 'OHH', src: 'MUSICA/1.6.6OHH.mp3' },
-                        { title: 'LAUNDRY', src: 'MUSICA/1.7.7LAUNDRY.mp3' },
-                        { title: 'END', src: 'MUSICA/1.8.8END.mp3' }
-                    ]
-                },
-                {
-                    albumTitle: "CHISSA' COSA DIREBBE FREUD", albumCover: "album4.jpg", unreleased: true,
-                    tracks: [
-                        { title: 'WHISPERS', src: 'MUSICA/1.1.1.1WHISPERS.mp3' }, 
-                        { title: 'HONEY LIGHT', src: 'MUSICA/1.2.2.2HONEYLIGHT.mp3' },
-                        { title: 'BETWEEN SHADOWS', src: 'MUSICA/1.3.3.3BETWEEN SHADOWS.mp3' },
-                        { title: 'FIELDS', src: 'MUSICA/1.4.4.4FIELDS.mp3' },
-                        { title: 'GOLDEN HUNGER', src: 'MUSICA/1.5.5.5GOLDEN HUNGER.mp3' },
-                        { title: 'WHERE THE SKY MELTS', src: 'MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3' },
-                        { title: 'LANTERN', src: 'MUSICA/1.7.7.7LANTERN.mp3' },
-                        { title: 'THE HOURS THAT FLOW', src: 'MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3' }
-                    ]
-                },
-                {
-                    albumTitle: "ANCHE GLI EROI SI FANNO DI CRACK", albumCover: "album5.jpg", unreleased: true,
-                    tracks: [
-                        { title: 'CONCRETE', src: 'MUSICA/1.1.1.1.1CONCRETE.mp3' }, 
-                        { title: 'PARTICLES', src: 'MUSICA/1.2.2.2.2PARTICLES.mp3' },
-                        { title: 'TRACE', src: 'MUSICA/1.3.3.3.3TRACE.mp3' },
-                        { title: 'LURK', src: 'MUSICA/1.4.4.4.4LURK.mp3' },
-                        { title: 'BREATHE', src: 'MUSICA/1.5.5.5.5BREATHE.mp3' },
-                        { title: 'GRID', src: 'MUSICA/1.6.6.6.6GRID.mp3' },
-                        { title: 'GEAR', src: 'MUSICA/1.7.7.7.7GEAR.mp3' },
-                        { title: 'NOISE', src: 'MUSICA/1.8.8.8.8NOISE.mp3' }
-                    ]
-                }
-            ],
-            art: [
-                {
-                    title: "FART MUSIC", unreleased: false,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_1.png", desc: "Cover FART MUSIC" },
-                        { type: "image", src: "IMMAGINE/Back_1.png", desc: "Back cover FART MUSIC" }
-                    ],
-                    documentaries: [
-                        { type: "mux", playbackId: "2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k", desc: "FART MUSIC DOCUMENTARY" }
-                    ]
-                },
-                {
-                    title: "BLACKSTONE FREESTYLE", unreleased: false,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_6.jpg", desc: "Cover BLACKSTONE FREESTYLE" },
-                        { type: "image", src: "IMMAGINE/bf01.jpg", desc: "WE ARE HISTORY" }
-                    ],
-                    documentaries: [
-                        { type: "mux", playbackId: "u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA", desc: "BLACKSTONE FREESTYLE DOCUMENTARY" }
-                    ]
-                },
-                {
-                    title: "BAG CHASERS", unreleased: false, initialDesc: "BAG CHASERS COVER",
-                    slides: [
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/Front_7.png", desc: "Cover BAG CHASERS" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_01.jpg", desc: "JUANKY TOON SIGN" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_02.jpg", desc: "VSN TOON SIGN" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_03.jpg", desc: "KFC YUNG CAC & JUANKY" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_04.jpg", desc: "KFC JUANKY" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_05.jpg", desc: "KFC ZODIAK & VSN" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_06.jpg", desc: "GREEDY SUL POLLO" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_07.jpg", desc: "JUANKY X STEF5K" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_09.jpg", desc: "ZODIAK X STEF5K" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_08.jpg", desc: "VSN DIETRO LA CAMERA" },
-                        { type: "video", src: "IMMAGINE/BAGCHASERS/BC_10.mp4", desc: "LOST" },
-                        { type: "video", src: "IMMAGINE/BAGCHASERS/BC_11.mp4", desc: "JUANKY ESCLUSO PERCHE' NERO" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_12.jpg", desc: "THE CHAIN" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_13.jpg", desc: "ZODIAK X WICKIBOI" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_14.jpg", desc: "JUANKY X WICKIBOI" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_15.jpg", desc: "SQUAD" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_16.jpg", desc: "LARPER" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_17.jpg", desc: "LARPER PT.2" },
-                        { type: "video", src: "IMMAGINE/BAGCHASERS/BC_18.mp4", desc: "LARPER PT.3" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_19.jpg", desc: "OBAMA" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_20.jpg", desc: "STUDIO (PARK)" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_21.jpg", desc: "FOCUSRITE" },
-                        { type: "image", src: "IMMAGINE/BAGCHASERS/BC_22.jpg", desc: "THE STUDIO" }
-                    ],
-                    documentaries: []
-                },
-                {
-                    title: "FUFI", unreleased: false,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_8.png", desc: "FUFI COVER" },
-                        { type: "image", src: "IMMAGINE/Back_8.jpg", desc: "THE STUDIO - MICROPHONE UPGRADE + SWISS GO" }
-                    ],
-                    documentaries: []
-                },
-                {
-                    title: "MORAN", unreleased: false,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_9.png", desc: "MORAN COVER" }
-                    ],
-                    documentaries: []
-                },
-                {
-                    title: "STUPRO MUSICA 2", unreleased: true,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_2.jpg", desc: "Cover STUPRO MUSICA 2" },
-                        { type: "image", src: "IMMAGINE/Back_2.png", desc: "Back cover STUPRO MUSICA 2" }
-                    ],
-                    documentaries: [
-                        { type: "video", src: "VIDEO/PISCIO (esperienza ufficiale).mp4", desc: "PISCIO (esperienza ufficiale)" }
-                    ]
-                },
-                {
-                    title: "VULTURES 4", unreleased: true,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_3.png", desc: "Cover VULTURES 4" },
-                        { type: "image", src: "IMMAGINE/Back_3.png", desc: "Back cover VULTURES 4" }
-                    ],
-                    documentaries: []
-                },
-                {
-                    title: "CHISSA' COSA DIREBBE FREUD", unreleased: true,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_4.png", desc: "Cover CHISSA' COSA DIREBBE FREUD" },
-                        { type: "image", src: "IMMAGINE/Back_4.png", desc: "Back cover CHISSA' COSA DIREBBE FREUD" }
-                    ],
-                    documentaries: []
-                },
-                {
-                    title: "ANCHE GLI EROI SI FANNO DI CRACK", unreleased: true,
-                    slides: [
-                        { type: "image", src: "IMMAGINE/Front_5.png", desc: "Cover ANCHE GLI EROI SI FANNO DI CRACK" },
-                        { type: "image", src: "IMMAGINE/Back_5.png", desc: "Back cover ANCHE GLI EROI SI FANNO DI CRACK" }
-                    ],
-                    documentaries: []
-                }
-            ],
-            goycast: [
-                { title: "EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE", date: "16-05-2026 ", playbackId: "2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00" },
-                { title: "EP.1 LA CAVERNA DI PLATONE", date: "25-06-2026 ", playbackId: "RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI" },
-                { title: "EP.1.5 PORTIAMO DA MANGIARE ALLE HOES", date: "28-06-2026 ", playbackId: "iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c" },
-                { title: "EP.2 ECCO COSA PROVAVANO", date: "11-07-2026 ", playbackId: "s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U" },
-                { title: "EP.2.5 IL VIAGGIO DI ULISSE", date: "18-07-2026 ", playbackId: "tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo" },
-                { title: "EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)", date: "18-07-2026 ", playbackId: "HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ" },
-                { title: "EP.3.5 HA BACIATO IL MICROFONO", date: "01-08-2026 ", playbackId: "scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc" },
-                { title: "EP.4 PROTESTIAMO DA MCDONALD'S", date: "17-10-2026 ", playbackId: "H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs" }
-            ]
-        };
+        let allAlbums       = [];
+        let artProjects     = [];
+        let goycastEpisodes = [];
 
-        let allAlbums       = DEFAULT_SITE_DATA.snd;
-        let artProjects     = DEFAULT_SITE_DATA.art;
-        let goycastEpisodes = DEFAULT_SITE_DATA.goycast;
+        // ==========================================
+        // GESTIONE SCROLL LOCK & NAV VISIBILITY
+        // ==========================================
+        const mainNav         = document.getElementById('main-nav');
+        const lightbox        = document.getElementById('image-lightbox');
+        const lightboxImg     = document.getElementById('lightbox-img');
+        const modalBackdrop   = document.getElementById('modal-backdrop');
+        const tracklistModal  = document.getElementById('tracklist-modal');
+        const tracklistContent = document.getElementById('tracklist-content');
+        const playerExpanded  = document.getElementById('player-expanded');
+
+        function syncModalState() {
+            const isPlayerOpen    = playerExpanded.classList.contains('active');
+            const isTracklistOpen = tracklistModal.classList.contains('active');
+            const isLightboxOpen  = lightbox.classList.contains('active');
+
+            mainNav.classList.toggle('hidden-by-player', isPlayerOpen || isTracklistOpen);
+            document.body.style.overflow = (isPlayerOpen || isTracklistOpen || isLightboxOpen) ? 'hidden' : '';
+        }
+
+        // ==========================================
+        // LAZY PRELOAD DEI VIDEO VISIBILI
+        // ==========================================
+        const mediaObserver = ('IntersectionObserver' in window)
+            ? new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const media = entry.target;
+                    if (media.getAttribute('preload') === 'none') {
+                        media.setAttribute('preload', 'metadata');
+                    }
+                    obs.unobserve(media);
+                });
+            }, { rootMargin: '250px 0px' })
+            : null;
+
+        function observePageMedia(pageId) {
+            const pageEl = document.getElementById('page-' + pageId);
+            if (!pageEl) return;
+            pageEl.querySelectorAll('video[preload="none"], mux-video[preload="none"]').forEach(media => {
+                // Osserva solo i video nella prima slide o nei documentari/episodi singoli
+                const slide = media.closest('.carousel-slide');
+                if (!slide || !slide.previousElementSibling) {
+                    if (mediaObserver) mediaObserver.observe(media);
+                    else media.setAttribute('preload', 'metadata');
+                }
+            });
+        }
 
         // ==========================================
         // SPA ROUTING
         // ==========================================
-        const ALL_PAGES = ['snd','art','goycast'];
+        const ALL_PAGES = ['snd', 'art', 'goycast'];
         let currentPage = null;
-        const mainNav = document.getElementById('main-nav');
 
-        function navigateTo(page) {
+        function navigateTo(page, pushHistory = true) {
             if (!ALL_PAGES.includes(page)) page = 'snd';
             if (page === currentPage) return;
             
@@ -680,28 +523,32 @@
                 a.classList.toggle('active', a.dataset.page === page);
             });
             
-            history.pushState({ page }, '', '#' + page);
+            if (pushHistory) {
+                history.pushState({ page }, '', '#' + page);
+            }
             window.scrollTo(0, 0);
 
             document.querySelectorAll('video, mux-video').forEach(video => video.pause());
+            observePageMedia(page);
         }
 
         document.querySelectorAll('.text-menu a[data-page]').forEach(a => {
             a.addEventListener('click', e => { 
                 e.preventDefault(); 
-                navigateTo(a.dataset.page); 
+                navigateTo(a.dataset.page, true); 
             });
         });
 
         window.addEventListener('popstate', e => {
-            const page = (e.state && e.state.page) || location.hash.replace('#','') || 'snd';
-            navigateTo(page);
+            const page = (e.state && e.state.page) || location.hash.replace('#', '') || 'snd';
+            navigateTo(page, false);
         });
 
         // ==========================================
         // PLAYER AUDIO GLOBALE + MEDIA SESSION API
         // ==========================================
         const globalAudio = new Audio();
+        globalAudio.preload = 'metadata';
         let currentAlbumIndex = 0;
         let currentTrackIndex = 0;
         let isPlaying = false;
@@ -712,26 +559,36 @@
         const globalProgressBar     = document.getElementById('global-progress-bar');
         const globalCurrentTime     = document.getElementById('global-current-time');
         const globalDuration        = document.getElementById('global-duration');
+        const barAlbumCover         = document.getElementById('bar-album-cover');
+        const barTrackTitle         = document.getElementById('bar-track-title');
+        const barAlbumTitle         = document.getElementById('bar-album-title');
+        const barTrackArtists       = document.getElementById('bar-track-artists');
+        const expAlbumCover         = document.getElementById('expanded-album-cover');
+        const expTrackTitle         = document.getElementById('expanded-track-title');
+        const expAlbumTitle         = document.getElementById('expanded-album-title');
+        const expTrackArtists       = document.getElementById('expanded-track-artists');
+
+        barPlayPauseBtn.innerHTML    = PLAY_SVG;
+        globalPlayPauseBtn.innerHTML = PLAY_SVG;
+
+        globalAudio.addEventListener('loadedmetadata', () => {
+            globalDuration.textContent = formatTime(globalAudio.duration || 0);
+        });
 
         function loadTrack(albumIndex, trackIndex) {
-            if (!allAlbums[albumIndex] || !allAlbums[albumIndex].tracks[trackIndex]) return;
+            const album = allAlbums[albumIndex];
+            if (!album || !album.tracks || !album.tracks[trackIndex]) return;
             currentAlbumIndex = albumIndex;
             currentTrackIndex = trackIndex;
-            const album = allAlbums[albumIndex];
             const track = album.tracks[trackIndex];
             
             globalAudio.src = track.src;
-            document.getElementById('bar-album-cover').src = album.albumCover;
-            document.getElementById('bar-track-title').textContent = track.title;
-            document.getElementById('bar-album-title').textContent = album.albumTitle;
-            document.getElementById('expanded-album-cover').src = album.albumCover;
-            document.getElementById('expanded-track-title').textContent = track.title;
-            document.getElementById('expanded-album-title').textContent = album.albumTitle;
-            
-            const expTrackTitle   = document.getElementById('expanded-track-title');
-            const barAlbumTitle   = document.getElementById('bar-album-title');
-            const barTrackArtists = document.getElementById('bar-track-artists');
-            const expTrackArtists = document.getElementById('expanded-track-artists');
+            barAlbumCover.src = album.albumCover;
+            barTrackTitle.textContent = track.title;
+            barAlbumTitle.textContent = album.albumTitle;
+            expAlbumCover.src = album.albumCover;
+            expTrackTitle.textContent = track.title;
+            expAlbumTitle.textContent = album.albumTitle;
 
             if (album.isSingle) {
                 expTrackTitle.style.display = 'none';
@@ -757,12 +614,8 @@
             globalPlayerContainer.classList.remove('hidden');
             globalProgressBar.value = 0;
             globalCurrentTime.textContent = '0:00';
-            
-            globalAudio.addEventListener('loadedmetadata', () => {
-                globalDuration.textContent = formatTime(globalAudio.duration || 0);
-            }, { once: true });
+            globalDuration.textContent = '0:00';
 
-            // Notifica di sistema (Media Session API) con cover e artista
             if ('mediaSession' in navigator) {
                 const mimeType = album.albumCover.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -794,18 +647,16 @@
         function togglePlayPause() { isPlaying ? pauseAudio() : playAudio(); }
 
         function playNextTrack() {
-            currentTrackIndex++;
             const currentAlbum = allAlbums[currentAlbumIndex];
-            if (currentTrackIndex >= currentAlbum.tracks.length) currentTrackIndex = 0;
+            if (!currentAlbum || !currentAlbum.tracks.length) return;
+            currentTrackIndex = (currentTrackIndex + 1) % currentAlbum.tracks.length;
             loadTrack(currentAlbumIndex, currentTrackIndex);
         }
 
         function playPrevTrack() {
-            currentTrackIndex--;
-            if (currentTrackIndex < 0) {
-                const currentAlbum = allAlbums[currentAlbumIndex];
-                currentTrackIndex = currentAlbum.tracks.length - 1;
-            }
+            const currentAlbum = allAlbums[currentAlbumIndex];
+            if (!currentAlbum || !currentAlbum.tracks.length) return;
+            currentTrackIndex = (currentTrackIndex - 1 + currentAlbum.tracks.length) % currentAlbum.tracks.length;
             loadTrack(currentAlbumIndex, currentTrackIndex);
         }
 
@@ -827,12 +678,12 @@
         document.getElementById('global-prev-btn').addEventListener('click', playPrevTrack);
 
         document.getElementById('open-expanded-player').addEventListener('click', () => {
-            document.getElementById('player-expanded').classList.add('active');
-            mainNav.classList.add('hidden-by-player'); 
+            playerExpanded.classList.add('active');
+            syncModalState();
         });
         document.getElementById('close-expanded-btn').addEventListener('click', () => {
-            document.getElementById('player-expanded').classList.remove('active');
-            mainNav.classList.remove('hidden-by-player'); 
+            playerExpanded.classList.remove('active');
+            syncModalState();
         });
 
         if ('mediaSession' in navigator) {
@@ -845,23 +696,23 @@
         // ==========================================
         // TRACKLIST MODAL (SND)
         // ==========================================
-        const modalBackdrop    = document.getElementById('modal-backdrop');
-        const tracklistModal   = document.getElementById('tracklist-modal');
-        const tracklistContent = document.getElementById('tracklist-content');
-
         function showTracklist(albumIndex) {
             const album = allAlbums[albumIndex];
+            if (!album) return;
             tracklistContent.innerHTML = '';
             
+            const fragment = document.createDocumentFragment();
+
             const modalCover = document.createElement('img');
             modalCover.src = album.albumCover;
             modalCover.className = 'tracklist-cover';
-            tracklistContent.appendChild(modalCover);
+            modalCover.decoding = 'async';
+            fragment.appendChild(modalCover);
             
             const modalTitle = document.createElement('h3');
             modalTitle.textContent = album.albumTitle;
             modalTitle.className = 'tracklist-album-title';
-            tracklistContent.appendChild(modalTitle);
+            fragment.appendChild(modalTitle);
             
             const trackListElement = document.createElement('ol');
             trackListElement.className = 'tracklist-ol';
@@ -873,22 +724,24 @@
                 trackItem.dataset.trackIndex = trackIndex;
                 trackListElement.appendChild(trackItem);
             });
-            tracklistContent.appendChild(trackListElement);
+            fragment.appendChild(trackListElement);
+            tracklistContent.appendChild(fragment);
             
             modalBackdrop.classList.add('active');
             tracklistModal.classList.add('active');
-            mainNav.classList.add('hidden-by-player'); 
+            syncModalState();
         }
 
         function closeTracklistModal() {
             modalBackdrop.classList.remove('active');
             tracklistModal.classList.remove('active');
-            mainNav.classList.remove('hidden-by-player'); 
+            syncModalState();
         }
 
-        tracklistContent.addEventListener('click', (e) => {
-            if (e.target && e.target.classList.contains('tracklist-item')) {
-                loadTrack(parseInt(e.target.dataset.albumIndex), parseInt(e.target.dataset.trackIndex));
+        tracklistContent.addEventListener('click', e => {
+            const item = e.target.closest('.tracklist-item');
+            if (item) {
+                loadTrack(parseInt(item.dataset.albumIndex, 10), parseInt(item.dataset.trackIndex, 10));
                 playAudio();
                 closeTracklistModal(); 
             }
@@ -900,37 +753,52 @@
         // ==========================================
         // CAROUSEL & LIGHTBOX (ART / GOYCAST)
         // ==========================================
-        window.moveSlide = function(carouselId, direction) {
+        function hydrateSlideMedia(slideEl) {
+            if (!slideEl) return;
+            const img = slideEl.querySelector('img[data-src]');
+            if (img) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+            const media = slideEl.querySelector('video[preload="none"], mux-video[preload="none"]');
+            if (media) {
+                media.setAttribute('preload', 'metadata');
+            }
+        }
+
+        function moveSlide(carouselId, direction) {
             const carousel = document.getElementById(carouselId);
             if (!carousel) return;
             const track = carousel.querySelector('.carousel-track');
             const slides = carousel.querySelectorAll('.carousel-slide');
+            if (slides.length <= 1) return;
             const descElement = document.getElementById('desc-' + carouselId); 
             
             carousel.querySelectorAll('video, mux-video').forEach(video => video.pause());
             
-            let currentIndex = parseInt(carousel.getAttribute('data-index')) || 0;
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = slides.length - 1;
-            else if (currentIndex >= slides.length) currentIndex = 0;
+            let currentIndex = parseInt(carousel.getAttribute('data-index'), 10) || 0;
+            currentIndex = (currentIndex + direction + slides.length) % slides.length;
             
+            // Precarica la slide corrente e quelle adiacenti per uno scorrimento fluido
+            hydrateSlideMedia(slides[currentIndex]);
+            hydrateSlideMedia(slides[(currentIndex + 1) % slides.length]);
+            hydrateSlideMedia(slides[(currentIndex - 1 + slides.length) % slides.length]);
+
             carousel.setAttribute('data-index', currentIndex);
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
             if (descElement && slides[currentIndex]) {
-                descElement.textContent = slides[currentIndex].getAttribute('data-desc');
+                descElement.textContent = slides[currentIndex].getAttribute('data-desc') || '';
             }
-        };
-
-        const lightbox    = document.getElementById('image-lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
+        }
+        window.moveSlide = moveSlide;
 
         function closeLightbox() {
             lightbox.classList.remove('active');
-            document.body.style.overflow = ''; 
+            syncModalState();
         }
 
         document.getElementById('close-lightbox').addEventListener('click', closeLightbox);
-        lightbox.addEventListener('click', (e) => {
+        lightbox.addEventListener('click', e => {
             if (e.target === lightbox || e.target.classList.contains('lightbox-content')) closeLightbox();
         });
 
@@ -949,57 +817,128 @@
             }
         });
 
-        function bindMediaInteractions() {
-            document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-                if (wrapper.dataset.bound === 'true') return;
-                wrapper.dataset.bound = 'true';
-                const video   = wrapper.querySelector('video, mux-video');
-                const overlay = wrapper.querySelector('.custom-play-overlay');
-                if (video && overlay) {
-                    overlay.addEventListener('click', () => video.play());
-                    video.addEventListener('play', () => {
-                        overlay.classList.add('hidden');
-                        if (isPlaying) pauseAudio();
-                    });
-                    video.addEventListener('pause', () => overlay.classList.remove('hidden'));
+        // Chiusura modali con tasto Escape su Desktop
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                if (lightbox.classList.contains('active')) closeLightbox();
+                else if (tracklistModal.classList.contains('active')) closeTracklistModal();
+                else if (playerExpanded.classList.contains('active')) {
+                    playerExpanded.classList.remove('active');
+                    syncModalState();
                 }
-            });
+            }
+        });
 
-            document.querySelectorAll('.carousel-slide img').forEach(img => {
-                if (img.dataset.bound === 'true') return;
-                img.dataset.bound = 'true';
-                img.addEventListener('click', function() {
-                    lightboxImg.src = this.src;
+        // Event Delegation su ART & GOYCAST (frecce carosello, play video, zoom immagini, swipe touch)
+        function setupGalleryDelegation(galleryEl) {
+            galleryEl.addEventListener('click', e => {
+                const carouselBtn = e.target.closest('.carousel-btn');
+                if (carouselBtn && carouselBtn.dataset.carouselId) {
+                    moveSlide(carouselBtn.dataset.carouselId, parseInt(carouselBtn.dataset.dir, 10));
+                    return;
+                }
+
+                const playOverlay = e.target.closest('.custom-play-overlay');
+                if (playOverlay) {
+                    const wrapper = playOverlay.closest('.video-wrapper');
+                    const video = wrapper ? wrapper.querySelector('video, mux-video') : null;
+                    if (video) video.play();
+                    return;
+                }
+
+                const slideImg = e.target.closest('.carousel-slide img');
+                if (slideImg) {
+                    const src = slideImg.getAttribute('src') || slideImg.dataset.src;
+                    if (!src || src === EMPTY_IMG) return;
+                    lightboxImg.src = src;
                     lightboxImg.classList.remove('zoomed'); 
                     lightboxImg.style.transform = 'scale(1)'; 
                     lightbox.classList.add('active');
-                    document.body.style.overflow = 'hidden'; 
-                });
+                    syncModalState();
+                }
             });
+
+            // Supporto Swipe orizzontale su Mobile per i caroselli
+            let touchStartX = 0;
+            let touchStartY = 0;
+            galleryEl.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1) return;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            galleryEl.addEventListener('touchend', e => {
+                const carousel = e.target.closest('.carousel[id]');
+                if (!carousel || e.changedTouches.length !== 1) return;
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+                    moveSlide(carousel.id, dx < 0 ? 1 : -1);
+                }
+            }, { passive: true });
         }
 
-        function createSlideElement(slide) {
+        setupGalleryDelegation(document.getElementById('art-gallery'));
+        setupGalleryDelegation(document.getElementById('goycast-gallery'));
+
+        function createSlideElement(slide, slideIndex = 0, totalSlides = 1, isUnreleased = false) {
             const slideDiv = document.createElement('div');
             slideDiv.className = 'carousel-slide';
             if (slide.desc) slideDiv.setAttribute('data-desc', slide.desc);
 
+            // Carica subito la prima slide e quelle adiacenti; differisci le altre nei caroselli lunghi
+            const isImmediateNeighbor = (slideIndex <= 1 || slideIndex === totalSlides - 1);
+
             if (slide.type === 'image') {
                 const img = document.createElement('img');
-                img.src = slide.src;
                 img.alt = slide.desc || '';
+                img.loading = 'lazy';
+                img.decoding = 'async';
+                if (isImmediateNeighbor) {
+                    img.src = slide.src;
+                } else {
+                    img.src = EMPTY_IMG;
+                    img.dataset.src = slide.src;
+                }
                 slideDiv.appendChild(img);
-            } else if (slide.type === 'video') {
-                slideDiv.innerHTML = `
-                    <div class="video-wrapper">
-                        <video controls playsinline preload="metadata"><source src="${slide.src}" type="video/mp4"></video>
-                        <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                    </div>`;
-            } else if (slide.type === 'mux') {
-                slideDiv.innerHTML = `
-                    <div class="video-wrapper">
-                        <mux-video controls playsinline preload="metadata" playback-id="${slide.playbackId || slide.src}"></mux-video>
-                        <div class="custom-play-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div>
-                    </div>`;
+            } else if (slide.type === 'video' || slide.type === 'mux') {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'video-wrapper';
+
+                let videoEl;
+                if (slide.type === 'video') {
+                    videoEl = document.createElement('video');
+                    videoEl.controls = true;
+                    videoEl.playsInline = true;
+                    videoEl.setAttribute('playsinline', '');
+                    videoEl.setAttribute('preload', 'none');
+                    const source = document.createElement('source');
+                    source.src = slide.src;
+                    source.type = 'video/mp4';
+                    videoEl.appendChild(source);
+                } else {
+                    videoEl = document.createElement('mux-video');
+                    videoEl.setAttribute('controls', '');
+                    videoEl.setAttribute('playsinline', '');
+                    videoEl.setAttribute('preload', 'none');
+                    videoEl.setAttribute('playback-id', slide.playbackId || slide.src);
+                }
+
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-play-overlay';
+                overlay.innerHTML = PLAY_SVG;
+
+                if (!isUnreleased) {
+                    videoEl.addEventListener('play', () => {
+                        overlay.classList.add('hidden');
+                        if (isPlaying) pauseAudio();
+                    });
+                    videoEl.addEventListener('pause', () => overlay.classList.remove('hidden'));
+                }
+
+                wrapper.appendChild(videoEl);
+                wrapper.appendChild(overlay);
+                slideDiv.appendChild(wrapper);
             }
             return slideDiv;
         }
@@ -1008,13 +947,14 @@
         // RENDER DINAMICO DELLE SEZIONI (Da data.json)
         // ==========================================
         function renderAllSections(data) {
-            allAlbums       = data.snd     || DEFAULT_SITE_DATA.snd;
-            artProjects     = data.art     || DEFAULT_SITE_DATA.art;
-            goycastEpisodes = data.goycast || DEFAULT_SITE_DATA.goycast;
+            allAlbums       = (data && data.snd)     || [];
+            artProjects     = (data && data.art)     || [];
+            goycastEpisodes = (data && data.goycast) || [];
 
-            // 1. Render SND
+            // 1. Render SND (con DocumentFragment per un singolo reflow)
             const pageSnd = document.getElementById('page-snd');
-            pageSnd.innerHTML = '';
+            const sndFragment = document.createDocumentFragment();
+
             allAlbums.forEach((album, idx) => {
                 const container = document.createElement('div');
                 container.className = 'music-container';
@@ -1034,17 +974,8 @@
                 img.alt = 'Copertina ' + album.albumTitle;
                 img.className = 'album-cover-clickable';
                 img.dataset.albumIndex = idx;
-
-                img.addEventListener('click', () => {
-                    if (album.unreleased) {
-                        tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
-                        modalBackdrop.classList.add('active');
-                        tracklistModal.classList.add('active');
-                        mainNav.classList.add('hidden-by-player');
-                        return;
-                    }
-                    showTracklist(idx);
-                });
+                img.decoding = 'async';
+                if (idx >= 3) img.loading = 'lazy';
 
                 const h3 = document.createElement('h3');
                 h3.className = 'album-title-text';
@@ -1053,12 +984,14 @@
                 albumDiv.appendChild(img);
                 albumDiv.appendChild(h3);
                 container.appendChild(albumDiv);
-                pageSnd.appendChild(container);
+                sndFragment.appendChild(container);
             });
+            pageSnd.replaceChildren(sndFragment);
 
             // 2. Render ART
             const artGallery = document.getElementById('art-gallery');
-            artGallery.innerHTML = '';
+            const artFragment = document.createDocumentFragment();
+
             artProjects.forEach((proj, pIdx) => {
                 const item = document.createElement('div');
                 item.className = 'model-item' + (proj.unreleased ? ' unreleased' : '');
@@ -1086,23 +1019,33 @@
                     carousel.id = cId;
                     carousel.setAttribute('data-index', '0');
 
-                    const prevBtn = document.createElement('button');
-                    prevBtn.className = 'carousel-btn prev';
-                    prevBtn.innerHTML = '&#10094;';
-                    prevBtn.setAttribute('onclick', `moveSlide('${cId}', -1)`);
-
-                    const nextBtn = document.createElement('button');
-                    nextBtn.className = 'carousel-btn next';
-                    nextBtn.innerHTML = '&#10095;';
-                    nextBtn.setAttribute('onclick', `moveSlide('${cId}', 1)`);
-
                     const track = document.createElement('div');
                     track.className = 'carousel-track';
-                    proj.slides.forEach(s => track.appendChild(createSlideElement(s)));
+                    const totalSlides = proj.slides.length;
+                    proj.slides.forEach((s, sIdx) => {
+                        track.appendChild(createSlideElement(s, sIdx, totalSlides, !!proj.unreleased));
+                    });
 
-                    carousel.appendChild(prevBtn);
-                    carousel.appendChild(track);
-                    carousel.appendChild(nextBtn);
+                    if (totalSlides > 1) {
+                        const prevBtn = document.createElement('button');
+                        prevBtn.className = 'carousel-btn prev';
+                        prevBtn.innerHTML = '&#10094;';
+                        prevBtn.dataset.carouselId = cId;
+                        prevBtn.dataset.dir = '-1';
+
+                        const nextBtn = document.createElement('button');
+                        nextBtn.className = 'carousel-btn next';
+                        nextBtn.innerHTML = '&#10095;';
+                        nextBtn.dataset.carouselId = cId;
+                        nextBtn.dataset.dir = '1';
+
+                        carousel.appendChild(prevBtn);
+                        carousel.appendChild(track);
+                        carousel.appendChild(nextBtn);
+                    } else {
+                        carousel.appendChild(track);
+                    }
+
                     cContainer.appendChild(carousel);
 
                     const descP = document.createElement('p');
@@ -1122,7 +1065,7 @@
 
                         const docCarousel = document.createElement('div');
                         docCarousel.className = 'carousel';
-                        docCarousel.appendChild(createSlideElement(doc));
+                        docCarousel.appendChild(createSlideElement(doc, 0, 1, !!proj.unreleased));
                         docContainer.appendChild(docCarousel);
 
                         const docDesc = document.createElement('p');
@@ -1134,12 +1077,14 @@
                     });
                 }
 
-                artGallery.appendChild(item);
+                artFragment.appendChild(item);
             });
+            artGallery.replaceChildren(artFragment);
 
             // 3. Render GOYCAST
             const goycastGallery = document.getElementById('goycast-gallery');
-            goycastGallery.innerHTML = '';
+            const goyFragment = document.createDocumentFragment();
+
             goycastEpisodes.forEach(ep => {
                 const item = document.createElement('div');
                 item.className = 'model-item';
@@ -1160,7 +1105,7 @@
                     type: slideType,
                     src: ep.videoSrc || ep.playbackId,
                     playbackId: ep.playbackId
-                }));
+                }, 0, 1, false));
 
                 cContainer.appendChild(carousel);
 
@@ -1170,32 +1115,53 @@
                 cContainer.appendChild(descP);
 
                 item.appendChild(cContainer);
-                goycastGallery.appendChild(item);
+                goyFragment.appendChild(item);
             });
+            goycastGallery.replaceChildren(goyFragment);
 
-            bindMediaInteractions();
+            if (currentPage) observePageMedia(currentPage);
         }
 
-        // Render iniziale immediato + aggiornamento da data.json
-        renderAllSections(DEFAULT_SITE_DATA);
-        loadTrack(0, 0);
-        globalPlayerContainer.classList.add('hidden');
-        pauseAudio();
+        // Event Delegation per apertura Tracklist in SND
+        document.getElementById('page-snd').addEventListener('click', e => {
+            const img = e.target.closest('.album-cover-clickable');
+            if (!img) return;
+            const idx = parseInt(img.dataset.albumIndex, 10);
+            const album = allAlbums[idx];
+            if (!album) return;
 
-        fetch('./data.json?t=' + Date.now(), {
-            cache: 'no-store',
-            headers: { 'Accept': 'text/html,application/json' }
-        })
-        .then(r => r.ok ? r.json() : null)
-        .then(customData => {
-            if (customData) renderAllSections(customData);
-        })
-        .catch(() => {});
+            if (album.unreleased) {
+                tracklistContent.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height: 150px;"><h2 style="font-size: 3em; margin: 0; letter-spacing: 5px; color: #333;">SOON</h2></div>';
+                modalBackdrop.classList.add('active');
+                tracklistModal.classList.add('active');
+                syncModalState();
+                return;
+            }
+            showTracklist(idx);
+        });
 
-        // Setup iniziale SPA
-        (function() {
-            const hash = location.hash.replace('#','');
-            navigateTo(ALL_PAGES.includes(hash) ? hash : 'snd');
+        // Fallback compatto (usato SOLO se fetch('./data.json') fallisce, es. apertura locale file://)
+        const FALLBACK_SITE_DATA = {"snd":[{"albumTitle":"FART MUSIC","albumCover":"album.jpg","tracks":[{"title":"CAVALLI","src":"MUSICA/FartMusic/CAVALLI.mp3"},{"title":"BERGHAIN","src":"MUSICA/FartMusic/BERGHAIN.mp3"},{"title":"NINTENDO SWITCH","src":"MUSICA/FartMusic/NINTENDO SWITCH.mp3"},{"title":"AHAHAHAH","src":"MUSICA/FartMusic/AHAHAHAH.mp3"},{"title":"OUTRO","src":"MUSICA/FartMusic/OUTRO.mp3"}]},{"albumTitle":"BLACKSTONE FREESTYLE","albumCover":"album6.jpg","artists":"Juanky, Zodiak, Yung CAC, VSN","isSingle":true,"tracks":[{"title":"BLACKSTONE FREESTYLE","src":"MUSICA/BLACKSTONE FREESTYLE.mp3"}]},{"albumTitle":"BAG CHASERS","albumCover":"album7.png","artists":"Juanky, Zodiak, Yung CAC","isSingle":true,"tracks":[{"title":"BAG CHASERS","src":"MUSICA/BAG CHASERS.mp3"}]},{"albumTitle":"FUFI","albumCover":"album8.png","artists":"Yung CAC, VSN","isSingle":true,"tracks":[{"title":"FUFI","src":"MUSICA/FUFI.mp3"}]},{"albumTitle":"MORAN","albumCover":"album9.png","artists":"Yung CAC, VSN","isSingle":true,"tracks":[{"title":"MORAN","src":"MUSICA/MORAN.mp3"}]},{"albumTitle":"B4SM","albumCover":"cover b4sp.png","tracks":[{"title":"SALTO LEZIONE","src":"MUSICA/SALTO LEZIONE.mp3"},{"title":"NIENTE COME TE","src":"MUSICA/NIENTE COME TE.mp3"},{"title":"SONRI6","src":"MUSICA/SONRI6.mp3"}],"artists":"Yung CAC, VSN"},{"albumTitle":"PAM (THE EP)","albumCover":"pam ep.png","tracks":[{"title":"WHY ALWAYS ME 2","src":"MUSICA/why always me.mp3"},{"title":"COCCOLE","src":"MUSICA/COCCOLE.mp3"},{"title":"CIAO (FROCI DAL CENTRO)","src":"MUSICA/CIAO_FROCI_DAL_CENTRO.mp3"},{"title":"LABUBU","src":"MUSICA/LABUBU.mp3"}],"artists":"Yung CAC, Zodiak, Juanky, VSN"},{"albumTitle":"STUPRO MUSICA 2","albumCover":"album2.jpg","unreleased":true,"tracks":[{"title":"JEWS HANDS","src":"MUSICA/1.1JEWSHANDS.mp3"},{"title":"ANGEL","src":"MUSICA/1.2ANGEL.mp3"},{"title":"BLIND","src":"MUSICA/1.3BLIND.mp3"},{"title":"BARK","src":"MUSICA/1.4BARK.mp3"},{"title":"GHOST","src":"MUSICA/1.5GHOST.mp3"},{"title":"FLY","src":"MUSICA/1.6FLY.mp3"},{"title":"MARIA","src":"MUSICA/1.7MARIA.mp3"},{"title":"POPE","src":"MUSICA/1.8POPE.mp3"}]},{"albumTitle":"VULTURES 4","albumCover":"album3.jpg","unreleased":true,"tracks":[{"title":"OH MY","src":"MUSICA/1.1.1OH MY.mp3"},{"title":"BELL","src":"MUSICA/1.2.2BELL.mp3"},{"title":"HEAVEN","src":"MUSICA/1.3.3HEAVEN.mp3"},{"title":"ZZ","src":"MUSICA/1.4.4ZZ.mp3"},{"title":"RISE","src":"MUSICA/1.5.5RISE.mp3"},{"title":"OHH","src":"MUSICA/1.6.6OHH.mp3"},{"title":"LAUNDRY","src":"MUSICA/1.7.7LAUNDRY.mp3"},{"title":"END","src":"MUSICA/1.8.8END.mp3"}]},{"albumTitle":"CHISSA' COSA DIREBBE FREUD","albumCover":"album4.jpg","unreleased":true,"tracks":[{"title":"WHISPERS","src":"MUSICA/1.1.1.1WHISPERS.mp3"},{"title":"HONEY LIGHT","src":"MUSICA/1.2.2.2HONEYLIGHT.mp3"},{"title":"BETWEEN SHADOWS","src":"MUSICA/1.3.3.3BETWEEN SHADOWS.mp3"},{"title":"FIELDS","src":"MUSICA/1.4.4.4FIELDS.mp3"},{"title":"GOLDEN HUNGER","src":"MUSICA/1.5.5.5GOLDEN HUNGER.mp3"},{"title":"WHERE THE SKY MELTS","src":"MUSICA/1.6.6.6WHERE THE SKY MELTS.mp3"},{"title":"LANTERN","src":"MUSICA/1.7.7.7LANTERN.mp3"},{"title":"THE HOURS THAT FLOW","src":"MUSICA/1.8.8.8THE HOURS THAT FLOW.mp3"}]},{"albumTitle":"ANCHE GLI EROI SI FANNO DI CRACK","albumCover":"album5.jpg","unreleased":true,"tracks":[{"title":"CONCRETE","src":"MUSICA/1.1.1.1.1CONCRETE.mp3"},{"title":"PARTICLES","src":"MUSICA/1.2.2.2.2PARTICLES.mp3"},{"title":"TRACE","src":"MUSICA/1.3.3.3.3TRACE.mp3"},{"title":"LURK","src":"MUSICA/1.4.4.4.4LURK.mp3"},{"title":"BREATHE","src":"MUSICA/1.5.5.5.5BREATHE.mp3"},{"title":"GRID","src":"MUSICA/1.6.6.6.6GRID.mp3"},{"title":"GEAR","src":"MUSICA/1.7.7.7.7GEAR.mp3"},{"title":"NOISE","src":"MUSICA/1.8.8.8.8NOISE.mp3"}]}],"art":[{"title":"FART MUSIC","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_1.png","desc":"Cover FART MUSIC"},{"type":"image","src":"IMMAGINE/Back_1.png","desc":"Back cover FART MUSIC"}],"documentaries":[{"type":"mux","playbackId":"2VDeq4ZEBdrNdvcJoZMNX16xg4xAzhZpekzbyZ02w34k","desc":"FART MUSIC DOCUMENTARY"}]},{"title":"BLACKSTONE FREESTYLE","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_6.jpg","desc":"Cover BLACKSTONE FREESTYLE"},{"type":"image","src":"IMMAGINE/bf01.jpg","desc":"WE ARE HISTORY"}],"documentaries":[{"type":"mux","playbackId":"u3hjsd5RA01nMH029b6JOb17hTTpnOTD98W9K601VtI2QA","desc":"BLACKSTONE FREESTYLE DOCUMENTARY"}]},{"title":"BAG CHASERS","unreleased":false,"initialDesc":"BAG CHASERS COVER","slides":[{"type":"image","src":"IMMAGINE/BAGCHASERS/Front_7.png","desc":"Cover BAG CHASERS"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_01.jpg","desc":"JUANKY TOON SIGN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_02.jpg","desc":"VSN TOON SIGN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_03.jpg","desc":"KFC YUNG CAC & JUANKY"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_04.jpg","desc":"KFC JUANKY"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_05.jpg","desc":"KFC ZODIAK & VSN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_06.jpg","desc":"GREEDY SUL POLLO"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_07.jpg","desc":"JUANKY X STEF5K"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_09.jpg","desc":"ZODIAK X STEF5K"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_08.jpg","desc":"VSN DIETRO LA CAMERA"},{"type":"video","src":"IMMAGINE/BAGCHASERS/BC_10.mp4","desc":"LOST"},{"type":"video","src":"IMMAGINE/BAGCHASERS/BC_11.mp4","desc":"JUANKY ESCLUSO PERCHE' NERO"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_12.jpg","desc":"THE CHAIN"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_13.jpg","desc":"ZODIAK X WICKIBOI"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_14.jpg","desc":"JUANKY X WICKIBOI"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_15.jpg","desc":"SQUAD"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_16.jpg","desc":"LARPER"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_17.jpg","desc":"LARPER PT.2"},{"type":"video","src":"IMMAGINE/BAGCHASERS/BC_18.mp4","desc":"LARPER PT.3"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_19.jpg","desc":"OBAMA"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_20.jpg","desc":"STUDIO (PARK)"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_21.jpg","desc":"FOCUSRITE"},{"type":"image","src":"IMMAGINE/BAGCHASERS/BC_22.jpg","desc":"THE STUDIO"}],"documentaries":[]},{"title":"FUFI","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_8.png","desc":"FUFI COVER"},{"type":"image","src":"IMMAGINE/Back_8.jpg","desc":"THE STUDIO - MICROPHONE UPGRADE + SWISS GO"}],"documentaries":[]},{"title":"MORAN","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/Front_9.png","desc":"MORAN COVER"}],"documentaries":[]},{"title":"B4SM","unreleased":false,"slides":[{"type":"image","src":"IMMAGINE/cover b4sp.png","desc":"B4SM COVER"}],"documentaries":[]},{"title":"STUPRO MUSICA 2","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_2.jpg","desc":"Cover STUPRO MUSICA 2"},{"type":"image","src":"IMMAGINE/Back_2.png","desc":"Back cover STUPRO MUSICA 2"}],"documentaries":[{"type":"video","src":"VIDEO/PISCIO (esperienza ufficiale).mp4","desc":"PISCIO (esperienza ufficiale)"}]},{"title":"VULTURES 4","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_3.png","desc":"Cover VULTURES 4"},{"type":"image","src":"IMMAGINE/Back_3.png","desc":"Back cover VULTURES 4"}],"documentaries":[]},{"title":"CHISSA' COSA DIREBBE FREUD","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_4.png","desc":"Cover CHISSA' COSA DIREBBE FREUD"},{"type":"image","src":"IMMAGINE/Back_4.png","desc":"Back cover CHISSA' COSA DIREBBE FREUD"}],"documentaries":[]},{"title":"ANCHE GLI EROI SI FANNO DI CRACK","unreleased":true,"slides":[{"type":"image","src":"IMMAGINE/Front_5.png","desc":"Cover ANCHE GLI EROI SI FANNO DI CRACK"},{"type":"image","src":"IMMAGINE/Back_5.png","desc":"Back cover ANCHE GLI EROI SI FANNO DI CRACK"}],"documentaries":[]}],"goycast":[{"title":"EP.0 L'ERBA VOGLIO NON CRESCE MANCO NEL GIARDINO DEL RE","date":"16-05-2026 ","playbackId":"2u9o02QIuGs8wQqpJKvGaxNr00hcHMq6baYCFKMARHsd00"},{"title":"EP.1 LA CAVERNA DI PLATONE","date":"25-06-2026 ","playbackId":"RLgIaAUhfTdbBv7mBEakRTMBS1zsYMhIJK00Kw2p00xvI"},{"title":"EP.1.5 PORTIAMO DA MANGIARE ALLE HOES","date":"28-06-2026 ","playbackId":"iGhDb7ZLHtw01FqVEUbxuM8S4NspOQRXprRbtDoF7f7c"},{"title":"EP.2 ECCO COSA PROVAVANO","date":"11-07-2026 ","playbackId":"s1DR4wEVdjmGmAMau2jtgNUDEgKnpPCAEU00qZzGvk5U"},{"title":"EP.2.5 IL VIAGGIO DI ULISSE","date":"18-07-2026 ","playbackId":"tOJwQ02OvBfccbj2LLvAEE4acHziF016w3i9Kwk7w91Yo"},{"title":"EP.3 RISPETTO PER TAYLOR SWIFT (TAYLOR'S VERSION)","date":"18-07-2026 ","playbackId":"HgqDVYyFsxWiiKTIwpGKLEd02IG9sBwGtlF00PBBEDRmQ"},{"title":"EP.3.5 HA BACIATO IL MICROFONO","date":"01-08-2026 ","playbackId":"scPnepyQ00hjBnK446OWhMxbKau1KEWjhXQRAyAK56gc"},{"title":"EP.4 PROTESTIAMO DA MCDONALD'S","date":"17-10-2026 ","playbackId":"H3ASDsomOVIqQEmGxE00d00BoFwIF101S1BwX931c338rs"}]};
+
+        // Setup iniziale SPA e caricamento singolo da data.json
+        (function initApp() {
+            const hash = location.hash.replace('#', '');
+            navigateTo(ALL_PAGES.includes(hash) ? hash : 'snd', false);
+
+            fetch('./data.json?t=' + Date.now(), {
+                cache: 'no-store',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(siteData => {
+                renderAllSections(siteData);
+            })
+            .catch(() => {
+                renderAllSections(FALLBACK_SITE_DATA);
+            });
         })();
 
         // ==========================================
@@ -1204,7 +1170,6 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js').then(reg => {
-                    setInterval(() => reg.update(), 60 * 60 * 1000); 
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
