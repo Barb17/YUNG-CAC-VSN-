@@ -485,6 +485,18 @@
       "documentaries": []
     },
     {
+      "title": "PAM (THE EP)",
+      "unreleased": false,
+      "slides": [
+        {
+          "type": "image",
+          "src": "IMMAGINE/pam ep.png",
+          "desc": "Cover PAM (THE EP)"
+        }
+      ],
+      "documentaries": []
+    },
+    {
       "title": "STUPRO MUSICA 2",
       "unreleased": true,
       "slides": [
