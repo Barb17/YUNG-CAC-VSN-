@@ -297,6 +297,7 @@
             position: fixed; top: 100%; left: 0; width: 100%; height: 100vh; height: 100dvh;
             background-color: white; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.4s; visibility: hidden;
+            overscroll-behavior: contain; touch-action: pan-x;
         }
         #player-expanded.active { top: 0; visibility: visible; transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s; }
         #close-expanded-btn { position: absolute; top: 20px; left: 20px; font-size: 1.5em; background: none; border: none; cursor: pointer; z-index: 1002; color: #555; font-weight: bold; }
@@ -685,6 +686,50 @@
             playerExpanded.classList.remove('active');
             syncModalState();
         });
+
+        // Gesture Swipe su Mobile per il Player (Swipe giù per chiudere, Swipe su sulla barra per aprire)
+        (function setupPlayerSwipe() {
+            let startX = 0;
+            let startY = 0;
+            let ignoreSwipe = false;
+
+            playerExpanded.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1 || !playerExpanded.classList.contains('active')) return;
+                ignoreSwipe = !!e.target.closest('#global-progress-bar, button');
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+
+            playerExpanded.addEventListener('touchend', e => {
+                if (ignoreSwipe || e.changedTouches.length !== 1 || !playerExpanded.classList.contains('active')) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                const dy = e.changedTouches[0].clientY - startY;
+                if (dy > 50 && dy > Math.abs(dx) * 1.3) {
+                    playerExpanded.classList.remove('active');
+                    syncModalState();
+                }
+            }, { passive: true });
+
+            const playerBar = document.getElementById('player-bar');
+            let barStartX = 0;
+            let barStartY = 0;
+
+            playerBar.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1) return;
+                barStartX = e.touches[0].clientX;
+                barStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            playerBar.addEventListener('touchend', e => {
+                if (e.changedTouches.length !== 1) return;
+                const dx = e.changedTouches[0].clientX - barStartX;
+                const dy = e.changedTouches[0].clientY - barStartY;
+                if (dy < -40 && Math.abs(dy) > Math.abs(dx) * 1.3) {
+                    playerExpanded.classList.add('active');
+                    syncModalState();
+                }
+            }, { passive: true });
+        })();
 
         if ('mediaSession' in navigator) {
             navigator.mediaSession.setActionHandler('play', playAudio);
