@@ -58,7 +58,8 @@
       "tracks": [
         {
           "title": "FUFI",
-          "src": "MUSICA/FUFI.mp3"
+          "src": "MUSICA/FUFI.mp3",
+          "lrc": "[00:14.75] Fanculo il commercialista\n[00:17.17] Non ho bisogno del commercialista\n[00:20.34] Non pago le tasse in Italia non ne ho bisogno\n[00:23.12] Non pago le tasse in Italia non ne ho bisogno\n[00:25.82] Vado in Brasile pago le tasse in Brasile perchè  ne ho bisogno\n[00:29.50] Ho bisogno della cucaracha\n[00:32.12] Ho bisogno di quell'iguana\n[00:34.16] Ah\n[00:35.00] Non pago le tasse in Italia non ne ho bisogno\n[00:37.91] Oggi è arrivata un'altra raccomandata non ne ho bisogno\n[00:45.53] Questa argentina l'ho trovata per strada\n[00:49.53] La raccomandata non l'ho trovata per strada\n[00:53.08] Mi è arrivata a casa\n[00:54.94] Come ad Ale Della Giusta mi sono entrati in casa\n[00:59.41] Lei vuole entrare nella Dacia\n[01:01.97] E' troppo grassa e si è cappottata\n[01:06.59] La scopo in bagno\n[01:08.41] Non me ne pento\n[01:10.31] Son G Mineiro\n[01:11.96] Son tutto negro\n[01:13.75] La baby vuole il mio cazzo ma non lo avrà\n[01:17.51] Lei è una chiwawa\n[01:19.26] Fa arf arf arf\n[01:21.21] Fa arf arf arf\n[01:23.12] Lei sul mio cazzo\n[01:24.81] Fa arf arf arf\n[01:27.63] Questa chiwawa la chiamo FUFI\n[01:30.25] Vieni qua FUFI\n[01:31.99] Vieni qua FUFI\n[01:35.96] Vieni qua FUFI\n[01:37.63] Fammi mangiare la figa FUFI\n[01:39.88] Fammela mangiare FUFI, FUFI, FUFI\n[01:43.35] Mangio fufu come gli africani\n[01:45.85] Uwufufu sul tuo culo perchè voglio mangiare la tua gattina\n[01:50.54] Vieni dammi la tua gattina FUFI, FUFI\n[01:54.29] Ti metto le mutande di Yeezy Kitten\n[01:57.69] Compro le Yeezy kitten alle mie puttane\n[02:01.26] Le puttane all'UniBo voglion le Yeezy Kitten\n[02:04.92] Kitten, kitten, voglio mangiare la tua kitten\n[02:13.31] E' finita\n[02:15.52] Porcodio!"
         }
       ]
     },
@@ -480,18 +481,6 @@
           "type": "image",
           "src": "IMMAGINE/cover b4sp.png",
           "desc": "B4SM COVER"
-        }
-      ],
-      "documentaries": []
-    },
-    {
-      "title": "PAM (THE EP)",
-      "unreleased": false,
-      "slides": [
-        {
-          "type": "image",
-          "src": "IMMAGINE/pam ep.png",
-          "desc": "Cover PAM (THE EP)"
         }
       ],
       "documentaries": []
