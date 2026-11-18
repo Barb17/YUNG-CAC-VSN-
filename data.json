@@ -94,6 +94,29 @@
       "artists": "Yung CAC, VSN"
     },
     {
+      "albumTitle": "PAM (THE EP)",
+      "albumCover": "pam ep.png",
+      "tracks": [
+        {
+          "title": "WHY ALWAYS ME 2",
+          "src": "MUSICA/why always me.mp3"
+        },
+        {
+          "title": "COCCOLE",
+          "src": "MUSICA/COCCOLE.mp3"
+        },
+        {
+          "title": "CIAO (FROCI DAL CENTRO)",
+          "src": "MUSICA/CIAO_FROCI_DAL_CENTRO.mp3"
+        },
+        {
+          "title": "LABUBU",
+          "src": "MUSICA/LABUBU.mp3"
+        }
+      ],
+      "artists": "Yung CAC, Zodiak, Juanky, VSN"
+    },
+    {
       "albumTitle": "STUPRO MUSICA 2",
       "albumCover": "album2.jpg",
       "unreleased": true,
