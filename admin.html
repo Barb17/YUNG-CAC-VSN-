@@ -76,6 +76,34 @@
     .status-text { font-size: 0.85em; color: #333; }
     .badge { background: #eee; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; }
     .badge-soon { background: #ffecb3; color: #8d6e63; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; font-weight: bold; }
+    .badge-lrc { background: #000; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 0.72em; font-weight: bold; }
+    textarea {
+        width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+        font-family: 'IBM Plex Mono', monospace; font-size: 0.88em; line-height: 1.5;
+        resize: vertical; min-height: 180px; margin-bottom: 12px;
+    }
+    .lrc-modal-backdrop {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+        z-index: 2000; align-items: center; justify-content: center; padding: 15px;
+    }
+    .lrc-modal-backdrop.active { display: flex; }
+    .lrc-modal {
+        background: white; width: 100%; max-width: 680px; max-height: 92vh;
+        border-radius: 8px; padding: 22px; overflow-y: auto;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;
+    }
+    .lrc-sync-box {
+        background: #f8f8f8; border: 1.5px solid #000; border-radius: 6px;
+        padding: 14px; margin-bottom: 15px;
+    }
+    .lrc-current-preview {
+        font-size: 1.05em; font-weight: bold; color: #000;
+        padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px;
+        margin: 8px 0 4px 0; min-height: 40px;
+    }
+    .lrc-next-preview {
+        font-size: 0.82em; color: #777; margin-bottom: 10px; min-height: 18px;
+    }
 </style>
 </head>
 <body>
@@ -236,6 +264,46 @@
         </div>
     </div>
     <button class="btn-black" id="publish-btn" style="padding: 14px 24px; font-size: 1em;">SALVA E PUBBLICA SUL SITO</button>
+</div>
+
+<!-- MODALE EDITOR TESTI SINCRONIZZATI (LRC & TAP-TO-SYNC) -->
+<div class="lrc-modal-backdrop" id="lrc-modal-backdrop">
+    <div class="lrc-modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0;" id="lrc-modal-title">TESTO SINCRONIZZATO [TXT]</h2>
+            <button type="button" class="btn-toggle" id="lrc-close-btn">✕ CHIUDI</button>
+        </div>
+
+        <div class="lrc-sync-box">
+            <label>1. Sincronizzatore Live "Tap-to-Sync" (Stile Apple Music)</label>
+            <div style="font-size:0.78em; color:#555; margin-bottom:8px;">
+                Incolla sotto il testo normale (una frase per riga), avvia il brano qui sotto e premi <strong>SEGNA RIGA</strong> (o il tasto <strong>SPAZIO</strong> quando non stai scrivendo nel box) appena inizia ogni frase.
+            </div>
+            <audio id="lrc-sync-audio" controls style="width:100%; height:38px; margin-bottom:8px;"></audio>
+            <div style="font-size:0.72em; color:#555; text-transform:uppercase;">Riga pronta da timbrare (<span id="lrc-line-counter">0/0</span>):</div>
+            <div class="lrc-current-preview" id="lrc-current-line">—</div>
+            <div class="lrc-next-preview" id="lrc-next-line">Prossima: —</div>
+            <div class="action-group">
+                <button type="button" class="btn-black" id="lrc-stamp-btn">⏱ SEGNA RIGA ADESSO [SPAZIO]</button>
+                <button type="button" class="btn-toggle" id="lrc-prev-line-btn">↺ Riga Prec. (-2s)</button>
+                <button type="button" class="btn-toggle" id="lrc-reset-times-btn">Pulisci Tutti i Tempi</button>
+            </div>
+        </div>
+
+        <label>2. Testo / Formato .LRC (es. [00:12.40] Frase del brano)</label>
+        <textarea id="lrc-textarea" placeholder="[00:10.50] Prima riga del testo&#10;[00:14.20] Seconda riga del testo&#10;&#10;(Oppure incolla il testo normale senza orari e usa il pulsante 'SEGNA RIGA ADESSO' qui sopra mentre ascolti il pezzo)"></textarea>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+                <label style="margin-bottom:3px;">Oppure importa file .lrc / .txt</label>
+                <input type="file" id="lrc-file-input" accept=".lrc,.txt" style="width:auto; margin:0;">
+            </div>
+            <div class="action-group">
+                <button type="button" class="btn-danger" id="lrc-clear-btn">Rimuovi Testo</button>
+                <button type="button" class="btn-black" id="lrc-save-btn">✓ SALVA TESTO NELLA TRACCIA</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -417,10 +485,16 @@ function renderAdminLists() {
         const ol = document.createElement('ol');
         ol.className = 'sub-list';
         tracks.forEach((t, ti) => {
+            const hasLrc = !!(t.lrc && t.lrc.trim());
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>${escapeHtml(t.title)} <span class="badge">${escapeHtml(t.src)}</span></span>
+                <span>
+                    ${escapeHtml(t.title)}
+                    <span class="badge">${escapeHtml(t.src)}</span>
+                    ${hasLrc ? '<span class="badge-lrc">[TXT ✓]</span>' : ''}
+                </span>
                 <div class="action-group">
+                    <button class="btn-toggle" title="Aggiungi o Sincronizza Testo" data-edit-snd-lyrics="${ai}:${ti}">${hasLrc ? '✎ [TXT]' : '+ [TXT]'}</button>
                     <button class="btn-move" title="Sposta Traccia Su" data-move-snd-track="${ai}:${ti}:-1" ${ti === 0 ? 'disabled' : ''}>▲</button>
                     <button class="btn-move" title="Sposta Traccia Giù" data-move-snd-track="${ai}:${ti}:1" ${ti === tracks.length - 1 ? 'disabled' : ''}>▼</button>
                     <button class="btn-danger" data-del-snd-track="${ai}:${ti}">✕</button>
@@ -700,6 +774,9 @@ document.body.addEventListener('click', e => {
     } else if (btn.dataset.delSndAlbum !== undefined) {
         siteData.snd.splice(parseInt(btn.dataset.delSndAlbum, 10), 1);
         renderAdminLists();
+    } else if (btn.dataset.editSndLyrics !== undefined) {
+        const [a, t] = btn.dataset.editSndLyrics.split(':').map(Number);
+        openLyricsEditor(a, t);
     } else if (btn.dataset.delSndTrack !== undefined) {
         const [a, t] = btn.dataset.delSndTrack.split(':').map(Number);
         siteData.snd[a].tracks.splice(t, 1);
@@ -722,6 +799,198 @@ document.body.addEventListener('click', e => {
     } else if (btn.dataset.delGoy !== undefined) {
         siteData.goycast.splice(parseInt(btn.dataset.delGoy, 10), 1);
         renderAdminLists();
+    }
+});
+
+/* ── EDITOR TESTI SINCRONIZZATI (LRC & TAP-TO-SYNC) ────── */
+const lrcBackdrop    = document.getElementById('lrc-modal-backdrop');
+const lrcModalTitle  = document.getElementById('lrc-modal-title');
+const lrcSyncAudio   = document.getElementById('lrc-sync-audio');
+const lrcTextarea    = document.getElementById('lrc-textarea');
+const lrcCurrentLine = document.getElementById('lrc-current-line');
+const lrcNextLine    = document.getElementById('lrc-next-line');
+const lrcLineCounter = document.getElementById('lrc-line-counter');
+const lrcFileInput   = document.getElementById('lrc-file-input');
+
+let editingLrcAlbumIdx = null;
+let editingLrcTrackIdx = null;
+let activeObjectUrl    = null;
+
+function formatLrcTimestamp(sec) {
+    const s = Math.max(0, sec || 0);
+    const min = Math.floor(s / 60).toString().padStart(2, '0');
+    const rem = (s % 60).toFixed(2).padStart(5, '0');
+    return `[${min}:${rem}]`;
+}
+
+function getLyricsLinesState() {
+    const raw = lrcTextarea.value;
+    if (!raw.trim()) return [];
+    const timeTagRegex = /^\s*\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*/;
+    return raw.split(/\r?\n/).map((line, idx) => {
+        const trimmed = line.trim();
+        const isStamped = timeTagRegex.test(trimmed);
+        const cleanText = trimmed.replace(timeTagRegex, '').trim();
+        return { index: idx, raw: line, isStamped, cleanText, isEmpty: !trimmed };
+    });
+}
+
+function updateTapToSyncPreview() {
+    const lines = getLyricsLinesState().filter(l => !l.isEmpty);
+    const nextUnstampedIdx = lines.findIndex(l => !l.isStamped);
+
+    if (lines.length === 0) {
+        lrcLineCounter.textContent = '0/0';
+        lrcCurrentLine.textContent = 'Incolla il testo nel box qui sotto per iniziare.';
+        lrcNextLine.textContent = 'Prossima: —';
+        return;
+    }
+
+    if (nextUnstampedIdx === -1) {
+        lrcLineCounter.textContent = `${lines.length}/${lines.length}`;
+        lrcCurrentLine.textContent = '✓ Tutte le righe hanno il timestamp!';
+        lrcNextLine.textContent = 'Premi "SALVA TESTO NELLA TRACCIA" in basso.';
+        return;
+    }
+
+    lrcLineCounter.textContent = `${nextUnstampedIdx + 1}/${lines.length}`;
+    lrcCurrentLine.textContent = lines[nextUnstampedIdx].cleanText;
+    lrcNextLine.textContent = lines[nextUnstampedIdx + 1]
+        ? 'Prossima: ' + lines[nextUnstampedIdx + 1].cleanText
+        : 'Prossima: (Fine del testo)';
+}
+
+function stampCurrentLyricLine() {
+    const rawLines = lrcTextarea.value.split(/\r?\n/);
+    const timeTagRegex = /^\s*\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*/;
+
+    for (let i = 0; i < rawLines.length; i++) {
+        const trimmed = rawLines[i].trim();
+        if (!trimmed) continue;
+        if (!timeTagRegex.test(trimmed)) {
+            if (lrcSyncAudio.paused && lrcSyncAudio.currentTime === 0) {
+                lrcSyncAudio.play().catch(() => {});
+            }
+            const stamp = formatLrcTimestamp(lrcSyncAudio.currentTime);
+            rawLines[i] = `${stamp} ${trimmed}`;
+            lrcTextarea.value = rawLines.join('\n');
+            updateTapToSyncPreview();
+            return;
+        }
+    }
+}
+
+function undoLastStampedLine() {
+    const rawLines = lrcTextarea.value.split(/\r?\n/);
+    const timeTagRegex = /^\s*\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*/;
+
+    for (let i = rawLines.length - 1; i >= 0; i--) {
+        const trimmed = rawLines[i].trim();
+        if (trimmed && timeTagRegex.test(trimmed)) {
+            rawLines[i] = trimmed.replace(timeTagRegex, '');
+            lrcTextarea.value = rawLines.join('\n');
+            lrcSyncAudio.currentTime = Math.max(0, (lrcSyncAudio.currentTime || 0) - 2);
+            updateTapToSyncPreview();
+            return;
+        }
+    }
+}
+
+function openLyricsEditor(albumIdx, trackIdx) {
+    const album = siteData.snd[albumIdx];
+    const track = album && album.tracks && album.tracks[trackIdx];
+    if (!track) return;
+
+    editingLrcAlbumIdx = albumIdx;
+    editingLrcTrackIdx = trackIdx;
+
+    lrcModalTitle.textContent = `TESTO [TXT] — ${track.title}`;
+    lrcTextarea.value = track.lrc || '';
+    lrcFileInput.value = '';
+
+    if (activeObjectUrl) {
+        URL.revokeObjectURL(activeObjectUrl);
+        activeObjectUrl = null;
+    }
+
+    // Se il file MP3 è appena stato messo in coda, usa il file locale in memoria per il preascolto
+    const queuedAudio = uploadQueue.find(q => q.path === track.src);
+    if (queuedAudio && queuedAudio.file) {
+        activeObjectUrl = URL.createObjectURL(queuedAudio.file);
+        lrcSyncAudio.src = activeObjectUrl;
+    } else {
+        lrcSyncAudio.src = track.src;
+    }
+
+    updateTapToSyncPreview();
+    lrcBackdrop.classList.add('active');
+}
+
+function closeLyricsEditor() {
+    lrcSyncAudio.pause();
+    lrcBackdrop.classList.remove('active');
+    editingLrcAlbumIdx = null;
+    editingLrcTrackIdx = null;
+}
+
+lrcTextarea.addEventListener('input', updateTapToSyncPreview);
+document.getElementById('lrc-stamp-btn').addEventListener('click', stampCurrentLyricLine);
+document.getElementById('lrc-prev-line-btn').addEventListener('click', undoLastStampedLine);
+
+document.getElementById('lrc-reset-times-btn').addEventListener('click', () => {
+    const timeTagRegex = /\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]\s*/g;
+    lrcTextarea.value = lrcTextarea.value.replace(timeTagRegex, '');
+    updateTapToSyncPreview();
+});
+
+lrcFileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        lrcTextarea.value = String(reader.result || '');
+        updateTapToSyncPreview();
+    };
+    reader.readAsText(file, 'utf-8');
+});
+
+document.getElementById('lrc-clear-btn').addEventListener('click', () => {
+    lrcTextarea.value = '';
+    updateTapToSyncPreview();
+});
+
+document.getElementById('lrc-save-btn').addEventListener('click', () => {
+    if (editingLrcAlbumIdx === null || editingLrcTrackIdx === null) return;
+    const track = siteData.snd[editingLrcAlbumIdx]?.tracks?.[editingLrcTrackIdx];
+    if (!track) return;
+
+    const val = lrcTextarea.value.trim();
+    if (val) {
+        track.lrc = val;
+    } else {
+        delete track.lrc;
+    }
+    closeLyricsEditor();
+    renderAdminLists();
+    document.getElementById('publish-status').textContent = `Testo aggiornato per "${track.title}". Premi SALVA E PUBBLICA per metterlo online.`;
+});
+
+document.getElementById('lrc-close-btn').addEventListener('click', closeLyricsEditor);
+lrcBackdrop.addEventListener('click', e => {
+    if (e.target === lrcBackdrop) closeLyricsEditor();
+});
+
+// Scorciatoia Barra Spaziatrice per timbrare le righe quando la modale è aperta (fuori dalla textarea)
+document.addEventListener('keydown', e => {
+    if (!lrcBackdrop.classList.contains('active')) return;
+    if (e.key === 'Escape') {
+        closeLyricsEditor();
+        return;
+    }
+    const tag = (e.target && e.target.tagName) || '';
+    if (e.code === 'Space' && tag !== 'TEXTAREA' && tag !== 'INPUT') {
+        e.preventDefault();
+        stampCurrentLyricLine();
     }
 });
 
