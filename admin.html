@@ -262,6 +262,10 @@
         <div class="status-text">
             <span id="publish-status">Pronto.</span> — File in coda da caricare: <strong id="queue-count">0</strong>
         </div>
+        <label class="checkbox-row" style="margin: 4px 0 0 0; font-size: 0.75em; color: #555; text-transform: none; font-weight: normal;">
+            <input type="checkbox" id="opt-compress-img" checked style="width:14px; height:14px;">
+            Ottimizza automaticamente foto/copertine grandi (max 1400px) per velocizzare il sito
+        </label>
     </div>
     <button class="btn-black" id="publish-btn" style="padding: 14px 24px; font-size: 1em;">SALVA E PUBBLICA SUL SITO</button>
 </div>
@@ -994,13 +998,61 @@ document.addEventListener('keydown', e => {
     }
 });
 
-/* ── UPLOAD SU GITHUB API ──────────────────────────────── */
+/* ── UPLOAD SU GITHUB API (COMMIT SINGOLO ATOMICO + OTTIMIZZAZIONE IMMAGINI) ── */
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result.split(',')[1]);
         reader.onerror = reject;
         reader.readAsDataURL(file);
+    });
+}
+
+// Ridimensiona automaticamente immagini oltre 1400px di lato mantenendo qualità elevata
+function optimizeImageFileToBase64(file, maxDimension = 1400) {
+    return new Promise((resolve) => {
+        const shouldOptimize = document.getElementById('opt-compress-img')?.checked;
+        if (!shouldOptimize || !file.type || !/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+            fileToBase64(file).then(resolve);
+            return;
+        }
+        const img = new Image();
+        const objUrl = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(objUrl);
+            const w = img.naturalWidth || img.width;
+            const h = img.naturalHeight || img.height;
+            // Se l'immagine è già sotto i 1400px e pesa meno di 600KB, mantieni il file originale intatto
+            if (w <= maxDimension && h <= maxDimension && file.size <= 600 * 1024) {
+                fileToBase64(file).then(resolve);
+                return;
+            }
+            const scale = Math.min(1, maxDimension / Math.max(w, h));
+            const targetW = Math.round(w * scale);
+            const targetH = Math.round(h * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+
+            const outMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            const dataUrl = canvas.toDataURL(outMime, 0.88);
+            const optimizedB64 = dataUrl.split(',')[1];
+            // Usa la versione ottimizzata solo se è effettivamente più leggera dell'originale
+            if (optimizedB64.length * 0.75 < file.size) {
+                resolve(optimizedB64);
+            } else {
+                fileToBase64(file).then(resolve);
+            }
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(objUrl);
+            fileToBase64(file).then(resolve);
+        };
+        img.src = objUrl;
     });
 }
 
@@ -1048,6 +1100,80 @@ async function githubUploadFile(owner, repo, branch, token, path, base64Content,
     }
 }
 
+// Pubblica tutti i file in coda + data.json in 1 SINGOLO COMMIT atomico su GitHub
+async function githubPublishSingleCommit(owner, repo, branch, token, filesWithBase64, commitMessage, statusEl) {
+    const baseApi = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+    };
+
+    // 1. Legge l'ultimo commit del branch
+    const refResp = await fetch(`${baseApi}/git/ref/heads/${encodeURIComponent(branch)}`, { cache: 'no-store', headers });
+    if (!refResp.ok) throw new Error(`Impossibile leggere il branch ${branch} (${refResp.status})`);
+    const refData = await refResp.json();
+    const latestCommitSha = refData.object.sha;
+
+    const commitResp = await fetch(`${baseApi}/git/commits/${latestCommitSha}`, { cache: 'no-store', headers });
+    if (!commitResp.ok) throw new Error(`Impossibile leggere il commit corrente (${commitResp.status})`);
+    const commitData = await commitResp.json();
+    const baseTreeSha = commitData.tree.sha;
+
+    // 2. Crea i Blob su GitHub per ogni file
+    const treeItems = [];
+    for (let i = 0; i < filesWithBase64.length; i++) {
+        const f = filesWithBase64[i];
+        if (statusEl) statusEl.textContent = `Caricamento su GitHub (${i + 1}/${filesWithBase64.length}): ${f.path}...`;
+        const blobResp = await fetch(`${baseApi}/git/blobs`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ content: f.base64, encoding: 'base64' })
+        });
+        if (!blobResp.ok) {
+            const errText = await blobResp.text();
+            throw new Error(`Errore creazione blob per ${f.path}: ${blobResp.status} ${errText}`);
+        }
+        const blobData = await blobResp.json();
+        treeItems.push({
+            path: f.path,
+            mode: '100644',
+            type: 'blob',
+            sha: blobData.sha
+        });
+    }
+
+    // 3. Crea il nuovo Tree e il singolo Commit
+    if (statusEl) statusEl.textContent = 'Creazione commit unico su GitHub...';
+    const treeResp = await fetch(`${baseApi}/git/trees`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ base_tree: baseTreeSha, tree: treeItems })
+    });
+    if (!treeResp.ok) throw new Error(`Errore creazione tree Git (${treeResp.status})`);
+    const treeData = await treeResp.json();
+
+    const newCommitResp = await fetch(`${baseApi}/git/commits`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            message: commitMessage,
+            tree: treeData.sha,
+            parents: [latestCommitSha]
+        })
+    });
+    if (!newCommitResp.ok) throw new Error(`Errore creazione commit Git (${newCommitResp.status})`);
+    const newCommitData = await newCommitResp.json();
+
+    // 4. Aggiorna il puntatore del branch al nuovo commit
+    const updateRefResp = await fetch(`${baseApi}/git/refs/heads/${encodeURIComponent(branch)}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ sha: newCommitData.sha })
+    });
+    if (!updateRefResp.ok) throw new Error(`Errore aggiornamento branch ${branch} (${updateRefResp.status})`);
+}
+
 document.getElementById('publish-btn').addEventListener('click', async () => {
     const owner  = ghOwner.value.trim();
     const repo   = ghRepo.value.trim();
@@ -1069,20 +1195,42 @@ document.getElementById('publish-btn').addEventListener('click', async () => {
     btn.disabled = true;
 
     try {
-        for (let i = 0; i < uploadQueue.length; i++) {
-            const item = uploadQueue[i];
-            status.textContent = `Caricamento file (${i + 1}/${uploadQueue.length}): ${item.path}...`;
-            const b64 = await fileToBase64(item.file);
-            await githubUploadFile(owner, repo, branch, token, item.path, b64, `Upload ${item.path} via Admin Panel`);
-        }
-
-        status.textContent = 'Aggiornamento catalogo data.json sul sito...';
         const jsonBase64 = utf8ToBase64(JSON.stringify(siteData, null, 2));
-        await githubUploadFile(owner, repo, branch, token, 'data.json', jsonBase64, 'Update data.json via Admin Panel');
+
+        if (uploadQueue.length === 0) {
+            status.textContent = 'Aggiornamento catalogo data.json sul sito...';
+            await githubUploadFile(owner, repo, branch, token, 'data.json', jsonBase64, 'Update data.json via Admin Panel');
+        } else {
+            const batchFiles = [];
+            for (let i = 0; i < uploadQueue.length; i++) {
+                const item = uploadQueue[i];
+                status.textContent = `Preparazione file (${i + 1}/${uploadQueue.length}): ${item.path}...`;
+                const b64 = await optimizeImageFileToBase64(item.file);
+                batchFiles.push({ path: item.path, base64: b64 });
+            }
+            batchFiles.push({ path: 'data.json', base64: jsonBase64 });
+
+            try {
+                await githubPublishSingleCommit(
+                    owner, repo, branch, token,
+                    batchFiles,
+                    `Update YNGCAC (${uploadQueue.length} file + data.json) via Admin Panel`,
+                    status
+                );
+            } catch (gitApiErr) {
+                // Fallback automatico su upload sequenziale se il token non ha permessi Git Data API
+                console.warn('Fallback su Contents API:', gitApiErr);
+                for (let i = 0; i < batchFiles.length; i++) {
+                    const f = batchFiles[i];
+                    status.textContent = `Caricamento file (${i + 1}/${batchFiles.length}): ${f.path}...`;
+                    await githubUploadFile(owner, repo, branch, token, f.path, f.base64, `Update ${f.path} via Admin Panel`);
+                }
+            }
+        }
 
         uploadQueue = [];
         updateQueueUI();
-        status.innerHTML = '✓ <strong>PUBBLICATO CON SUCCESSO!</strong> Il sito sarà aggiornato tra 30-60s';
+        status.innerHTML = '✓ <strong>PUBBLICATO CON SUCCESSO (1 Commit)!</strong> Il sito sarà aggiornato tra 30-60s';
     } catch (err) {
         console.error(err);
         status.textContent = 'Errore durante la pubblicazione: ' + err.message;

@@ -25,9 +25,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
     
-    <!-- Mux Video Script (defer per non bloccare il rendering iniziale) -->
-    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-video" defer></script>
-    
     <style>
         /* ================================================================
            RESET & BASE
@@ -37,6 +34,18 @@
             box-sizing: border-box;
         }
         *:focus:not(:focus-visible) { outline: none; }
+        
+        html, body, #tracklist-content {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        #tracklist-content::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
         
         body {
             margin: 0;
@@ -49,7 +58,12 @@
             min-height: 100vh;
             min-height: 100dvh;
             overflow-x: hidden;
-            overflow-y: scroll;
+            overflow-y: auto;
+        }
+
+        img, button, .text-menu a, .carousel {
+            -webkit-user-drag: none;
+            user-select: none;
         }
 
         /* ================================================================
@@ -93,6 +107,10 @@
         /* ================================================================
            PAGES (SPA Logic)
            ================================================================ */
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
         .page { 
             display: none; 
             flex-direction: column; 
@@ -102,7 +120,10 @@
             padding-bottom: 80px; 
             flex-grow: 1;
         }
-        .page.active { display: flex; }
+        .page.active {
+            display: flex;
+            animation: pageFadeIn 0.22s cubic-bezier(0.2, 0, 0.2, 1) both;
+        }
 
         /* ================================================================
            SND (Music Section)
@@ -118,23 +139,29 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            contain: layout paint;
+            content-visibility: auto;
+            contain-intrinsic-size: auto 290px;
         }
         .album { margin-bottom: 20px; }
-        .album img { max-width: 200px; width: 200px; border-radius: 5px; display: block; margin: 0 auto; }
+        .album img { max-width: 200px; width: 200px; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 5px; display: block; margin: 0 auto; }
         
         .album-cover-clickable {
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            will-change: transform;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         }
         .album-cover-clickable:hover {
-            transform: scale(1.03);
+            transform: translateZ(0) scale(1.03);
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         /* Unreleased / SOON */
         .album.unreleased { position: relative; }
         .album.unreleased img,
-        .album.unreleased h3 { filter: blur(8px); opacity: 0.6; }
+        .album.unreleased h3 { filter: blur(8px); opacity: 0.6; transform: translateZ(0); backface-visibility: hidden; }
         .album.unreleased .soon-overlay {
             position: absolute;
             top: 100px;
@@ -182,7 +209,12 @@
             padding: 20px 20px 80px 20px; 
         }
 
-        .model-item { text-align: center; width: 90%; max-width: 600px; }
+        .model-item {
+            text-align: center; width: 90%; max-width: 600px;
+            contain: layout paint;
+            content-visibility: auto;
+            contain-intrinsic-size: auto 520px;
+        }
         .model-item .image-title { margin-bottom: 25px; font-size: 1.5em; color: black; width: 100%; }
 
         .carousel-container {
@@ -238,7 +270,7 @@
         .model-item.unreleased { position: relative; pointer-events: none; user-select: none; }
         .model-item.unreleased .image-title,
         .model-item.unreleased .carousel-container,
-        .model-item.unreleased .carousel-description { filter: blur(8px); opacity: 0.6; }
+        .model-item.unreleased .carousel-description { filter: blur(8px); opacity: 0.6; transform: translateZ(0); backface-visibility: hidden; }
         .model-item.unreleased .soon-overlay {
             position: absolute; top: 250px; left: 50%; transform: translate(-50%, -50%);
             font-size: 2em; font-weight: bold; color: black; background-color: rgba(255, 255, 255, 0.7);
@@ -275,9 +307,21 @@
         }
         #global-player-container.hidden { transform: translateY(100%); }
         #player-bar {
+            position: relative;
             display: flex; align-items: center; justify-content: space-between;
             background-color: #ffffff; border-top: 1px solid #ccc; height: 60px; padding: 0 10px;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        #player-bar::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            height: 2px;
+            width: var(--player-progress, 0%);
+            background-color: #000000;
+            pointer-events: none;
+            transition: width 0.1s linear;
         }
         .player-bar-clickable {
             display: flex; align-items: center; flex-grow: 1; cursor: pointer;
@@ -310,9 +354,14 @@
         .controls { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; width: 100%; position: relative; }
         .controls button { padding: 15px 30px; border: none; background-color: transparent; font-size: 1.5em; outline: none; box-shadow: none; cursor: pointer; border-radius: 3px; }
         
-        .progress-bar { width: 100%; margin-top: 5px; -webkit-appearance: none; appearance: none; background: #ccc; height: 3px; cursor: pointer; border-radius: 2px; }
-        .progress-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; background: black; width: 8px; height: 8px; border-radius: 50%; cursor: pointer; }
-        .progress-bar::-moz-range-thumb { background: black; width: 8px; height: 8px; border-radius: 50%; cursor: pointer; border: none; }
+        .progress-bar {
+            width: 100%; margin-top: 5px; -webkit-appearance: none; appearance: none;
+            background: linear-gradient(to right, #000000 var(--player-progress, 0%), #cccccc var(--player-progress, 0%));
+            height: 3px; cursor: pointer; border-radius: 2px;
+        }
+        .progress-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; background: black; width: 9px; height: 9px; border-radius: 50%; cursor: pointer; }
+        .progress-bar::-moz-range-thumb { background: black; width: 9px; height: 9px; border-radius: 50%; cursor: pointer; border: none; }
+        .progress-bar::-moz-range-progress { background-color: #000000; height: 3px; border-radius: 2px; }
         .time-container { display: flex; justify-content: space-between; width: 100%; margin-top: 3px; font-size: 0.7em; color: #555; }
 
         /* ================================================================
@@ -484,24 +533,29 @@
            ================================================================ */
         #modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1001; visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1001; visibility: hidden; opacity: 0; transition: opacity 0.22s ease, visibility 0.22s ease;
+            will-change: opacity;
         }
         #modal-backdrop.active { visibility: visible; opacity: 1; }
         #tracklist-modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            position: fixed; top: 50%; left: 50%; transform: translate3d(-50%, -50%, 0) scale(0.92);
             width: 90%; max-width: 400px; max-height: 80vh; max-height: 80dvh; background-color: #ffffff; border-radius: 8px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1002; visibility: hidden; opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease; display: flex; flex-direction: column;
+            transition: opacity 0.22s cubic-bezier(0.2, 0, 0.2, 1), transform 0.22s cubic-bezier(0.2, 0, 0.2, 1), visibility 0.22s ease;
+            display: flex; flex-direction: column;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
         }
-        #tracklist-modal.active { visibility: visible; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #tracklist-modal.active { visibility: visible; opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1); }
         #close-tracklist-btn { position: absolute; top: 10px; right: 15px; font-size: 2em; color: #aaa; background: none; border: none; cursor: pointer; line-height: 1; padding: 0; }
         #close-tracklist-btn:hover { color: #333; }
-        #tracklist-content { padding: 20px; text-align: center; overflow-y: auto; }
+        #tracklist-content { padding: 20px; text-align: center; overflow-y: auto; overscroll-behavior: contain; }
         .tracklist-cover { width: 150px; height: 150px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); object-fit: cover; }
         .tracklist-album-title { font-size: 1.2em; font-weight: bold; margin: 0 0 20px 0; }
         .tracklist-ol { list-style-type: decimal; padding-left: 30px; margin: 0; text-align: left; }
         .tracklist-item { padding: 12px 10px; font-size: 0.9em; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s ease; }
         .tracklist-item:hover { background-color: #f9f9f9; }
+        .tracklist-item.playing { font-weight: bold; background-color: #f4f4f4; }
         .tracklist-item:last-child { border-bottom: none; }
 
         /* ================================================================
@@ -646,11 +700,18 @@
         function syncModalState() {
             const isPlayerOpen    = playerExpanded.classList.contains('active');
             const isTracklistOpen = tracklistModal.classList.contains('active');
-            const isLightboxOpen  = lightbox.classList.contains('active');
 
             mainNav.classList.toggle('hidden-by-player', isPlayerOpen || isTracklistOpen);
-            document.body.style.overflow = (isPlayerOpen || isTracklistOpen || isLightboxOpen) ? 'hidden' : '';
         }
+
+        // Impedisce lo scroll della pagina sottostante con la rotellina quando un overlay è attivo,
+        // senza mai rimuovere la scrollbar del body su Desktop (zero layout shift e zero reflow!)
+        [modalBackdrop, lightbox, playerExpanded].forEach(overlayEl => {
+            overlayEl.addEventListener('wheel', e => {
+                if (e.target.closest('#tracklist-content, #lyrics-scroll-container')) return;
+                e.preventDefault();
+            }, { passive: false });
+        });
 
         // ==========================================
         // LAZY PRELOAD DEI VIDEO VISIBILI
@@ -686,6 +747,8 @@
         // ==========================================
         const ALL_PAGES = ['snd', 'art', 'goycast'];
         let currentPage = null;
+        let dataLoaded = false;
+        const renderedPages = { snd: false, art: false, goycast: false };
 
         function navigateTo(page, pushHistory = true) {
             if (!ALL_PAGES.includes(page)) page = 'snd';
@@ -696,6 +759,7 @@
             }
             
             currentPage = page;
+            if (dataLoaded) ensurePageRendered(page);
             document.getElementById('page-' + page).classList.add('active');
             
             document.querySelectorAll('.text-menu a').forEach(a => {
@@ -724,13 +788,17 @@
         });
 
         // ==========================================
-        // PLAYER AUDIO GLOBALE + MEDIA SESSION API
+        // PLAYER AUDIO GLOBALE + MEDIA SESSION API + 60FPS SYNC
         // ==========================================
         const globalAudio = new Audio();
         globalAudio.preload = 'metadata';
-        let currentAlbumIndex = 0;
-        let currentTrackIndex = 0;
+        const nextAudioPreloader = new Audio();
+        nextAudioPreloader.preload = 'metadata';
+        let currentAlbumIndex = -1;
+        let currentTrackIndex = -1;
         let isPlaying = false;
+        let preloadedNextSrc = '';
+        let playerRafId = null;
 
         const globalPlayerContainer = document.getElementById('global-player-container');
         const barPlayPauseBtn       = document.getElementById('bar-play-pause-btn');
@@ -930,8 +998,56 @@
         lyricsScrollContainer.addEventListener('wheel', markUserLyricsScroll, { passive: true });
         lyricsScrollContainer.addEventListener('touchmove', markUserLyricsScroll, { passive: true });
 
+        function updateMediaSessionPosition() {
+            if ('mediaSession' in navigator && typeof navigator.mediaSession.setPositionState === 'function') {
+                const dur = globalAudio.duration;
+                if (dur && isFinite(dur) && dur > 0) {
+                    try {
+                        navigator.mediaSession.setPositionState({
+                            duration: dur,
+                            playbackRate: globalAudio.playbackRate || 1,
+                            position: Math.min(dur, Math.max(0, globalAudio.currentTime || 0))
+                        });
+                    } catch (_) {}
+                }
+            }
+        }
+
+        function setProgressVisual(pct) {
+            const clamped = Math.max(0, Math.min(100, pct || 0));
+            globalProgressBar.value = clamped;
+            globalPlayerContainer.style.setProperty('--player-progress', clamped + '%');
+        }
+
+        function syncProgressUI() {
+            const d = globalAudio.duration || 0;
+            const c = globalAudio.currentTime || 0;
+            setProgressVisual(d ? (c / d) * 100 : 0);
+            globalCurrentTime.textContent = formatTime(c);
+            updateActiveLyricLine(false);
+        }
+
+        function playerRafStep() {
+            if (!isPlaying || !playerExpanded.classList.contains('active')) {
+                playerRafId = null;
+                return;
+            }
+            syncProgressUI();
+            playerRafId = requestAnimationFrame(playerRafStep);
+        }
+
+        function updatePlayerRafState() {
+            if (isPlaying && playerExpanded.classList.contains('active')) {
+                if (!playerRafId) playerRafId = requestAnimationFrame(playerRafStep);
+            } else if (playerRafId) {
+                cancelAnimationFrame(playerRafId);
+                playerRafId = null;
+            }
+        }
+
         globalAudio.addEventListener('loadedmetadata', () => {
             globalDuration.textContent = formatTime(globalAudio.duration || 0);
+            updateMediaSessionPosition();
         });
 
         function loadTrack(albumIndex, trackIndex) {
@@ -939,6 +1055,7 @@
             if (!album || !album.tracks || !album.tracks[trackIndex]) return;
             currentAlbumIndex = albumIndex;
             currentTrackIndex = trackIndex;
+            preloadedNextSrc  = '';
             const track = album.tracks[trackIndex];
             
             globalAudio.src = track.src;
@@ -973,7 +1090,7 @@
             renderTrackLyrics(track, album);
 
             globalPlayerContainer.classList.remove('hidden');
-            globalProgressBar.value = 0;
+            setProgressVisual(0);
             globalCurrentTime.textContent = '0:00';
             globalDuration.textContent = '0:00';
 
@@ -996,6 +1113,8 @@
             isPlaying = true;
             barPlayPauseBtn.innerHTML = PAUSE_SVG;
             globalPlayPauseBtn.innerHTML = PAUSE_SVG;
+            updatePlayerRafState();
+            updateMediaSessionPosition();
         }
 
         function pauseAudio() {
@@ -1003,6 +1122,8 @@
             isPlaying = false;
             barPlayPauseBtn.innerHTML = PLAY_SVG;
             globalPlayPauseBtn.innerHTML = PLAY_SVG;
+            updatePlayerRafState();
+            updateMediaSessionPosition();
         }
 
         function togglePlayPause() { isPlaying ? pauseAudio() : playAudio(); }
@@ -1022,15 +1143,29 @@
         }
 
         globalAudio.addEventListener('timeupdate', () => {
+            if (!playerRafId) syncProgressUI();
             const d = globalAudio.duration || 0;
-            globalProgressBar.value = d ? (globalAudio.currentTime / d) * 100 : 0;
-            globalCurrentTime.textContent = formatTime(globalAudio.currentTime);
-            updateActiveLyricLine(false);
+            const c = globalAudio.currentTime || 0;
+            // Precarica metadati traccia successiva quando il brano supera l'85%
+            if (d > 0 && c / d > 0.85) {
+                const album = allAlbums[currentAlbumIndex];
+                if (album && album.tracks && album.tracks.length > 1) {
+                    const nextTrack = album.tracks[(currentTrackIndex + 1) % album.tracks.length];
+                    if (nextTrack && nextTrack.src !== preloadedNextSrc) {
+                        preloadedNextSrc = nextTrack.src;
+                        nextAudioPreloader.src = nextTrack.src;
+                    }
+                }
+            }
         });
 
         globalProgressBar.addEventListener('input', () => {
-            globalAudio.currentTime = (globalProgressBar.value / 100) * (globalAudio.duration || 0);
+            const pct = parseFloat(globalProgressBar.value) || 0;
+            setProgressVisual(pct);
+            globalAudio.currentTime = (pct / 100) * (globalAudio.duration || 0);
+            globalCurrentTime.textContent = formatTime(globalAudio.currentTime);
             updateActiveLyricLine(true);
+            updateMediaSessionPosition();
         });
         
         globalAudio.addEventListener('ended', playNextTrack);
@@ -1043,10 +1178,12 @@
         document.getElementById('open-expanded-player').addEventListener('click', () => {
             playerExpanded.classList.add('active');
             syncModalState();
+            updatePlayerRafState();
         });
         document.getElementById('close-expanded-btn').addEventListener('click', () => {
             playerExpanded.classList.remove('active');
             syncModalState();
+            updatePlayerRafState();
         });
 
         // Gesture Swipe su Mobile per il Player (Swipe giù per chiudere, Swipe su sulla barra per aprire)
@@ -1069,6 +1206,7 @@
                 if (dy > 50 && dy > Math.abs(dx) * 1.3) {
                     playerExpanded.classList.remove('active');
                     syncModalState();
+                    updatePlayerRafState();
                 }
             }, { passive: true });
 
@@ -1089,6 +1227,7 @@
                 if (dy < -40 && Math.abs(dy) > Math.abs(dx) * 1.3) {
                     playerExpanded.classList.add('active');
                     syncModalState();
+                    updatePlayerRafState();
                 }
             }, { passive: true });
         })();
@@ -1098,6 +1237,32 @@
             navigator.mediaSession.setActionHandler('pause', pauseAudio);
             navigator.mediaSession.setActionHandler('previoustrack', playPrevTrack);
             navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
+            try {
+                navigator.mediaSession.setActionHandler('seekto', details => {
+                    if (details.fastSeek && 'fastSeek' in globalAudio) {
+                        globalAudio.fastSeek(details.seekTime);
+                    } else {
+                        globalAudio.currentTime = details.seekTime;
+                    }
+                    syncProgressUI();
+                    updateActiveLyricLine(true);
+                    updateMediaSessionPosition();
+                });
+                navigator.mediaSession.setActionHandler('seekbackward', details => {
+                    const offset = details.seekOffset || 10;
+                    globalAudio.currentTime = Math.max(0, (globalAudio.currentTime || 0) - offset);
+                    syncProgressUI();
+                    updateActiveLyricLine(true);
+                    updateMediaSessionPosition();
+                });
+                navigator.mediaSession.setActionHandler('seekforward', details => {
+                    const offset = details.seekOffset || 10;
+                    globalAudio.currentTime = Math.min(globalAudio.duration || 0, (globalAudio.currentTime || 0) + offset);
+                    syncProgressUI();
+                    updateActiveLyricLine(true);
+                    updateMediaSessionPosition();
+                });
+            } catch (_) {}
         }
 
         // ==========================================
@@ -1106,13 +1271,14 @@
         function showTracklist(albumIndex) {
             const album = allAlbums[albumIndex];
             if (!album) return;
-            tracklistContent.innerHTML = '';
             
             const fragment = document.createDocumentFragment();
 
             const modalCover = document.createElement('img');
             modalCover.src = album.albumCover;
             modalCover.className = 'tracklist-cover';
+            modalCover.width = 150;
+            modalCover.height = 150;
             modalCover.decoding = 'async';
             fragment.appendChild(modalCover);
             
@@ -1126,17 +1292,20 @@
             album.tracks.forEach((track, trackIndex) => {
                 const trackItem = document.createElement('li');
                 trackItem.textContent = track.title;
-                trackItem.className = 'tracklist-item';
+                const isThisTrackLoaded = (albumIndex === currentAlbumIndex && trackIndex === currentTrackIndex && !!globalAudio.src);
+                trackItem.className = 'tracklist-item' + (isThisTrackLoaded ? ' playing' : '');
                 trackItem.dataset.albumIndex = albumIndex;
                 trackItem.dataset.trackIndex = trackIndex;
                 trackListElement.appendChild(trackItem);
             });
             fragment.appendChild(trackListElement);
-            tracklistContent.appendChild(fragment);
+            tracklistContent.replaceChildren(fragment);
             
-            modalBackdrop.classList.add('active');
-            tracklistModal.classList.add('active');
-            syncModalState();
+            requestAnimationFrame(() => {
+                modalBackdrop.classList.add('active');
+                tracklistModal.classList.add('active');
+                syncModalState();
+            });
         }
 
         function closeTracklistModal() {
@@ -1148,7 +1317,17 @@
         tracklistContent.addEventListener('click', e => {
             const item = e.target.closest('.tracklist-item');
             if (item) {
-                loadTrack(parseInt(item.dataset.albumIndex, 10), parseInt(item.dataset.trackIndex, 10));
+                const aIdx = parseInt(item.dataset.albumIndex, 10);
+                const tIdx = parseInt(item.dataset.trackIndex, 10);
+                if (aIdx === currentAlbumIndex && tIdx === currentTrackIndex && globalAudio.src) {
+                    if (!isPlaying) playAudio();
+                    closeTracklistModal();
+                    playerExpanded.classList.add('active');
+                    syncModalState();
+                    updatePlayerRafState();
+                    return;
+                }
+                loadTrack(aIdx, tIdx);
                 playAudio();
                 closeTracklistModal(); 
             }
@@ -1224,7 +1403,7 @@
             }
         });
 
-        // Chiusura modali con tasto Escape su Desktop
+        // Chiusura modali con tasto Escape e controlli tastiera Desktop nel Player Espanso
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 if (lightbox.classList.contains('active')) closeLightbox();
@@ -1232,6 +1411,26 @@
                 else if (playerExpanded.classList.contains('active')) {
                     playerExpanded.classList.remove('active');
                     syncModalState();
+                    updatePlayerRafState();
+                }
+                return;
+            }
+            if (playerExpanded.classList.contains('active')) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlayPause();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    globalAudio.currentTime = Math.min(globalAudio.duration || 0, (globalAudio.currentTime || 0) + 5);
+                    syncProgressUI();
+                    updateActiveLyricLine(true);
+                    updateMediaSessionPosition();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    globalAudio.currentTime = Math.max(0, (globalAudio.currentTime || 0) - 5);
+                    syncProgressUI();
+                    updateActiveLyricLine(true);
+                    updateMediaSessionPosition();
                 }
             }
         });
@@ -1351,14 +1550,9 @@
         }
 
         // ==========================================
-        // RENDER DINAMICO DELLE SEZIONI (Da data.json)
+        // RENDER DINAMICO LAZY PER TAB (Da data.json)
         // ==========================================
-        function renderAllSections(data) {
-            allAlbums       = (data && data.snd)     || [];
-            artProjects     = (data && data.art)     || [];
-            goycastEpisodes = (data && data.goycast) || [];
-
-            // 1. Render SND (con DocumentFragment per un singolo reflow)
+        function renderSndSection() {
             const pageSnd = document.getElementById('page-snd');
             const sndFragment = document.createDocumentFragment();
 
@@ -1380,6 +1574,8 @@
                 img.src = album.albumCover;
                 img.alt = 'Copertina ' + album.albumTitle;
                 img.className = 'album-cover-clickable';
+                img.width = 200;
+                img.height = 200;
                 img.dataset.albumIndex = idx;
                 img.decoding = 'async';
                 if (idx >= 3) img.loading = 'lazy';
@@ -1394,8 +1590,10 @@
                 sndFragment.appendChild(container);
             });
             pageSnd.replaceChildren(sndFragment);
+            renderedPages.snd = true;
+        }
 
-            // 2. Render ART
+        function renderArtSection() {
             const artGallery = document.getElementById('art-gallery');
             const artFragment = document.createDocumentFragment();
 
@@ -1487,8 +1685,10 @@
                 artFragment.appendChild(item);
             });
             artGallery.replaceChildren(artFragment);
+            renderedPages.art = true;
+        }
 
-            // 3. Render GOYCAST
+        function renderGoycastSection() {
             const goycastGallery = document.getElementById('goycast-gallery');
             const goyFragment = document.createDocumentFragment();
 
@@ -1525,8 +1725,43 @@
                 goyFragment.appendChild(item);
             });
             goycastGallery.replaceChildren(goyFragment);
+            renderedPages.goycast = true;
+        }
 
-            if (currentPage) observePageMedia(currentPage);
+        let muxScriptLoaded = false;
+        function ensureMuxScriptLoaded() {
+            if (muxScriptLoaded) return;
+            muxScriptLoaded = true;
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/@mux/mux-video';
+            s.async = true;
+            document.head.appendChild(s);
+        }
+
+        function ensurePageRendered(page) {
+            if (page === 'snd' && !renderedPages.snd) renderSndSection();
+            else if (page === 'art' && !renderedPages.art) {
+                ensureMuxScriptLoaded();
+                renderArtSection();
+            } else if (page === 'goycast' && !renderedPages.goycast) {
+                ensureMuxScriptLoaded();
+                renderGoycastSection();
+            }
+        }
+
+        function renderAllSections(data) {
+            allAlbums       = (data && data.snd)     || [];
+            artProjects     = (data && data.art)     || [];
+            goycastEpisodes = (data && data.goycast) || [];
+            dataLoaded      = true;
+
+            renderedPages.snd = false;
+            renderedPages.art = false;
+            renderedPages.goycast = false;
+
+            const activePage = currentPage || 'snd';
+            ensurePageRendered(activePage);
+            observePageMedia(activePage);
         }
 
         // Event Delegation per apertura Tracklist in SND
